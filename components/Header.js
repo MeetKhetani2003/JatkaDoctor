@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Phone, MessageCircle, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { FaWhatsapp } from "react-icons/fa";
 
 const Header = () => {
   const [open, setOpen] = useState(false);
@@ -82,10 +83,9 @@ const Header = () => {
         onClick={() =>
           window.open(`https://wa.me/${phone}?text=Hello Doctor`, "_blank")
         }
-        className="fixed bottom-5 right-5 z-50 flex items-center gap-2 bg-emerald-600 text-white px-4 py-3 rounded-full shadow-lg"
+        className="fixed bottom-16 right-5 z-50 flex items-center gap-2 bg-emerald-600 text-white px-4 py-3 rounded-full shadow-lg"
       >
-        <MessageCircle className="w-5 h-5" />
-        <span className="text-sm font-semibold">Chat</span>
+        <FaWhatsapp className="w-5 h-7" />
       </motion.button>
 
       {/* FULL SCREEN MENU */}

@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
 import BottomNav from "@/components/BottomNav";
+import Footer from "@/components/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,7 +16,8 @@ const geistMono = Geist_Mono({
 
 export const metadata = {
   title: "Dr. Jhatka Medicare",
-  description: "24x7 Ambulance Service, Lab Tests, and Medical Equipment at Home in Lucknow.",
+  description:
+    "24x7 Ambulance Service, Lab Tests, and Medical Equipment at Home in Lucknow.",
 };
 
 export default function RootLayout({ children }) {
@@ -28,7 +30,7 @@ export default function RootLayout({ children }) {
         <Header />
         {/* Main Content Area - Full width but max container for large screens */}
         <main className="flex-1 w-full max-w-7xl mx-auto">{children}</main>
-        <BottomNav />
+        <Footer />
       </body>
     </html>
   );
