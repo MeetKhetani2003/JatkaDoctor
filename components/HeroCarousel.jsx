@@ -51,7 +51,7 @@ export default function HeroCarousel() {
             alt="banner"
             fill
             priority
-            className="object-cover"
+            className="object-cover object-[75%_center] sm:object-center"
           />
 
           {/* DARK OVERLAY */}
