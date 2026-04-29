@@ -34,6 +34,7 @@ import {
   Monitor,
   HelpCircle,
 } from "lucide-react";
+import Navbar from "@/components/Header";
 
 const phone = "8874744756";
 
@@ -1209,46 +1210,46 @@ const SERVICES_CONFIG = {
 };
 
 // ==================== COMPONENTS ====================
-function Header() {
-  return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-white/95 backdrop-blur-xl border-b border-gray-100">
-      <div className="flex items-center justify-between px-4 h-14 max-w-7xl mx-auto">
-        <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-700" />
-          </Link>
-          <div className="relative h-24 w-auto">
-            <Image
-              src="/Dr.Jhatka.png"
-              alt="Dr Jhatka Medicare"
-              width={500}
-              height={100}
-              className="object-contain h-full w-auto"
-              priority
-            />
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <a
-            href={`tel:${phone}`}
-            className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white active:scale-90 transition"
-          >
-            <Phone className="w-5 h-5" />
-          </a>
-          <a
-            href={`https://wa.me/91${phone}`}
-            className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white active:scale-90 transition"
-          >
-            <MessageCircle className="w-5 h-5" />
-          </a>
-        </div>
-      </div>
-    </header>
-  );
-}
+// function Header() {
+//   return (
+//     <header className="fixed top-0 left-0 w-full z-50 bg-white/95 backdrop-blur-xl border-b border-gray-100">
+//       <div className="flex items-center justify-between px-4 h-14 max-w-7xl mx-auto">
+//         <div className="flex items-center gap-3">
+//           <Link
+//             href="/"
+//             className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition"
+//           >
+//             <ChevronLeft className="w-5 h-5 text-gray-700" />
+//           </Link>
+//           <div className="relative h-24 w-auto">
+//             <Image
+//               src="/Dr.Jhatka.png"
+//               alt="Dr Jhatka Medicare"
+//               width={500}
+//               height={100}
+//               className="object-contain h-full w-auto"
+//               priority
+//             />
+//           </div>
+//         </div>
+//         <div className="flex items-center gap-2">
+//           <a
+//             href={`tel:${phone}`}
+//             className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white active:scale-90 transition"
+//           >
+//             <Phone className="w-5 h-5" />
+//           </a>
+//           <a
+//             href={`https://wa.me/91${phone}`}
+//             className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white active:scale-90 transition"
+//           >
+//             <MessageCircle className="w-5 h-5" />
+//           </a>
+//         </div>
+//       </div>
+//     </header>
+//   );
+// }
 
 function Banner({ config }) {
   return (
@@ -1701,7 +1702,7 @@ export default async function ServicePage({ params }) {
 
   return (
     <main className="min-h-screen bg-white pb-24 sm:pb-8">
-      <Header />
+      <Navbar />
       <Banner config={service.banner} />
       <ServiceTypes types={service.types} />
       <Benefits benefits={service.benefits} />
