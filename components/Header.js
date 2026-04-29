@@ -1,149 +1,613 @@
 "use client";
-
-import React, { useState, useEffect } from "react";
-import Image from "next/image";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Phone, MessageCircle, Menu, X } from "lucide-react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaWhatsapp } from "react-icons/fa";
+import {
+  Ambulance,
+  Activity,
+  Stethoscope,
+  Bed,
+  Home,
+  UserPlus,
+  TestTube,
+  Accessibility,
+  Menu,
+  X,
+  ChevronDown,
+  ChevronRight,
+  Phone,
+} from "lucide-react";
 
-const Header = () => {
-  const [open, setOpen] = useState(false);
+const PRIMARY = "#0F9D58";
+const PRIMARY_LIGHT = "#E8F8F1";
+const PRIMARY_DARK = "#0d8a4e";
+const TEXT = "#222222";
+
+const services = [
+  {
+    title: "Ambulance Service",
+    icon: Ambulance,
+    link: "/services/ambulance",
+    desc: "24/7 Emergency response",
+  },
+  {
+    title: "Physiotherapy at Home",
+    icon: Activity,
+    link: "/services/physiotherapy",
+    desc: "Expert therapy sessions",
+  },
+  {
+    title: "Doctor Visit at Home",
+    icon: Stethoscope,
+    link: "/services/doctor",
+    desc: "Qualified MDs at your door",
+  },
+  {
+    title: "ICU at Home",
+    icon: Bed,
+    link: "/services/icu",
+    desc: "Critical care support",
+  },
+  {
+    title: "Home Care Services",
+    icon: Home,
+    link: "/services/home-care",
+    desc: "Comprehensive daily support",
+  },
+  {
+    title: "Nursing Care at Home",
+    icon: UserPlus,
+    link: "/services/nursing",
+    desc: "Trained nursing staff",
+  },
+  {
+    title: "Lab Test at Home",
+    icon: TestTube,
+    link: "/lab-test",
+    desc: "NABL Certified labs",
+  },
+  {
+    title: "Equipment Rental",
+    icon: Accessibility,
+    link: "/services/equipment",
+    desc: "Medical equipment on rent",
+  },
+];
+
+const navLinks = [
+  { label: "Home", href: "/" },
+  { label: "Services", href: "/services", hasSubmenu: true },
+  { label: "Lab Tests", href: "/lab-test" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
+];
+
+/* ─── Desktop Megamenu ─────────────────────────────────── */
+function ServicesMegaMenu({ open }) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0, y: 8, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 6, scale: 0.97 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+          className="absolute top-full left-1/2 -translate-x-1/2 mt-3 z-50"
+          style={{ width: 580 }}
+        >
+          {/* Arrow */}
+          <div className="flex justify-center -mb-px">
+            <div
+              className="w-3 h-3 rotate-45 bg-white border-l border-t border-gray-100 z-10"
+              style={{ boxShadow: "-2px -2px 5px rgba(0,0,0,0.04)" }}
+            />
+          </div>
+
+          {/* Panel */}
+          <div
+            className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+            style={{ boxShadow: `0 24px 64px rgba(15,157,88,0.13)` }}
+          >
+            {/* Header */}
+            <div
+              className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between"
+              style={{
+                background: `linear-gradient(to right, ${PRIMARY_LIGHT}, #ffffff)`,
+              }}
+            >
+              <div>
+                <p
+                  className="text-[13px] font-black tracking-tight"
+                  style={{ color: TEXT }}
+                >
+                  Our Services
+                </p>
+                <p className="text-[11px] text-gray-400 mt-0.5 font-medium">
+                  Trusted home healthcare · Available 24 / 7
+                </p>
+              </div>
+              <Link
+                href="/services"
+                className="flex items-center gap-1 text-[11px] font-bold px-3 py-1.5 rounded-xl transition-colors"
+                style={{ color: PRIMARY, background: PRIMARY_LIGHT }}
+              >
+                View all <ChevronRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            {/* Grid */}
+            <div className="grid grid-cols-2 gap-px bg-gray-100/70">
+              {services.map((s, i) => {
+                const Icon = s.icon;
+                return (
+                  <motion.div
+                    key={s.title}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                  >
+                    <Link
+                      href={s.link}
+                      className="flex items-center gap-3 px-4 py-3.5 bg-white group transition-colors duration-150"
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background = "#F5FDF9")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.background = "white")
+                      }
+                    >
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110"
+                        style={{ background: PRIMARY_LIGHT }}
+                      >
+                        <Icon
+                          style={{ color: PRIMARY, width: 18, height: 18 }}
+                        />
+                      </div>
+                      <div>
+                        <p
+                          className="text-[12.5px] font-bold leading-tight transition-colors group-hover:text-[#0F9D58]"
+                          style={{ color: TEXT }}
+                        >
+                          {s.title}
+                        </p>
+                        <p className="text-[10.5px] text-gray-400 mt-0.5 font-medium">
+                          {s.desc}
+                        </p>
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Footer */}
+            <div
+              className="px-5 py-3 flex items-center justify-between"
+              style={{
+                background: `linear-gradient(135deg, ${PRIMARY}, ${PRIMARY_DARK})`,
+              }}
+            >
+              <div>
+                <p className="text-[12px] font-bold text-white">
+                  Need help choosing a service?
+                </p>
+                <p className="text-[10px] mt-0.5" style={{ color: "#a7f3d0" }}>
+                  Our care coordinators are here 24 / 7
+                </p>
+              </div>
+              <a
+                href="tel:+911800000000"
+                className="flex items-center gap-1.5 bg-white text-[11px] font-bold px-3.5 py-2 rounded-xl hover:bg-green-50 transition-colors"
+                style={{ color: PRIMARY }}
+              >
+                <Phone className="w-3.5 h-3.5" /> Call Now
+              </a>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ─── Mobile Drawer ────────────────────────────────────── */
+function MobileDrawer({ open, onClose }) {
+  const [servicesOpen, setServicesOpen] = useState(false);
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40"
+            style={{
+              background: "rgba(0,0,0,0.42)",
+              backdropFilter: "blur(3px)",
+            }}
+            onClick={onClose}
+          />
+
+          {/* Drawer */}
+          <motion.div
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 26, stiffness: 260 }}
+            className="fixed top-0 right-0 h-full w-[88vw] max-w-[360px] bg-white z-50 flex flex-col overflow-hidden"
+            style={{ boxShadow: `-8px 0 40px rgba(15,157,88,0.14)` }}
+          >
+            {/* Drawer Header — green bar with logo */}
+            <div
+              className="flex items-center justify-between px-5 py-4 shrink-0"
+              style={{
+                background: `linear-gradient(135deg, ${PRIMARY}, ${PRIMARY_DARK})`,
+              }}
+            >
+              <Image
+                src="/Dr.Jhatka.png"
+                alt="Dr. Jhatka"
+                width={130}
+                height={42}
+                className="object-cover"
+              />
+              <button
+                onClick={onClose}
+                className="w-8 h-8 rounded-full flex items-center justify-center"
+                style={{ background: "rgba(255,255,255,0.2)" }}
+              >
+                <X className="w-4 h-4 text-white" />
+              </button>
+            </div>
+
+            {/* Nav list */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="py-1.5">
+                {navLinks.map((link) =>
+                  link.hasSubmenu ? (
+                    <div key={link.label}>
+                      {/* Accordion trigger */}
+                      <button
+                        onClick={() => setServicesOpen((v) => !v)}
+                        className="w-full flex items-center justify-between px-5 py-4 border-b border-gray-100 text-left"
+                        style={{
+                          background: servicesOpen ? PRIMARY_LIGHT : "white",
+                        }}
+                      >
+                        <span
+                          className="text-[14px] font-black tracking-tight"
+                          style={{ color: servicesOpen ? PRIMARY : TEXT }}
+                        >
+                          Services
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                            style={{
+                              background: PRIMARY_LIGHT,
+                              color: PRIMARY,
+                            }}
+                          >
+                            8
+                          </span>
+                          <motion.div
+                            animate={{ rotate: servicesOpen ? 180 : 0 }}
+                            transition={{ duration: 0.22 }}
+                          >
+                            <ChevronDown
+                              className="w-4 h-4"
+                              style={{
+                                color: servicesOpen ? PRIMARY : "#9CA3AF",
+                              }}
+                            />
+                          </motion.div>
+                        </div>
+                      </button>
+
+                      <AnimatePresence>
+                        {servicesOpen && (
+                          <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.22, ease: "easeInOut" }}
+                            className="overflow-hidden"
+                            style={{ background: "#FAFAFA" }}
+                          >
+                            {/* Sub-header */}
+                            <div className="px-5 pt-3 pb-1.5 flex items-center justify-between">
+                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                All Services
+                              </p>
+                              <Link
+                                href="/services"
+                                onClick={onClose}
+                                className="text-[11px] font-bold flex items-center gap-0.5"
+                                style={{ color: PRIMARY }}
+                              >
+                                View all <ChevronRight className="w-3 h-3" />
+                              </Link>
+                            </div>
+
+                            {/* Service cards */}
+                            <div className="px-3 pb-3 space-y-1.5">
+                              {services.map((s, i) => {
+                                const Icon = s.icon;
+                                return (
+                                  <motion.div
+                                    key={s.title}
+                                    initial={{ opacity: 0, x: 10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: i * 0.035 }}
+                                  >
+                                    <Link
+                                      href={s.link}
+                                      onClick={onClose}
+                                      className="flex items-center gap-3 px-3 py-3 rounded-xl bg-white border border-gray-100 active:scale-[0.97] transition-transform group"
+                                      style={{
+                                        boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                                      }}
+                                    >
+                                      <div
+                                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                                        style={{ background: PRIMARY_LIGHT }}
+                                      >
+                                        <Icon
+                                          style={{
+                                            color: PRIMARY,
+                                            width: 20,
+                                            height: 20,
+                                          }}
+                                        />
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p
+                                          className="text-[13px] font-bold leading-tight"
+                                          style={{ color: TEXT }}
+                                        >
+                                          {s.title}
+                                        </p>
+                                        <p className="text-[11px] text-gray-400 mt-0.5">
+                                          {s.desc}
+                                        </p>
+                                      </div>
+                                      <ChevronRight
+                                        className="w-4 h-4 shrink-0"
+                                        style={{ color: PRIMARY }}
+                                      />
+                                    </Link>
+                                  </motion.div>
+                                );
+                              })}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  ) : (
+                    <Link
+                      key={link.label}
+                      href={link.href}
+                      onClick={onClose}
+                      className="flex items-center justify-between px-5 py-4 text-[14px] font-black border-b border-gray-100 transition-colors"
+                      style={{ color: TEXT }}
+                      onTouchStart={(e) =>
+                        (e.currentTarget.style.background = PRIMARY_LIGHT)
+                      }
+                      onTouchEnd={(e) =>
+                        (e.currentTarget.style.background = "white")
+                      }
+                    >
+                      {link.label}
+                      <ChevronRight className="w-4 h-4 text-gray-300" />
+                    </Link>
+                  ),
+                )}
+              </div>
+
+              {/* Info pill */}
+              <div
+                className="mx-4 mt-4 px-4 py-3 rounded-2xl"
+                style={{ background: PRIMARY_LIGHT }}
+              >
+                <p className="text-[11px] font-bold" style={{ color: PRIMARY }}>
+                  🏥 Serving 50+ cities across India
+                </p>
+                <p className="text-[10px] text-gray-500 mt-0.5">
+                  Same-day appointments available
+                </p>
+              </div>
+            </div>
+
+            {/* Drawer Footer */}
+            <div
+              className="p-4 border-t border-gray-100 shrink-0"
+              style={{ background: "#FAFAFA" }}
+            >
+              <a
+                href="tel:+911800000000"
+                className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-white text-[14px] font-black tracking-tight active:scale-[0.97] transition-transform"
+                style={{
+                  background: `linear-gradient(135deg, ${PRIMARY}, ${PRIMARY_DARK})`,
+                  boxShadow: `0 6px 20px rgba(15,157,88,0.28)`,
+                }}
+              >
+                <Phone className="w-4 h-4" />
+                Call for Emergency
+              </a>
+              <p className="text-center text-[10px] text-gray-400 mt-2 font-medium">
+                Toll Free · 24 / 7 · No charges for calling
+              </p>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/* ─── Main Navbar ──────────────────────────────────────── */
+export default function Navbar() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [servicesHover, setServicesHover] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-
-  const phone = "8707790677";
+  const closeTimer = useRef(null);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const handler = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", handler, { passive: true });
+    return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  const navItems = [
-    "Home",
-    "Services",
-    "Doctors",
-    "Ambulance",
-    "Physiotherapy",
-    "Lab Tests",
-    "Blog",
-  ];
+  const handleServicesEnter = () => {
+    clearTimeout(closeTimer.current);
+    setServicesHover(true);
+  };
+  const handleServicesLeave = () => {
+    closeTimer.current = setTimeout(() => setServicesHover(false), 160);
+  };
 
   return (
     <>
-      {/* HEADER */}
       <header
-        className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-          scrolled
-            ? "bg-white/80 backdrop-blur-xl shadow-sm"
-            : "bg-white/60 backdrop-blur-md"
-        }`}
+        className="fixed top-0 inset-x-0 z-30 bg-white transition-all duration-300"
+        style={{
+          borderBottom: scrolled
+            ? "1px solid #F0F0F0"
+            : "1px solid transparent",
+          boxShadow: scrolled ? "0 2px 16px rgba(15,157,88,0.09)" : "none",
+        }}
       >
-        <div className="flex items-center justify-between px-4 h-14">
-          {/* LOGO */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="relative h-10 w-auto flex items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link href="/" className="flex items-center shrink-0">
               <Image
                 src="/Dr.Jhatka.png"
-                alt="Dr Jhatka Medicare"
-                width={160}
-                height={50}
+                alt="Dr. Jhatka"
+                width={140}
+                height={44}
+                className="object-contain"
                 priority
-                className="object-contain h-full w-auto scale-110"
               />
+            </Link>
+
+            {/* Desktop Nav */}
+            <nav className="hidden lg:flex items-center gap-0.5">
+              {navLinks.map((link) =>
+                link.hasSubmenu ? (
+                  <div
+                    key={link.label}
+                    className="relative"
+                    onMouseEnter={handleServicesEnter}
+                    onMouseLeave={handleServicesLeave}
+                  >
+                    <button
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13.5px] font-bold transition-all duration-200"
+                      style={{
+                        color: servicesHover ? PRIMARY : TEXT,
+                        background: servicesHover
+                          ? PRIMARY_LIGHT
+                          : "transparent",
+                      }}
+                    >
+                      {link.label}
+                      <motion.div
+                        animate={{ rotate: servicesHover ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronDown className="w-3.5 h-3.5" />
+                      </motion.div>
+                    </button>
+                    <ServicesMegaMenu open={servicesHover} />
+                  </div>
+                ) : (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    className="px-4 py-2 rounded-xl text-[13.5px] font-bold transition-all duration-200"
+                    style={{ color: TEXT }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = PRIMARY;
+                      e.currentTarget.style.background = PRIMARY_LIGHT;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = TEXT;
+                      e.currentTarget.style.background = "transparent";
+                    }}
+                  >
+                    {link.label}
+                  </Link>
+                ),
+              )}
+            </nav>
+
+            {/* Desktop CTAs */}
+            <div className="hidden lg:flex items-center gap-2.5">
+              <a
+                href="tel:+911800000000"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-bold border transition-colors duration-200"
+                style={{
+                  color: PRIMARY,
+                  borderColor: PRIMARY,
+                  background: "white",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = PRIMARY_LIGHT)
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = "white")
+                }
+              >
+                <Phone className="w-3.5 h-3.5" />
+                1800-000-000
+              </a>
+              <Link
+                href="/book"
+                className="px-5 py-2 rounded-xl text-[13px] font-black text-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
+                style={{
+                  background: `linear-gradient(135deg, ${PRIMARY}, ${PRIMARY_DARK})`,
+                  boxShadow: `0 4px 14px rgba(15,157,88,0.28)`,
+                }}
+              >
+                Book Now
+              </Link>
             </div>
-          </Link>
 
-          {/* RIGHT SIDE */}
-          <div className="flex items-center gap-2">
-            {/* CALL ICON */}
-            <button
-              onClick={() => (window.location.href = `tel:${phone}`)}
-              className="p-2 rounded-full bg-gray-100 active:scale-90 transition"
-            >
-              <Phone className="w-5 h-5" />
-            </button>
-
-            {/* MENU */}
-            <button
-              onClick={() => setOpen(true)}
-              className="p-2 rounded-full bg-gray-100 active:scale-90 transition"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
+            {/* Mobile right controls */}
+            <div className="flex lg:hidden items-center gap-2">
+              <a
+                href="tel:+911800000000"
+                className="w-9 h-9 rounded-xl flex items-center justify-center border"
+                style={{
+                  borderColor: PRIMARY,
+                  color: PRIMARY,
+                  background: PRIMARY_LIGHT,
+                }}
+              >
+                <Phone className="w-4 h-4" />
+              </a>
+              <button
+                onClick={() => setMenuOpen(true)}
+                className="w-9 h-9 rounded-xl flex items-center justify-center"
+                style={{ background: "#F5F5F5", color: TEXT }}
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* FLOATING WHATSAPP CTA */}
-      <motion.button
-        initial={{ y: 100, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        onClick={() =>
-          window.open(`https://wa.me/${phone}?text=Hello Doctor`, "_blank")
-        }
-        className="fixed bottom-16 right-5 z-50 flex items-center gap-2 bg-emerald-600 text-white px-4 py-3 rounded-full shadow-lg"
-      >
-        <FaWhatsapp className="w-5 h-7" />
-      </motion.button>
+      {/* Spacer so page content doesn't hide under fixed bar */}
 
-      {/* FULL SCREEN MENU */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            transition={{ duration: 0.35, ease: "easeInOut" }}
-            className="fixed inset-0 bg-white z-[100] flex flex-col"
-          >
-            {/* TOP BAR */}
-            <div className="flex items-center justify-between px-5 h-16 border-b">
-              <span className="font-bold text-lg">Menu</span>
-
-              <button
-                onClick={() => setOpen(false)}
-                className="p-2 rounded-full bg-gray-100"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* NAV ITEMS */}
-            <div className="flex flex-col px-6 pt-6 gap-3">
-              {navItems.map((item, i) => (
-                <motion.div
-                  key={item}
-                  initial={{ opacity: 0, x: 30 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                >
-                  <Link
-                    href={`/${item.toLowerCase().replace(" ", "-")}`}
-                    onClick={() => setOpen(false)}
-                    className="block text-lg font-medium py-3 border-b border-gray-100"
-                  >
-                    {item}
-                  </Link>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* BOTTOM CTA */}
-            <div className="mt-auto p-5">
-              <button
-                onClick={() => window.open(`https://wa.me/${phone}`, "_blank")}
-                className="w-full bg-emerald-600 text-white py-3 rounded-xl font-semibold"
-              >
-                Contact on WhatsApp
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <MobileDrawer open={menuOpen} onClose={() => setMenuOpen(false)} />
     </>
   );
-};
-
-export default Header;
+}

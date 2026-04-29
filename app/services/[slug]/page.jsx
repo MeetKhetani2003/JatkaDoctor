@@ -1,0 +1,1720 @@
+// app/services/[slug]/page.js
+"use client";
+
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { motion } from "framer-motion";
+import {
+  Phone,
+  MessageCircle,
+  ChevronLeft,
+  Star,
+  CheckCircle2,
+  Clock,
+  Shield,
+  MapPin,
+  Calendar,
+  User,
+  ChevronDown,
+  Ambulance,
+  Activity,
+  Bed,
+  Stethoscope,
+  Home,
+  UserPlus,
+  TestTube,
+  Accessibility,
+  Heart,
+  Brain,
+  Baby,
+  Dumbbell,
+  Syringe,
+  Monitor,
+  HelpCircle,
+} from "lucide-react";
+
+const phone = "8874744756";
+
+// ==================== SERVICE CONFIGURATIONS ====================
+// Each service has its own configuration. Add your real images to the public folder
+// and update these paths or use external URLs like Unsplash.
+
+const SERVICES_CONFIG = {
+  ambulance: {
+    banner: {
+      title: "24x7 Ambulance Service",
+      subtitle: "in Lucknow",
+      description:
+        "Fast, reliable and emergency ambulance service at your doorstep.",
+      image: "/services/s1.png",
+    },
+    types: [
+      {
+        icon: Ambulance,
+        title: "Basic Ambulance",
+        desc: "Standard emergency transport",
+        image:
+          "https://images.unsplash.com/photo-1550258987-190a2d41a8ba?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Activity,
+        title: "Oxygen Ambulance",
+        desc: "With oxygen cylinder support",
+        image:
+          "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Bed,
+        title: "ICU Ambulance",
+        desc: "Advanced life support systems",
+        image:
+          "https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Shield,
+        title: "Dead Body Ambulance",
+        desc: "Respectful mortuary transport",
+        image:
+          "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=300&h=200&fit=crop",
+      },
+    ],
+    benefits: [
+      { icon: Clock, title: "24x7 Available", desc: "Round the clock service" },
+      {
+        icon: Activity,
+        title: "10-15 Min Response",
+        desc: "Quick arrival guaranteed",
+      },
+      {
+        icon: Stethoscope,
+        title: "Trained Medical Staff",
+        desc: "Professional paramedics",
+      },
+      { icon: MapPin, title: "GPS Enabled", desc: "Live tracking available" },
+    ],
+    packages: [
+      {
+        name: "Basic Package",
+        price: "₹1,500",
+        period: "per trip",
+        features: [
+          "Standard ambulance",
+          "Basic first aid",
+          "Patient transport",
+          "Within 10km radius",
+        ],
+        popular: false,
+      },
+      {
+        name: "Advanced Package",
+        price: "₹3,500",
+        period: "per trip",
+        features: [
+          "Oxygen support",
+          "Paramedic staff",
+          "ECG monitoring",
+          "Within 25km radius",
+          "Priority response",
+        ],
+        popular: true,
+      },
+      {
+        name: "ICU Package",
+        price: "₹8,000",
+        period: "per trip",
+        features: [
+          "Full ICU setup",
+          "Ventilator support",
+          "Doctor accompanied",
+          "Unlimited distance",
+          "24/7 dedicated line",
+        ],
+        popular: false,
+      },
+    ],
+    serviceAreas: [
+      "Gomti Nagar",
+      "Indira Nagar",
+      "Aliganj",
+      "Hazratganj",
+      "Aminabad",
+      "Chowk",
+      "Mahanagar",
+      "Jankipuram",
+    ],
+    testimonials: [
+      {
+        name: "Rajesh Kumar",
+        location: "Gomti Nagar",
+        rating: 5,
+        text: "Very fast service! Ambulance arrived within 15 minutes. Thanks to the team for the quick response.",
+      },
+      {
+        name: "Anil Sharma",
+        location: "Indira Nagar",
+        rating: 5,
+        text: "Very professional staff. Handled the emergency perfectly. Highly recommended!",
+      },
+      {
+        name: "Neha Verma",
+        location: "Aliganj",
+        rating: 5,
+        text: "Best ambulance service in Lucknow. Clean vehicle and well-equipped.",
+      },
+    ],
+    formFields: [
+      { type: "text", placeholder: "Your Name", icon: User },
+      { type: "tel", placeholder: "Phone Number", icon: Phone },
+      { type: "text", placeholder: "Pickup Location", icon: MapPin },
+      {
+        type: "select",
+        placeholder: "Select Ambulance Type",
+        icon: Ambulance,
+        options: [
+          "Basic Ambulance",
+          "Oxygen Ambulance",
+          "ICU Ambulance",
+          "Dead Body Ambulance",
+        ],
+      },
+    ],
+    trustBadge: {
+      title: "100% Safe & Reliable",
+      points: [
+        "Verified Medical Staff",
+        "Sanitized Vehicles",
+        "GPS Tracking",
+        "Affordable Pricing",
+      ],
+      image:
+        "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=300&fit=crop",
+    },
+  },
+
+  physiotherapy: {
+    banner: {
+      title: "Physiotherapy at Home",
+      subtitle: "Professional rehab in your comfort zone",
+      description:
+        "Expert physiotherapy services delivered to your doorstep for faster recovery.",
+      image:
+        "https://images.unsplash.com/photo-1518611012118-696072aa579a?w=1200&h=400&fit=crop",
+    },
+    types: [
+      {
+        icon: Activity,
+        title: "Orthopedic",
+        desc: "Bone & joint rehab",
+        image:
+          "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Brain,
+        title: "Neurological",
+        desc: "Stroke & nerve care",
+        image:
+          "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Baby,
+        title: "Pediatric",
+        desc: "Child development",
+        image:
+          "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Dumbbell,
+        title: "Sports Injury",
+        desc: "Athletic recovery",
+        image:
+          "https://images.unsplash.com/photo-1518611507436-f9221403cca2?w=300&h=200&fit=crop",
+      },
+    ],
+    benefits: [
+      {
+        icon: Clock,
+        title: "Flexible Timing",
+        desc: "Schedule at your convenience",
+      },
+      {
+        icon: User,
+        title: "Expert Therapists",
+        desc: "Certified professionals",
+      },
+      { icon: Home, title: "Home Comfort", desc: "No travel needed" },
+      {
+        icon: Heart,
+        title: "Personalized Care",
+        desc: "Tailored treatment plans",
+      },
+    ],
+    packages: [
+      {
+        name: "Single Session",
+        price: "₹800",
+        period: "per session",
+        features: [
+          "45 min session",
+          "Assessment included",
+          "Exercise plan",
+          "Basic equipment",
+        ],
+        popular: false,
+      },
+      {
+        name: "Weekly Package",
+        price: "₹3,500",
+        period: "5 sessions",
+        features: [
+          "Daily visits",
+          "Progress tracking",
+          "Equipment provided",
+          "Emergency support",
+        ],
+        popular: true,
+      },
+      {
+        name: "Monthly Package",
+        price: "₹12,000",
+        period: "20 sessions",
+        features: [
+          "Comprehensive rehab",
+          "Doctor coordination",
+          "Advanced equipment",
+          "24/7 phone support",
+        ],
+        popular: false,
+      },
+    ],
+    serviceAreas: [
+      "Gomti Nagar",
+      "Indira Nagar",
+      "Aliganj",
+      "Hazratganj",
+      "Aminabad",
+      "Chowk",
+      "Mahanagar",
+      "Jankipuram",
+    ],
+    testimonials: [
+      {
+        name: "Ramesh Gupta",
+        location: "Mahanagar",
+        rating: 5,
+        text: "Excellent physiotherapy service! My knee pain reduced significantly after 2 weeks.",
+      },
+      {
+        name: "Sunita Verma",
+        location: "Indira Nagar",
+        rating: 5,
+        text: "The therapist was very professional and helped my mother recover from stroke.",
+      },
+      {
+        name: "Amit Singh",
+        location: "Gomti Nagar",
+        rating: 5,
+        text: "Convenient and effective. Got back to my sport faster than expected.",
+      },
+    ],
+    formFields: [
+      { type: "text", placeholder: "Your Name", icon: User },
+      { type: "tel", placeholder: "Phone Number", icon: Phone },
+      { type: "text", placeholder: "Your Location", icon: MapPin },
+      {
+        type: "select",
+        placeholder: "Select Therapy Type",
+        icon: Activity,
+        options: [
+          "Orthopedic",
+          "Neurological",
+          "Pediatric",
+          "Sports Injury",
+          "Post-surgical",
+        ],
+      },
+    ],
+    trustBadge: {
+      title: "Certified & Trusted",
+      points: [
+        "Licensed Therapists",
+        "Personalized Plans",
+        "Modern Techniques",
+        "Satisfaction Guaranteed",
+      ],
+      image:
+        "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=400&h=300&fit=crop",
+    },
+  },
+
+  doctor: {
+    banner: {
+      title: "Doctor Visit at Home",
+      subtitle: "Qualified MDs at your doorstep",
+      description: "Consult experienced doctors from the comfort of your home.",
+      image:
+        "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=1200&h=400&fit=crop",
+    },
+    types: [
+      {
+        icon: User,
+        title: "General Physician",
+        desc: "Family medicine",
+        image:
+          "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Heart,
+        title: "Cardiologist",
+        desc: "Heart specialist",
+        image:
+          "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Activity,
+        title: "Orthopedic",
+        desc: "Bone & joint specialist",
+        image:
+          "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Baby,
+        title: "Pediatrician",
+        desc: "Child specialist",
+        image:
+          "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=300&h=200&fit=crop",
+      },
+    ],
+    benefits: [
+      { icon: Clock, title: "Same Day Visit", desc: "Quick appointments" },
+      {
+        icon: Stethoscope,
+        title: "Experienced Doctors",
+        desc: "5+ years experience",
+      },
+      {
+        icon: Shield,
+        title: "Accurate Diagnosis",
+        desc: "Professional assessment",
+      },
+      { icon: Home, title: "Home Comfort", desc: "No waiting rooms" },
+    ],
+    packages: [
+      {
+        name: "Consultation",
+        price: "₹1,200",
+        period: "per visit",
+        features: [
+          "45 min consultation",
+          "Basic examination",
+          "Prescription",
+          "Follow-up advice",
+        ],
+        popular: false,
+      },
+      {
+        name: "Health Checkup",
+        price: "₹2,500",
+        period: "per visit",
+        features: [
+          "Full body checkup",
+          "Vital monitoring",
+          "ECG if needed",
+          "Lab recommendations",
+        ],
+        popular: true,
+      },
+      {
+        name: "Senior Care",
+        price: "₹2,000",
+        period: "per visit",
+        features: [
+          "Geriatric assessment",
+          "Medication review",
+          "Caregiver guidance",
+          "Monthly package available",
+        ],
+        popular: false,
+      },
+    ],
+    serviceAreas: [
+      "Gomti Nagar",
+      "Indira Nagar",
+      "Aliganj",
+      "Hazratganj",
+      "Aminabad",
+      "Chowk",
+      "Mahanagar",
+      "Jankipuram",
+    ],
+    testimonials: [
+      {
+        name: "Vijay Kumar",
+        location: "Aliganj",
+        rating: 5,
+        text: "Doctor arrived on time and gave proper attention. Much better than clinic visits.",
+      },
+      {
+        name: "Priya Singh",
+        location: "Gomti Nagar",
+        rating: 5,
+        text: "Very convenient for my elderly parents. Doctor was patient and thorough.",
+      },
+      {
+        name: "Sanjay Mishra",
+        location: "Hazratganj",
+        rating: 5,
+        text: "Professional service. Got accurate diagnosis and treatment at home.",
+      },
+    ],
+    formFields: [
+      { type: "text", placeholder: "Patient Name", icon: User },
+      { type: "tel", placeholder: "Phone Number", icon: Phone },
+      { type: "text", placeholder: "Your Location", icon: MapPin },
+      {
+        type: "select",
+        placeholder: "Select Speciality",
+        icon: Stethoscope,
+        options: [
+          "General Physician",
+          "Cardiologist",
+          "Orthopedic",
+          "Pediatrician",
+          "Neurologist",
+        ],
+      },
+    ],
+    trustBadge: {
+      title: "Trusted Medical Care",
+      points: [
+        "MBBS/MD Doctors",
+        "5+ Years Experience",
+        "Proper Diagnosis",
+        "Follow-up Support",
+      ],
+      image:
+        "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=400&h=300&fit=crop",
+    },
+  },
+
+  icu: {
+    banner: {
+      title: "ICU at Home",
+      subtitle: "Critical care in your comfort zone",
+      description: "Hospital-grade ICU setup with 24/7 monitoring at home.",
+      image:
+        "https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=1200&h=400&fit=crop",
+    },
+    types: [
+      {
+        icon: Monitor,
+        title: "Ventilator Care",
+        desc: "Mechanical ventilation",
+        image:
+          "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Heart,
+        title: "Cardiac ICU",
+        desc: "Post-cardiac care",
+        image:
+          "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Activity,
+        title: "Neuro ICU",
+        desc: "Neurological care",
+        image:
+          "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=300&h=200&fit=crop",
+      },
+      {
+        icon: UserPlus,
+        title: "Post-surgical ICU",
+        desc: "Post-op recovery",
+        image:
+          "https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=300&h=200&fit=crop",
+      },
+    ],
+    benefits: [
+      { icon: Clock, title: "24/7 Monitoring", desc: "Continuous care" },
+      {
+        icon: Stethoscope,
+        title: "ICU Trained Staff",
+        desc: "Critical care nurses",
+      },
+      {
+        icon: Shield,
+        title: "Hospital-grade Equipment",
+        desc: "Advanced monitors",
+      },
+      { icon: Home, title: "Familiar Environment", desc: "Better recovery" },
+    ],
+    packages: [
+      {
+        name: "Basic ICU",
+        price: "₹8,000",
+        period: "per day",
+        features: [
+          "ICU trained nurse",
+          "Basic monitoring",
+          "Oxygen support",
+          "Daily doctor visit",
+        ],
+        popular: false,
+      },
+      {
+        name: "Advanced ICU",
+        price: "₹15,000",
+        period: "per day",
+        features: [
+          "Ventilator support",
+          "24/7 doctor",
+          "Advanced monitoring",
+          "Specialist consultation",
+        ],
+        popular: true,
+      },
+      {
+        name: "Premium ICU",
+        price: "₹25,000",
+        period: "per day",
+        features: [
+          "Full ICU setup",
+          "Dedicated team",
+          "All equipment",
+          "Unlimited meds",
+        ],
+        popular: false,
+      },
+    ],
+    serviceAreas: [
+      "Gomti Nagar",
+      "Indira Nagar",
+      "Aliganj",
+      "Hazratganj",
+      "Aminabad",
+      "Chowk",
+      "Mahanagar",
+      "Jankipuram",
+    ],
+    testimonials: [
+      {
+        name: "Anand Sharma",
+        location: "Mahanagar",
+        rating: 5,
+        text: "Saved my father's life. ICU at home was much better than hospital.",
+      },
+      {
+        name: "Meena Devi",
+        location: "Indira Nagar",
+        rating: 5,
+        text: "Professional team and equipment. Patient recovered faster at home.",
+      },
+      {
+        name: "Rohit Singh",
+        location: "Gomti Nagar",
+        rating: 5,
+        text: "Excellent critical care service. Nurse was very skilled.",
+      },
+    ],
+    formFields: [
+      { type: "text", placeholder: "Patient Name", icon: User },
+      { type: "tel", placeholder: "Phone Number", icon: Phone },
+      { type: "text", placeholder: "Your Location", icon: MapPin },
+      {
+        type: "select",
+        placeholder: "ICU Type",
+        icon: Bed,
+        options: [
+          "Ventilator Care",
+          "Cardiac ICU",
+          "Neuro ICU",
+          "Post-surgical ICU",
+        ],
+      },
+    ],
+    trustBadge: {
+      title: "Critical Care Experts",
+      points: [
+        "ICU Certified Staff",
+        "Advanced Equipment",
+        "24/7 Doctor Support",
+        "Emergency Ready",
+      ],
+      image:
+        "https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=400&h=300&fit=crop",
+    },
+  },
+
+  "home-care": {
+    banner: {
+      title: "Home Care Services",
+      subtitle: "Complete support at home",
+      description:
+        "Comprehensive care for elderly, disabled, and recovering patients.",
+      image:
+        "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=1200&h=400&fit=crop",
+    },
+    types: [
+      {
+        icon: User,
+        title: "Elderly Care",
+        desc: "Senior citizen support",
+        image:
+          "https://images.unsplash.com/photo-1511688878353-3a2f5be94cd7?w=300&h=200&fit=crop",
+      },
+      {
+        icon: UserPlus,
+        title: "Post-surgical Care",
+        desc: "After surgery support",
+        image:
+          "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Accessibility,
+        title: "Disability Care",
+        desc: "Special needs support",
+        image:
+          "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Heart,
+        title: "Dementia Care",
+        desc: "Memory care support",
+        image:
+          "https://images.unsplash.com/photo-1511688878353-3a2f5be94cd7?w=300&h=200&fit=crop",
+      },
+    ],
+    benefits: [
+      { icon: Clock, title: "24/7 Support", desc: "Round the clock care" },
+      { icon: User, title: "Trained Caregivers", desc: "Experienced staff" },
+      { icon: Shield, title: "Safe & Secure", desc: "Background verified" },
+      { icon: Home, title: "Home Environment", desc: "Comfortable care" },
+    ],
+    packages: [
+      {
+        name: "Day Care",
+        price: "₹2,000",
+        period: "per day",
+        features: [
+          "12 hours care",
+          "Basic assistance",
+          "Meal prep",
+          "Medication reminder",
+        ],
+        popular: false,
+      },
+      {
+        name: "24/7 Care",
+        price: "₹3,500",
+        period: "per day",
+        features: [
+          "Full day care",
+          "Personal assistance",
+          "Night support",
+          "Family updates",
+        ],
+        popular: true,
+      },
+      {
+        name: "Live-in Care",
+        price: "₹25,000",
+        period: "per month",
+        features: [
+          "Continuous care",
+          "Dedicated caregiver",
+          "All assistance",
+          "Doctor coordination",
+        ],
+        popular: false,
+      },
+    ],
+    serviceAreas: [
+      "Gomti Nagar",
+      "Indira Nagar",
+      "Aliganj",
+      "Hazratganj",
+      "Aminabad",
+      "Chowk",
+      "Mahanagar",
+      "Jankipuram",
+    ],
+    testimonials: [
+      {
+        name: "Suman Gupta",
+        location: "Aliganj",
+        rating: 5,
+        text: "Caregiver was very caring and professional. Helped my mother recover well.",
+      },
+      {
+        name: "Vikram Singh",
+        location: "Gomti Nagar",
+        rating: 5,
+        text: "Excellent home care service. Staff was trustworthy and skilled.",
+      },
+      {
+        name: "Pooja Sharma",
+        location: "Indira Nagar",
+        rating: 5,
+        text: "Best decision for my father's post-surgery care. Highly recommend.",
+      },
+    ],
+    formFields: [
+      { type: "text", placeholder: "Your Name", icon: User },
+      { type: "tel", placeholder: "Phone Number", icon: Phone },
+      { type: "text", placeholder: "Your Location", icon: MapPin },
+      {
+        type: "select",
+        placeholder: "Care Type",
+        icon: Home,
+        options: [
+          "Elderly Care",
+          "Post-surgical Care",
+          "Disability Care",
+          "Dementia Care",
+        ],
+      },
+    ],
+    trustBadge: {
+      title: "Compassionate Care",
+      points: [
+        "Trained Caregivers",
+        "Background Verified",
+        "Personalized Plans",
+        "Family Support",
+      ],
+      image:
+        "https://images.unsplash.com/photo-1511688878353-3a2f5be94cd7?w=400&h=300&fit=crop",
+    },
+  },
+
+  nursing: {
+    banner: {
+      title: "Nursing Care at Home",
+      subtitle: "Professional nursing services",
+      description: "Skilled nurses for medical care and support at home.",
+      image:
+        "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&h=400&fit=crop",
+    },
+    types: [
+      {
+        icon: UserPlus,
+        title: "Basic Nursing",
+        desc: "General care",
+        image:
+          "https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Stethoscope,
+        title: "Trained Nurse",
+        desc: "Medical procedures",
+        image:
+          "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Heart,
+        title: "ICU Trained",
+        desc: "Critical care",
+        image:
+          "https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Baby,
+        title: "Baby Care",
+        desc: "Newborn support",
+        image:
+          "https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=300&h=200&fit=crop",
+      },
+    ],
+    benefits: [
+      { icon: Clock, title: "24/7 Available", desc: "Anytime service" },
+      { icon: Stethoscope, title: "Skilled Nurses", desc: "GNC registered" },
+      {
+        icon: Shield,
+        title: "Medical Procedures",
+        desc: "Injections, wound care",
+      },
+      { icon: Home, title: "Home Service", desc: "No hospital visits" },
+    ],
+    packages: [
+      {
+        name: "Day Shift",
+        price: "₹1,200",
+        period: "per day",
+        features: [
+          "12 hours service",
+          "Basic care",
+          "Medication administration",
+          "Vital monitoring",
+        ],
+        popular: false,
+      },
+      {
+        name: "Night Shift",
+        price: "₹1,500",
+        period: "per night",
+        features: [
+          "Night care",
+          "Emergency support",
+          "Sleep monitoring",
+          "Family updates",
+        ],
+        popular: true,
+      },
+      {
+        name: "24/7 Nursing",
+        price: "₹2,800",
+        period: "per day",
+        features: [
+          "Round the clock",
+          "All procedures",
+          "Doctor coordination",
+          "Complete care",
+        ],
+        popular: false,
+      },
+    ],
+    serviceAreas: [
+      "Gomti Nagar",
+      "Indira Nagar",
+      "Aliganj",
+      "Hazratganj",
+      "Aminabad",
+      "Chowk",
+      "Mahanagar",
+      "Jankipuram",
+    ],
+    testimonials: [
+      {
+        name: "Anita Yadav",
+        location: "Chowk",
+        rating: 5,
+        text: "Nurse was very professional and caring. Helped with my mother's injections.",
+      },
+      {
+        name: "Manoj Tiwari",
+        location: "Aminabad",
+        rating: 5,
+        text: "Excellent nursing care for my father post-surgery. Highly recommend.",
+      },
+      {
+        name: "Shweta Singh",
+        location: "Mahanagar",
+        rating: 5,
+        text: "Best nursing service in Lucknow. Nurse was skilled and punctual.",
+      },
+    ],
+    formFields: [
+      { type: "text", placeholder: "Your Name", icon: User },
+      { type: "tel", placeholder: "Phone Number", icon: Phone },
+      { type: "text", placeholder: "Your Location", icon: MapPin },
+      {
+        type: "select",
+        placeholder: "Nursing Type",
+        icon: UserPlus,
+        options: ["Basic Nursing", "Trained Nurse", "ICU Trained", "Baby Care"],
+      },
+    ],
+    trustBadge: {
+      title: "Qualified Nursing Staff",
+      points: [
+        "GNC Registered",
+        "Experienced",
+        "Background Checked",
+        "Medical Trained",
+      ],
+      image:
+        "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=300&fit=crop",
+    },
+  },
+
+  "lab-tests": {
+    banner: {
+      title: "Lab Test at Home",
+      subtitle: "NABL certified lab tests",
+      description: "Get accurate lab tests done at home with fast reports.",
+      image:
+        "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&h=400&fit=crop",
+    },
+    types: [
+      {
+        icon: TestTube,
+        title: "Basic Tests",
+        desc: "CBC, Sugar, etc",
+        image:
+          "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Activity,
+        title: "Advanced Tests",
+        desc: "Hormones, vitamins",
+        image:
+          "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Heart,
+        title: "Cardiac Tests",
+        desc: "Lipid profile, troponin",
+        image:
+          "https://images.unsplash.com/photo-1530497610245-94d3c16cda28?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Syringe,
+        title: "Health Packages",
+        desc: "Full body checkup",
+        image:
+          "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=300&h=200&fit=crop",
+      },
+    ],
+    benefits: [
+      { icon: Clock, title: "Same Day Collection", desc: "Quick scheduling" },
+      { icon: Shield, title: "NABL Certified", desc: "Accurate results" },
+      { icon: Home, title: "Home Collection", desc: "No lab visit" },
+      { icon: Activity, title: "Digital Reports", desc: "Email/WhatsApp" },
+    ],
+    packages: [
+      {
+        name: "Basic Package",
+        price: "₹1,200",
+        period: "per test",
+        features: [
+          "CBC, Sugar",
+          "Home collection",
+          "Digital report",
+          "24hr turnaround",
+        ],
+        popular: false,
+      },
+      {
+        name: "Advanced Package",
+        price: "₹3,500",
+        period: "per test",
+        features: [
+          "Liver, Kidney",
+          "Hormones",
+          "Home collection",
+          "12hr turnaround",
+        ],
+        popular: true,
+      },
+      {
+        name: "Full Body",
+        price: "₹8,000",
+        period: "package",
+        features: [
+          "80+ tests",
+          "Free collection",
+          "Doctor consultation",
+          "Same day report",
+        ],
+        popular: false,
+      },
+    ],
+    serviceAreas: [
+      "Gomti Nagar",
+      "Indira Nagar",
+      "Aliganj",
+      "Hazratganj",
+      "Aminabad",
+      "Chowk",
+      "Mahanagar",
+      "Jankipuram",
+    ],
+    testimonials: [
+      {
+        name: "Ravi Kumar",
+        location: "Gomti Nagar",
+        rating: 5,
+        text: "Very professional phlebotomist. Report was accurate and delivered on time.",
+      },
+      {
+        name: "Sarita Singh",
+        location: "Aliganj",
+        rating: 5,
+        text: "Convenient and reliable. Got my reports on WhatsApp within 24 hours.",
+      },
+      {
+        name: "Deepak Verma",
+        location: "Indira Nagar",
+        rating: 5,
+        text: "Best lab test service at home. Technician was skilled and punctual.",
+      },
+    ],
+    formFields: [
+      { type: "text", placeholder: "Your Name", icon: User },
+      { type: "tel", placeholder: "Phone Number", icon: Phone },
+      { type: "text", placeholder: "Your Location", icon: MapPin },
+      {
+        type: "select",
+        placeholder: "Test Type",
+        icon: TestTube,
+        options: [
+          "Basic Tests",
+          "Advanced Tests",
+          "Cardiac Tests",
+          "Health Packages",
+        ],
+      },
+    ],
+    trustBadge: {
+      title: "Certified Lab Tests",
+      points: [
+        "NABL Accredited",
+        "Accurate Results",
+        "Fast Turnaround",
+        "Home Collection",
+      ],
+      image:
+        "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=400&h=300&fit=crop",
+    },
+  },
+
+  equipment: {
+    banner: {
+      title: "Medical Equipment Rental",
+      subtitle: "Affordable & reliable equipment",
+      description: "Rent high-quality medical equipment for home care.",
+      image:
+        "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=1200&h=400&fit=crop",
+    },
+    types: [
+      {
+        icon: Bed,
+        title: "Hospital Beds",
+        desc: "Electric/manual beds",
+        image:
+          "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Activity,
+        title: "Oxygen Concentrator",
+        desc: "5L/10L machines",
+        image:
+          "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Accessibility,
+        title: "Wheelchairs",
+        desc: "Manual/electric",
+        image:
+          "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300&h=200&fit=crop",
+      },
+      {
+        icon: Monitor,
+        title: "Patient Monitor",
+        desc: "Vital signs tracking",
+        image:
+          "https://images.unsplash.com/photo-1512678080530-7760d81faba6?w=300&h=200&fit=crop",
+      },
+    ],
+    benefits: [
+      { icon: Clock, title: "Same Day Delivery", desc: "Quick setup" },
+      { icon: Shield, title: "Quality Equipment", desc: "Hospital-grade" },
+      { icon: Home, title: "Home Setup", desc: "Free installation" },
+      { icon: Activity, title: "Maintenance Included", desc: "Free service" },
+    ],
+    packages: [
+      {
+        name: "Basic Bed",
+        price: "₹3,000",
+        period: "per month",
+        features: [
+          "Manual hospital bed",
+          "Free delivery",
+          "Free setup",
+          "Maintenance included",
+        ],
+        popular: false,
+      },
+      {
+        name: "Oxygen Setup",
+        price: "₹8,000",
+        period: "per month",
+        features: [
+          "5L concentrator",
+          "Free delivery",
+          "Free setup",
+          "24/7 support",
+        ],
+        popular: true,
+      },
+      {
+        name: "ICU Setup",
+        price: "₹25,000",
+        period: "per month",
+        features: ["Electric bed", "Monitor", "Oxygen", "Full setup & support"],
+        popular: false,
+      },
+    ],
+    serviceAreas: [
+      "Gomti Nagar",
+      "Indira Nagar",
+      "Aliganj",
+      "Hazratganj",
+      "Aminabad",
+      "Chowk",
+      "Mahanagar",
+      "Jankipuram",
+    ],
+    testimonials: [
+      {
+        name: "Arvind Kumar",
+        location: "Mahanagar",
+        rating: 5,
+        text: "Rented oxygen concentrator. Equipment was new and worked perfectly.",
+      },
+      {
+        name: "Sneha Singh",
+        location: "Gomti Nagar",
+        rating: 5,
+        text: "Hospital bed was delivered same day. Good quality and affordable rent.",
+      },
+      {
+        name: "Mohan Lal",
+        location: "Indira Nagar",
+        rating: 5,
+        text: "Best equipment rental service. Free maintenance and quick response.",
+      },
+    ],
+    formFields: [
+      { type: "text", placeholder: "Your Name", icon: User },
+      { type: "tel", placeholder: "Phone Number", icon: Phone },
+      { type: "text", placeholder: "Your Location", icon: MapPin },
+      {
+        type: "select",
+        placeholder: "Equipment Type",
+        icon: Accessibility,
+        options: [
+          "Hospital Beds",
+          "Oxygen Concentrator",
+          "Wheelchairs",
+          "Patient Monitor",
+          "BiPAP/CPAP",
+        ],
+      },
+    ],
+    trustBadge: {
+      title: "Reliable Equipment",
+      points: [
+        "Hospital-grade Quality",
+        "Free Delivery",
+        "Free Maintenance",
+        "24/7 Support",
+      ],
+      image:
+        "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=400&h=300&fit=crop",
+    },
+  },
+};
+
+// ==================== COMPONENTS ====================
+function Header() {
+  return (
+    <header className="fixed top-0 left-0 w-full z-50 bg-white/95 backdrop-blur-xl border-b border-gray-100">
+      <div className="flex items-center justify-between px-4 h-14 max-w-7xl mx-auto">
+        <div className="flex items-center gap-3">
+          <Link
+            href="/"
+            className="p-2 -ml-2 rounded-full hover:bg-gray-100 transition"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-700" />
+          </Link>
+          <div className="relative h-24 w-auto">
+            <Image
+              src="/Dr.Jhatka.png"
+              alt="Dr Jhatka Medicare"
+              width={500}
+              height={100}
+              className="object-contain h-full w-auto"
+              priority
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <a
+            href={`tel:${phone}`}
+            className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white active:scale-90 transition"
+          >
+            <Phone className="w-5 h-5" />
+          </a>
+          <a
+            href={`https://wa.me/91${phone}`}
+            className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white active:scale-90 transition"
+          >
+            <MessageCircle className="w-5 h-5" />
+          </a>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function Banner({ config }) {
+  return (
+    <section className="mt-14 relative w-full bg-primary-soft">
+      <div className="max-w-7xl mx-auto">
+        <div className="relative h-[320px] sm:h-[380px]">
+          <Image
+            src={config.image}
+            alt={config.title}
+            fill
+            className="object-cover object-center"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+          <div className="relative z-10 h-full flex flex-col justify-center px-5 sm:px-8 max-w-xl">
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-white text-3xl sm:text-4xl font-bold leading-tight"
+            >
+              {config.title}
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-primary-light text-lg sm:text-xl font-semibold mt-1"
+            >
+              {config.subtitle}
+            </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-white/90 text-sm sm:text-base mt-3 max-w-sm"
+            >
+              {config.description}
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="flex gap-3 mt-5"
+            >
+              <a
+                href={`tel:${phone}`}
+                className="bg-white text-primary px-5 py-3 rounded-xl text-sm font-bold flex items-center gap-2 active:scale-95 transition shadow-lg"
+              >
+                <Phone className="w-4 h-4" />
+                Call Now
+              </a>
+              <a
+                href={`https://wa.me/91${phone}`}
+                className="bg-primary-dark text-white border-2 border-white/30 px-5 py-3 rounded-xl text-sm font-bold flex items-center gap-2 active:scale-95 transition"
+              >
+                <MessageCircle className="w-4 h-4" />
+                WhatsApp
+              </a>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ServiceTypes({ types }) {
+  return (
+    <section className="px-4 pt-8 max-w-7xl mx-auto">
+      <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
+        Our Services
+      </h2>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {types.map((type, i) => {
+          const Icon = type.icon;
+          return (
+            <motion.div
+              key={type.title}
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.05 }}
+              className="bg-white rounded-2xl border border-gray-100 p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] flex flex-col items-center text-center hover:border-primary/20 transition-all active:scale-95 cursor-pointer"
+            >
+              <div className="w-14 h-14 rounded-xl bg-primary-light flex items-center justify-center mb-3">
+                <Icon className="w-7 h-7 text-primary" />
+              </div>
+              <h3 className="text-sm font-bold text-gray-900">{type.title}</h3>
+              <p className="text-[11px] text-gray-500 mt-1">{type.desc}</p>
+              {type.image && (
+                <div className="w-full mt-3 h-20 relative rounded-lg overflow-hidden">
+                  <Image
+                    src={type.image}
+                    alt={type.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              )}
+            </motion.div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function Benefits({ benefits }) {
+  return (
+    <section className="px-4 pt-8 max-w-7xl mx-auto">
+      <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
+        Why Choose Our Service?
+      </h2>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {benefits.map((benefit, i) => {
+          const Icon = benefit.icon;
+          return (
+            <motion.div
+              key={benefit.title}
+              initial={{ opacity: 0, y: 15 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.05 }}
+              className="bg-white rounded-2xl border border-gray-100 p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] flex flex-col items-center text-center"
+            >
+              <div className="w-12 h-12 rounded-xl bg-primary-light flex items-center justify-center mb-2">
+                <Icon className="w-6 h-6 text-primary" />
+              </div>
+              <h3 className="text-sm font-bold text-gray-900">
+                {benefit.title}
+              </h3>
+              <p className="text-[11px] text-gray-500 mt-0.5">{benefit.desc}</p>
+            </motion.div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function Packages({ packages }) {
+  const [selectedPackage, setSelectedPackage] = useState(null);
+
+  return (
+    <section className="px-4 pt-8 max-w-7xl mx-auto">
+      <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
+        Packages & Pricing
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {packages.map((pkg, i) => (
+          <motion.div
+            key={pkg.name}
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: i * 0.05 }}
+            onClick={() => setSelectedPackage(i)}
+            className={`relative rounded-2xl border-2 p-5 cursor-pointer transition-all ${
+              selectedPackage === i
+                ? "border-primary bg-primary-soft"
+                : "border-gray-100 bg-white hover:border-primary/30"
+            }`}
+          >
+            {pkg.popular && (
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] font-bold px-3 py-1 rounded-full">
+                MOST POPULAR
+              </div>
+            )}
+            <h3 className="text-base font-bold text-gray-900 text-center">
+              {pkg.name}
+            </h3>
+            <div className="text-center mt-3">
+              <span className="text-3xl font-bold text-primary">
+                {pkg.price}
+              </span>
+              <span className="text-sm text-gray-500">/{pkg.period}</span>
+            </div>
+            <ul className="mt-4 space-y-2">
+              {pkg.features.map((feature, idx) => (
+                <li
+                  key={idx}
+                  className="flex items-start gap-2 text-sm text-gray-600"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  {feature}
+                </li>
+              ))}
+            </ul>
+            <button
+              className={`w-full mt-5 py-3 rounded-xl text-sm font-bold transition active:scale-95 ${
+                selectedPackage === i
+                  ? "bg-primary text-white"
+                  : "bg-primary-light text-primary hover:bg-primary hover:text-white"
+              }`}
+            >
+              Select Package
+            </button>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ServiceAreas({ areas }) {
+  return (
+    <section className="px-4 pt-8 max-w-7xl mx-auto">
+      <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary-light flex items-center justify-center shrink-0">
+            <MapPin className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-base font-bold text-gray-900">Service Areas</h3>
+            <p className="text-sm text-primary font-semibold mt-0.5">
+              Serving in Lucknow
+            </p>
+            <p className="text-xs text-gray-500 mt-1">
+              Other cities coming soon...
+            </p>
+            <div className="flex flex-wrap gap-2 mt-3">
+              {areas.map((area) => (
+                <span
+                  key={area}
+                  className="text-xs bg-primary-light text-primary px-3 py-1.5 rounded-lg font-medium"
+                >
+                  {area}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function BookingForm({ config }) {
+  return (
+    <section className="px-4 pt-8 max-w-7xl mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="lg:col-span-3 bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
+        >
+          <h2 className="text-lg font-bold text-gray-900 mb-5">
+            {config.formTitle || "Book Service"}
+          </h2>
+          <form
+            className="flex flex-col gap-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              alert("Booking submitted! We'll contact you soon.");
+            }}
+          >
+            {config.formFields.map((field, i) => {
+              const Icon = field.icon;
+              return (
+                <div key={i} className="relative">
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  {field.type === "select" ? (
+                    <div className="relative">
+                      <select className="w-full pl-10 pr-10 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition appearance-none text-gray-700">
+                        <option value="">{field.placeholder}</option>
+                        {field.options?.map((opt) => (
+                          <option key={opt} value={opt}>
+                            {opt}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                    </div>
+                  ) : (
+                    <input
+                      type={field.type}
+                      placeholder={field.placeholder}
+                      className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+                    />
+                  )}
+                </div>
+              );
+            })}
+            <button
+              type="submit"
+              className="w-full bg-primary text-white py-4 rounded-xl text-sm font-bold active:scale-95 transition hover:bg-primary-dark flex items-center justify-center gap-2 mt-2"
+            >
+              <Calendar className="w-4 h-4" />
+              {config.submitButtonText || "Book Now"}
+            </button>
+          </form>
+        </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.1 }}
+          className="lg:col-span-2 bg-primary-soft rounded-2xl p-5 sm:p-6 flex flex-col justify-between"
+        >
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <Shield className="w-5 h-5 text-primary" />
+              <h3 className="text-base font-bold text-primary-dark">
+                {config.trustBadge.title}
+              </h3>
+            </div>
+            <ul className="space-y-3">
+              {config.trustBadge.points.map((point, i) => (
+                <li
+                  key={i}
+                  className="flex items-center gap-2 text-sm text-gray-700"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                  {point}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="mt-4 relative h-40 rounded-xl overflow-hidden bg-white">
+            <Image
+              src={config.trustBadge.image}
+              alt="Trusted Service"
+              fill
+              className="object-cover object-top"
+            />
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+function Testimonials({ testimonials }) {
+  const [active, setActive] = useState(0);
+  const next = () => setActive((prev) => (prev + 1) % testimonials.length);
+  const prev = () =>
+    setActive((prev) => (prev - 1 + testimonials.length) % testimonials.length);
+
+  return (
+    <section className="px-4 pt-8 max-w-7xl mx-auto">
+      <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-4">
+        What Our Customers Say
+      </h2>
+      <div className="relative">
+        <motion.div
+          key={active}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="bg-white rounded-2xl border border-gray-100 p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
+        >
+          <div className="flex items-center gap-1 mb-3">
+            {[...Array(testimonials[active].rating)].map((_, i) => (
+              <Star
+                key={i}
+                className="w-4 h-4 text-yellow-500 fill-yellow-500"
+              />
+            ))}
+          </div>
+          <p className="text-gray-700 text-sm leading-relaxed">
+            {testimonials[active].text}
+          </p>
+          <div className="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between">
+            <div>
+              <p className="font-bold text-gray-900 text-sm">
+                {testimonials[active].name}
+              </p>
+              <p className="text-xs text-gray-500">
+                {testimonials[active].location}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+        <div className="flex items-center justify-center gap-3 mt-4">
+          <button
+            onClick={prev}
+            className="p-2 rounded-full bg-gray-100 hover:bg-primary-light transition active:scale-95"
+          >
+            <ChevronLeft className="w-4 h-4 text-gray-600" />
+          </button>
+          <div className="flex gap-1.5">
+            {testimonials.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setActive(i)}
+                className={`h-2 rounded-full transition-all ${
+                  i === active ? "w-6 bg-primary" : "w-2 bg-gray-300"
+                }`}
+              />
+            ))}
+          </div>
+          <button
+            onClick={next}
+            className="p-2 rounded-full bg-gray-100 hover:bg-primary-light transition active:scale-95"
+          >
+            <ChevronLeft className="w-4 h-4 text-gray-600 rotate-180" />
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StickyBottomBar() {
+  return (
+    <motion.div
+      initial={{ y: 100 }}
+      animate={{ y: 0 }}
+      transition={{ delay: 0.5, type: "spring" }}
+      className="fixed bottom-0 left-0 right-0 z-50 bg-primary sm:hidden"
+    >
+      <div className="flex items-center">
+        <a
+          href={`tel:${phone}`}
+          className="flex-1 flex items-center justify-center gap-2 text-white py-3.5 font-bold text-sm active:bg-primary-dark transition"
+        >
+          <Phone className="w-5 h-5" />
+          <div className="text-left leading-tight">
+            <div className="text-[10px] opacity-90 font-medium">Call Now</div>
+            <div>{phone}</div>
+          </div>
+        </a>
+        <div className="w-px h-8 bg-white/20" />
+        <a
+          href={`https://wa.me/91${phone}`}
+          className="flex-1 flex items-center justify-center gap-2 text-white py-3.5 font-bold text-sm active:bg-primary-dark transition"
+        >
+          <MessageCircle className="w-5 h-5" />
+          <div className="text-left leading-tight">
+            <div className="text-[10px] opacity-90 font-medium">WhatsApp</div>
+            <div>Chat Now</div>
+          </div>
+        </a>
+      </div>
+      <div className="h-[env(safe-area-inset-bottom)] bg-primary" />
+    </motion.div>
+  );
+}
+
+// ==================== MAIN PAGE ====================
+export default async function ServicePage({ params }) {
+  const { slug } = await params; // ✅ FIX
+  const service = SERVICES_CONFIG[slug];
+
+  if (!service) {
+    notFound();
+  }
+
+  return (
+    <main className="min-h-screen bg-white pb-24 sm:pb-8">
+      <Header />
+      <Banner config={service.banner} />
+      <ServiceTypes types={service.types} />
+      <Benefits benefits={service.benefits} />
+      <Packages packages={service.packages} />
+      <ServiceAreas areas={service.serviceAreas} />
+      <BookingForm config={service} />
+      <Testimonials testimonials={service.testimonials} />
+      <StickyBottomBar />
+    </main>
+  );
+}
+
+// // Optional: Generate static params for all services
+// export async function generateStaticParams() {
+//   return Object.keys(SERVICES_CONFIG).map((slug) => ({ slug }));
+// }

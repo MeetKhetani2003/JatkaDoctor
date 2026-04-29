@@ -35,7 +35,7 @@ export default function HeroCarousel() {
   }, []);
 
   return (
-    <section className="relative w-full h-[320px] sm:h-[380px] mt-12 overflow-hidden lg:mt-20">
+    <section className="relative w-full h-[320px] sm:h-[380px] mt-20 overflow-hidden lg:mt-20">
       {/* SLIDES */}
       <AnimatePresence>
         <motion.div

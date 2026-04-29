@@ -1,22 +1,30 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #0F9D58;
+  --color-primary: #0f9d58;
   --color-primary-dark: #0b7a44;
-  --color-primary-light: #e6f5ec;
-  --color-text-main: #222222;
+  --color-primary-light: #e8f5e9;
+  --color-primary-soft: #f1f8f4;
+  --color-text-main: #1a1a1a;
+  --color-text-secondary: #555555;
+  --color-text-muted: #888888;
   --color-bg-main: #ffffff;
-  --color-gray-50: #f9fafb;
-  --color-gray-100: #f3f4f6;
-  --color-gray-200: #e5e7eb;
-  --color-gray-800: #1f2937;
+  --color-bg-soft: #f8faf9;
+  --color-border: #e5e7eb;
+  --color-border-light: #f0f0f0;
 }
 
 body {
   background-color: var(--color-bg-main);
   color: var(--color-text-main);
-  font-family: var(--font-sans), sans-serif;
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    sans-serif;
   -webkit-tap-highlight-color: transparent;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Hide scrollbar for horizontal scroll areas */
@@ -26,4 +34,53 @@ body {
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom animations */
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
