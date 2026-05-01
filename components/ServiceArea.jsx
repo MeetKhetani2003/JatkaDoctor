@@ -1,92 +1,71 @@
 "use client";
 
-import { MapPin, CheckCircle, Clock, ChevronDown } from "lucide-react";
-import { motion } from "framer-motion";
+import { MapPin, Clock } from "lucide-react";
 
-const areas = [
-  {
-    name: "Lucknow",
-    status: "active",
-    areas: "Gomti Nagar, Indira Nagar, Aliganj, Hazratganj",
-  },
-  { name: "Kanpur", status: "soon" },
-  { name: "Ayodhya", status: "soon" },
-  { name: "Varanasi", status: "soon" },
+const activeAreas = [
+  "Gomti Nagar", "Indira Nagar", "Aliganj", "Hazratganj", "Alambagh", 
+  "Charbagh", "Mahanagar", "Jankipuram", "Ashiyana", "Rajajipuram", 
+  "Aminabad", "Chowk", "Chinhat", "Faizabad Road", "Sitapur Road", 
+  "Sultanpur Road", "Kanpur Road", "Telibagh", "Vrindavan Yojna", 
+  "Kalyanpur", "Dubagga", "Bakshi Ka Talab", "Kakori", "Malihabad", 
+  "Mohanlalganj", "Itaunja"
+];
+
+const expandingCities = [
+  "Barabanki", "Sitapur", "Unnao", "Rae Bareli", "Hardoi", 
+  "Sultanpur", "Ayodhya", "Lakhimpur", "Shahjahanpur", "Pratapgarh"
 ];
 
 export default function ServiceArea() {
   return (
-    <section className="px-4 pt-10 max-w-7xl mx-auto">
+    <section className="px-4 py-16 max-w-7xl mx-auto">
       {/* HEADER */}
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-gray-900">Service Areas</h2>
-        <p className="text-sm text-gray-500 mt-1">
-          Currently serving Lucknow. Expanding across Uttar Pradesh.
+      <div className="mb-10 text-center sm:text-left">
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">Our Service Areas</h2>
+        <p className="text-base text-gray-500 mt-2">
+          Comprehensive coverage across Lucknow and expanding soon to nearby cities.
         </p>
       </div>
 
-      {/* CITY SELECTOR */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] mb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white">
-              <MapPin className="w-5 h-5" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">Selected City</p>
-              <p className="text-base font-bold text-gray-900 flex items-center gap-1">
-                Lucknow <ChevronDown className="w-4 h-4 text-gray-400" />
-              </p>
+      <div className="space-y-6">
+        {/* Service Areas - Active */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8 border-l-4 border-l-primary">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+            <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <MapPin className="w-6 h-6 text-primary" /> Active Service Areas (Lucknow)
+            </h3>
+            <div className="inline-flex items-center gap-2 bg-green-50 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider w-max border border-green-100">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+              </span>
+              24x7 Available
             </div>
           </div>
-          <div className="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary-light px-3 py-1.5 rounded-full">
-            <CheckCircle className="w-3.5 h-3.5" />
-            Active
+          
+          <div className="flex flex-wrap gap-2">
+            {activeAreas.map((area) => (
+              <span key={area} className="text-xs sm:text-[13px] bg-primary text-white px-3.5 py-1.5 rounded-full font-medium shadow-sm transition hover:bg-primary-dark cursor-default">
+                {area}
+              </span>
+            ))}
           </div>
         </div>
-      </div>
 
-      {/* GRID */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {areas.map((area, i) => {
-          const isActive = area.status === "active";
-
-          return (
-            <motion.div
-              key={area.name}
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
-              className={`rounded-2xl p-4 flex flex-col items-center text-center gap-2 
-              ${isActive ? "bg-primary-soft border-2 border-primary/20" : "bg-white border border-gray-100"}`}
-            >
-              <div
-                className={`w-12 h-12 rounded-xl flex items-center justify-center 
-                ${isActive ? "bg-primary text-white" : "bg-gray-100 text-gray-400"}`}
-              >
-                <MapPin className="w-5 h-5" />
-              </div>
-
-              <div>
-                <h3 className="text-sm font-bold text-gray-900">{area.name}</h3>
-                <div className="flex items-center justify-center gap-1 mt-1 text-[10px] font-bold">
-                  {isActive ? (
-                    <>
-                      <CheckCircle className="w-3 h-3 text-primary" />
-                      <span className="text-primary">Available Now</span>
-                    </>
-                  ) : (
-                    <>
-                      <Clock className="w-3 h-3 text-gray-400" />
-                      <span className="text-gray-400">Coming Soon</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
+        {/* Service Areas - Expanding Soon */}
+        <div className="bg-gray-50 rounded-2xl border border-gray-200 border-dashed p-6 sm:p-8">
+          <h3 className="text-lg font-bold text-gray-500 mb-6 flex items-center gap-2">
+            <Clock className="w-5 h-5 text-gray-400" /> Expanding Soon – Nearby Cities
+          </h3>
+          
+          <div className="flex flex-wrap gap-2">
+            {expandingCities.map((city) => (
+              <span key={city} className="text-xs sm:text-[13px] bg-white text-gray-500 border border-gray-200 px-3.5 py-1.5 rounded-full font-medium cursor-default shadow-sm">
+                {city}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );
