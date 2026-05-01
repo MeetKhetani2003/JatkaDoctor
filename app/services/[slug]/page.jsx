@@ -35,6 +35,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import Navbar from "@/components/Header";
+import FAQSection from "@/components/FAQSection";
 
 const phone = "8874744756";
 
@@ -1971,6 +1972,239 @@ function AmbulancePage() {
 
       </section>
 
+      <FAQSection 
+        title="FAQ SECTION – AMBULANCE SERVICE" 
+        faqs={[
+          { q: "Q1. Ambulance kitni jaldi pahunchti hai?", a: "Dr Jhatka Medicare nearest ambulance ko turant dispatch karta hai. Emergency me 20–30 minutes me pahunchne ki koshish ki jati hai (location dependent)." },
+          { q: "Q2. Kya ambulance 24/7 available hai?", a: "Haan, ambulance service 24/7 available hai (subject to availability). Emergency ke liye turant call kare." },
+          { q: "Q3. Kaun kaun si ambulance available hai?", a: "Basic, oxygen support aur patient transfer ambulance available hain (availability area ke hisaab se hoti hai)." },
+          { q: "Q4. Charges kaise hote hain?", a: "Charges distance aur ambulance type ke hisaab se hote hain. Booking ke time exact charges bataye jate hain." },
+          { q: "Q5. Kaise ambulance book kare?", a: "Aap directly call ya WhatsApp karke turant ambulance book kar sakte hain. Hamari team jaldi se arrangement karti hai." }
+        ]} 
+      />
+
+      <StickyBottomBar />
+    </main>
+  );
+}
+
+// ==================== PHYSIOTHERAPY PAGE ====================
+function PhysiotherapyPage() {
+  const phone = "919026365448";
+  
+  return (
+    <main className="min-h-screen bg-white pb-20">
+      <Navbar />
+
+      {/* Hero Banner - EXACTLY SAME AS OTHERS */}
+      <section className="mt-14 relative w-full bg-gray-900">
+        <div className="max-w-7xl mx-auto">
+          <div className="relative h-[300px] sm:h-[300px] w-full">
+            <Image
+              src="/images/services/physiotherapy.png" // Replace with physio image
+              alt="Physiotherapy Services"
+              fill
+              className="object-cover object-center opacity-90"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <div className="relative z-10 h-full flex items-end px-5 sm:px-8 pb-6 sm:pb-8">
+              <h1 className="text-white text-2xl sm:text-3xl font-semibold tracking-wide shadow-sm">
+                Physiotherapy Services
+              </h1>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Intro / Positioning (Premium Mobile Style) */}
+      <section className="px-5 pt-8 pb-4 max-w-7xl mx-auto">
+        <div className="flex flex-col gap-3">
+          <div className="inline-flex items-center gap-2 bg-red-50 text-red-500 font-semibold px-3 py-1.5 rounded-full text-[11px] uppercase tracking-wider w-max">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+            </span>
+            Limited Slots Available Today
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-[1.2] tracking-tight">
+            Book Certified Physiotherapist at Home in 30 Minutes
+          </h2>
+          <p className="text-gray-500 text-sm sm:text-base">
+            Expert Care at Home <span className="text-gray-300 mx-1">•</span> Affordable Packages <span className="text-gray-300 mx-1">•</span> Quick Recovery
+          </p>
+        </div>
+      </section>
+
+      {/* Pricing Section (Minimal App Style) */}
+      <section className="px-5 py-8 max-w-7xl mx-auto">
+        <h3 className="text-lg font-bold text-gray-900 mb-6">Transparent Pricing</h3>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Card 1 */}
+          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col">
+             <div className="absolute top-0 right-0 bg-red-50 text-red-500 font-semibold text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider">50% OFF</div>
+             <h4 className="font-semibold text-gray-800 text-base">1 Session (Trial)</h4>
+             <div className="mt-3 flex items-end gap-2">
+               <span className="text-2xl font-bold text-gray-900">₹499</span>
+               <span className="text-xs text-gray-400 line-through mb-1.5">₹999</span>
+             </div>
+             <a href={`tel:${phone}`} className="mt-5 w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-semibold flex items-center justify-center hover:bg-gray-100 transition active:scale-95">Book Trial</a>
+          </div>
+
+          {/* Card 2 */}
+          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col">
+             <div className="absolute top-0 right-0 bg-green-50 text-primary font-semibold text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider">Save ₹1000</div>
+             <h4 className="font-semibold text-gray-800 text-base">7 Days Package</h4>
+             <div className="mt-3 flex items-end gap-2">
+               <span className="text-2xl font-bold text-gray-900">₹2999</span>
+               <span className="text-xs text-gray-400 line-through mb-1.5">₹3999</span>
+             </div>
+             <a href={`tel:${phone}`} className="mt-5 w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-semibold flex items-center justify-center hover:bg-gray-100 transition active:scale-95">Book Package</a>
+          </div>
+
+          {/* Card 3 - MOST POPULAR (Soft Highlight) */}
+          <div className="bg-primary/5 rounded-2xl p-5 border border-primary/20 shadow-sm relative overflow-hidden flex flex-col sm:col-span-2 lg:col-span-1">
+             <div className="absolute top-0 right-0 bg-primary text-white font-semibold text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider flex items-center gap-1">
+               <Star className="w-3 h-3 fill-white" /> Most Popular (Save ₹1500)
+             </div>
+             <h4 className="font-semibold text-primary text-lg mt-2">15 Days Package</h4>
+             <div className="mt-2 flex items-end gap-2">
+               <span className="text-3xl font-bold text-gray-900">₹5499</span>
+               <span className="text-sm text-gray-400 line-through mb-1.5">₹6999</span>
+             </div>
+             <p className="text-[11px] text-gray-500 mt-2">Recommended for optimal recovery</p>
+             <a href={`tel:${phone}`} className="mt-5 w-full bg-primary text-white py-3.5 rounded-xl text-sm font-bold flex items-center justify-center hover:bg-primary-dark transition active:scale-95 shadow-sm">Book 15 Days Now</a>
+          </div>
+
+          {/* Card 4 */}
+          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col">
+             <div className="absolute top-0 right-0 bg-amber-50 text-amber-600 font-semibold text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider">Best Value | Save ₹3000</div>
+             <h4 className="font-semibold text-gray-800 text-base">30 Days Package</h4>
+             <div className="mt-3 flex items-end gap-2">
+               <span className="text-2xl font-bold text-gray-900">₹9999</span>
+               <span className="text-xs text-gray-400 line-through mb-1.5">₹12999</span>
+             </div>
+             <a href={`tel:${phone}`} className="mt-5 w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-semibold flex items-center justify-center hover:bg-gray-100 transition active:scale-95">Book 30 Days</a>
+          </div>
+
+          {/* Card 5 */}
+          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col">
+             <div className="absolute top-0 right-0 bg-blue-50 text-blue-600 font-semibold text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider">Same Day Service</div>
+             <h4 className="font-semibold text-gray-800 text-base">Emergency Visit</h4>
+             <div className="mt-3 flex items-end gap-2">
+               <span className="text-2xl font-bold text-gray-900">₹799</span>
+               <span className="text-xs text-gray-400 line-through mb-1.5">₹1499</span>
+             </div>
+             <a href={`tel:${phone}`} className="mt-5 w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-semibold flex items-center justify-center hover:bg-gray-100 transition active:scale-95">Request Emergency</a>
+          </div>
+        </div>
+      </section>
+
+      {/* Problem-Based Sections */}
+      <section className="px-5 py-8 max-w-7xl mx-auto">
+        <h3 className="text-lg font-bold text-gray-900 mb-6">What We Treat</h3>
+        
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          {[
+            { title: "Back Pain Treatment", icon: Activity },
+            { title: "Knee Pain Therapy", icon: Accessibility },
+            { title: "Paralysis / Stroke", icon: Brain },
+            { title: "Post Surgery", icon: Clock },
+            { title: "Frozen Shoulder", icon: CheckCircle2 }
+          ].map((problem) => (
+            <div key={problem.title} className="bg-white border border-gray-100 rounded-2xl p-4 text-center flex flex-col items-center gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
+              <div className="w-10 h-10 bg-primary-light/50 text-primary rounded-full flex items-center justify-center">
+                <problem.icon className="w-5 h-5" />
+              </div>
+              <h4 className="font-semibold text-gray-800 text-xs sm:text-sm">{problem.title}</h4>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Location Section */}
+      <section className="px-5 py-8 max-w-7xl mx-auto">
+        <div className="bg-white rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100 p-5 sm:p-6 border-l-4 border-l-primary">
+          <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-primary" /> Serving Lucknow | Expanding Soon
+          </h3>
+          
+          <div className="space-y-6">
+            <div>
+              <h4 className="text-xs font-semibold text-gray-500 mb-3 uppercase tracking-wider flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                </span>
+                Active Service Areas
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                <span className="text-xs bg-primary text-white px-3.5 py-1.5 rounded-full font-medium shadow-sm cursor-default">
+                  Lucknow (All Areas)
+                </span>
+              </div>
+            </div>
+
+            <div className="pt-5 border-t border-gray-100">
+              <h4 className="text-xs font-semibold text-gray-400 mb-3 uppercase tracking-wider flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-gray-300"></span>
+                Coming Soon
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {["Kanpur", "Barabanki", "Sitapur", "Raebareli", "Unnao", "Ayodhya"].map((city) => (
+                  <span key={city} className="text-xs bg-gray-50 text-gray-500 border border-gray-200 px-3.5 py-1.5 rounded-full font-medium cursor-default">
+                    {city}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Trust Elements */}
+      <section className="px-5 py-10 max-w-7xl mx-auto">
+        <h3 className="text-lg font-bold text-gray-900 mb-6">Patient Reviews</h3>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {[
+            { name: "Rahul S.", review: "Very professional. My father's knee pain improved significantly.", rating: 5 },
+            { name: "Meera K.", review: "Excellent post-surgery rehab at home. Guided me perfectly.", rating: 5 },
+            { name: "Vikas T.", review: "Highly recommended for frozen shoulder. Transparent pricing.", rating: 5 }
+          ].map((r, i) => (
+            <div key={i} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
+              <div className="flex gap-1 mb-3 text-[#FFD700]">
+                {[...Array(r.rating)].map((_, j) => <Star key={j} className="w-3.5 h-3.5 fill-current" />)}
+              </div>
+              <p className="text-gray-600 text-xs sm:text-sm mb-4 leading-relaxed">"{r.review}"</p>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-primary-light rounded-full flex items-center justify-center text-primary text-xs font-bold">
+                  {r.name.charAt(0)}
+                </div>
+                <h4 className="font-semibold text-gray-900 text-xs">{r.name}</h4>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <FAQSection 
+        title="FAQ SECTION – PHYSIOTHERAPY AT HOME" 
+        faqs={[
+          { q: "Q1. Physiotherapy session ghar par kaise hota hai?", a: "Hamare trained physiotherapist aapke ghar par aakar proper assessment karke treatment start karte hain. Exercises, pain relief therapy aur guidance sab ghar par hi diya jata hai." },
+          { q: "Q2. Physiotherapy kitne din tak karni padti hai?", a: "Condition ke hisaab se duration decide hota hai. Normally 7, 15 ya 30 days packages available hote hain. Therapist aapko best plan suggest karta hai." },
+          { q: "Q3. Kya ek session me hi relief mil jata hai?", a: "Kuch cases me first session me relief milta hai, lekin long-term result ke liye multiple sessions recommended hote hain." },
+          { q: "Q4. Kya physiotherapy safe hai?", a: "Haan, physiotherapy ek safe aur non-surgical treatment hai. Hamare experienced therapists proper techniques follow karte hain." },
+          { q: "Q5. Kya physiotherapist ghar par equipment lekar aata hai?", a: "Haan, basic required equipment therapist saath me lekar aata hai. Advanced equipment condition ke hisaab se arrange kiya jata hai." },
+          { q: "Q6. Kis type ke patients ke liye physiotherapy useful hai?", a: "Back pain, neck pain, knee pain, paralysis, post-surgery recovery, sports injury aur elderly care me physiotherapy bahut effective hoti hai." },
+          { q: "Q7. Charges kya hote hain?", a: "Physiotherapy charges package ke hisaab se hote hain: 1 Session, 7 Days, 15 Days aur 30 Days packages available hain (best value plans bhi available hain)." },
+          { q: "Q8. Kya same day physiotherapy possible hai?", a: "Haan, same day physiotherapy home visit available hai (subject to availability)." },
+          { q: "Q9. Kya female physiotherapist available hai?", a: "Haan, female physiotherapist option bhi available hai (on request)." },
+          { q: "Q10. Kaise booking kare?", a: "Aap call ya WhatsApp ke through easily booking kar sakte hain. Hamari team turant therapist assign karegi." }
+        ]} 
+      />
+
       <StickyBottomBar />
     </main>
   );
@@ -1982,6 +2216,10 @@ export default async function ServicePage({ params }) {
   
   if (slug === "ambulance") {
     return <AmbulancePage />;
+  }
+
+  if (slug === "physiotherapy") {
+    return <PhysiotherapyPage />;
   }
 
   const service = SERVICES_CONFIG[slug];
