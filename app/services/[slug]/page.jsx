@@ -1691,9 +1691,297 @@ function StickyBottomBar() {
   );
 }
 
+// ==================== AMBULANCE PAGE ====================
+function AmbulancePage() {
+  return (
+    <main className="min-h-screen bg-white ">
+      <Navbar />
+      
+      {/* Banner / Header */}
+      <section className="mt-14 relative w-full bg-gray-900">
+        <div className="max-w-7xl mx-auto">
+          <div className="relative h-[300px] sm:h-[300px] w-full">
+            <Image
+              src={SERVICES_CONFIG.ambulance.banner.image}
+              alt="Ambulance Services"
+              fill
+              className="object-cover object-center opacity-90"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+            <div className="relative z-10 h-full flex items-end px-5 sm:px-8 pb-6 sm:pb-8">
+              <h1 className="text-white text-2xl sm:text-3xl font-semibold tracking-wide shadow-sm">
+                Ambulance Services 
+              </h1>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Cards */}
+      <section className="px-4 py-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          
+          {/* Card 1 */}
+          <div className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            {/* Header */}
+            <div className="p-3.5 flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 text-primary group-hover:scale-105 transition-transform">
+                <Ambulance className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-[15px] font-semibold text-gray-900 leading-tight">Normal Ambulance</h3>
+                <div className="text-[11px] text-gray-500 font-medium">Standard emergency transport</div>
+              </div>
+            </div>
+            
+            {/* Image Box */}
+            <div className="w-full h-64 relative bg-gray-50 overflow-hidden border-y border-gray-100/50">
+              <img src="/images/services/basic_ambulance.png" alt="Normal Ambulance" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+              <div className="absolute top-2 right-2 bg-red-50/95 backdrop-blur-sm text-red-600 text-[9px] font-bold px-2 py-1 rounded-md uppercase tracking-wider shadow-sm">
+                Most Used
+              </div>
+              <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1.5">
+                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm">Stretcher</span>
+                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm">First Aid</span>
+                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm">Trained Driver</span>
+              </div>
+            </div>
+
+            {/* Pricing Footer */}
+            <div className="p-3.5 flex items-center justify-between bg-white mt-auto">
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-[18px] font-bold text-gray-900 leading-none">₹1,199</span>
+                  <span className="text-gray-400 line-through text-[12px]">₹1,499</span>
+                  <span className="bg-green-50 text-primary border border-primary/20 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide">20% OFF</span>
+                </div>
+                <div className="text-[10px] text-gray-500 mt-1">Base (5km) • After 10km: <span className="font-semibold text-gray-700">₹18/km</span></div>
+              </div>
+              <a href={`tel:${phone}`} className="bg-primary text-white h-10 px-5 rounded-xl flex justify-center items-center text-[13px] font-semibold hover:bg-primary-dark transition-all active:scale-95 shadow-[0_2px_10px_0_rgba(15,157,88,0.2)] hover:shadow-[0_4px_14px_0_rgba(15,157,88,0.3)]">
+                Book
+              </a>
+            </div>
+          </div>
+
+          {/* Card 2 */}
+          <div className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="p-3.5 flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center shrink-0 text-primary group-hover:scale-105 transition-transform">
+                <Activity className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-[15px] font-semibold text-gray-900 leading-tight">Oxygen Ambulance</h3>
+                <div className="text-[11px] text-gray-500 font-medium">With oxygen cylinder support</div>
+              </div>
+            </div>
+            
+            <div className="w-full h-64 relative bg-gray-50 overflow-hidden border-y border-gray-100/50">
+              <img src="/images/services/oxygen_ambulance.png" alt="Oxygen Ambulance" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+              <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1.5">
+                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm">O2 Cylinder</span>
+                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm">Oximeter</span>
+                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm">Attendant</span>
+              </div>
+            </div>
+
+            <div className="p-3.5 flex items-center justify-between bg-white mt-auto">
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-[18px] font-bold text-gray-900 leading-none">₹1,699</span>
+                  <span className="text-gray-400 line-through text-[12px]">₹1,999</span>
+                  <span className="bg-green-50 text-primary border border-primary/20 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide">15% OFF</span>
+                </div>
+                <div className="text-[10px] text-gray-500 mt-1">Base (5km) • After 10km: <span className="font-semibold text-gray-700">₹22/km</span></div>
+              </div>
+              <a href={`tel:${phone}`} className="bg-primary/10 text-primary h-10 px-5 rounded-xl flex justify-center items-center text-[13px] font-semibold hover:bg-primary hover:text-white transition-all active:scale-95">
+                Book
+              </a>
+            </div>
+          </div>
+
+          {/* Card 3 */}
+          <div className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="p-3.5 flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center shrink-0 text-primary group-hover:scale-105 transition-transform">
+                <Monitor className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-[15px] font-semibold text-gray-900 leading-tight">ICU Ambulance</h3>
+                <div className="text-[11px] text-gray-500 font-medium">Advanced life support systems</div>
+              </div>
+            </div>
+            
+            <div className="w-full h-64 relative bg-gray-50 overflow-hidden border-y border-gray-100/50">
+              <img src="/images/services/icu_ambulance.png" alt="ICU Ambulance" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+              <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1.5">
+                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm">Ventilator</span>
+                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm">Monitor</span>
+                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm">Medical Staff</span>
+              </div>
+            </div>
+
+            <div className="p-3.5 flex items-center justify-between bg-white mt-auto">
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-[18px] font-bold text-primary leading-none tracking-tight">₹4,999</span>
+                  <span className="text-gray-400 line-through text-[12px]">₹6,999</span>
+                  <span className="bg-green-50 text-primary border border-primary/20 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide">28% OFF</span>
+                </div>
+                <div className="text-[10px] text-gray-500 mt-1">Base (5km) • After 10km: <span className="font-semibold text-gray-700">₹30/km</span></div>
+              </div>
+              <a href={`tel:${phone}`} className="bg-primary/10 text-primary h-10 px-5 rounded-xl flex justify-center items-center text-[13px] font-semibold hover:bg-primary hover:text-white transition-all active:scale-95">
+                Book
+              </a>
+            </div>
+          </div>
+
+          {/* Card 4 */}
+          <div className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+            <div className="p-3.5 flex items-center gap-3">
+              <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center shrink-0 text-primary group-hover:scale-105 transition-transform">
+                <Shield className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-[15px] font-semibold text-gray-900 leading-tight">Dead Body</h3>
+                <div className="text-[11px] text-gray-500 font-medium">Respectful mortuary transport</div>
+              </div>
+            </div>
+            
+            <div className="w-full h-64 relative bg-gray-50 overflow-hidden border-y border-gray-100/50">
+              <img src="/images/services/mortuary_ambulance.png" alt="Mortuary Ambulance" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
+              <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1.5">
+                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm">Freezer Box</span>
+                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm">Safe Handling</span>
+                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-medium px-2 py-1 rounded-md shadow-sm">Doorstep</span>
+              </div>
+            </div>
+
+            <div className="p-3.5 flex items-center justify-between bg-white mt-auto">
+              <div>
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="text-[18px] font-bold text-gray-900 leading-none">₹1,799</span>
+                  <span className="text-gray-400 line-through text-[12px]">₹2,499</span>
+                  <span className="bg-green-50 text-primary border border-primary/20 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wide">28% OFF</span>
+                </div>
+                <div className="text-[10px] text-gray-500 mt-1">Base (5km) • After 10km: <span className="font-semibold text-gray-700">₹20/km</span></div>
+              </div>
+              <a href={`tel:${phone}`} className="bg-primary/10 text-primary h-10 px-5 rounded-xl flex justify-center items-center text-[13px] font-semibold hover:bg-primary hover:text-white transition-all active:scale-95">
+                Book
+              </a>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Extra Charges */}
+        <div className="mt-10 bg-gray-50 rounded-2xl p-6 border border-gray-100 max-w-4xl mx-auto">
+          <h4 className="text-lg font-bold text-gray-900 mb-5 flex items-center gap-2 justify-center sm:justify-start">
+            <Clock className="w-5 h-5 text-primary" /> Extra Charges
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-center sm:text-left">
+              <div className="text-sm text-gray-500 mb-1">Night Charges (10 PM – 6 AM)</div>
+              <div className="font-bold text-gray-900 text-lg">+₹300 – ₹500</div>
+            </div>
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-center sm:text-left">
+              <div className="text-sm text-gray-500 mb-1">Urgent Booking</div>
+              <div className="font-bold text-gray-900 text-lg">+₹200</div>
+            </div>
+            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 text-center sm:text-left">
+              <div className="text-sm text-gray-500 mb-1">Waiting Charges</div>
+              <div className="font-bold text-gray-900 text-lg">₹100 / 15 min</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-10 text-center">
+          <div className="inline-flex items-center gap-2 bg-primary-light text-primary font-bold px-6 py-3 rounded-full text-sm sm:text-base border border-primary/20">
+            <Shield className="w-5 h-5 text-primary" /> Starting ₹1,199 – Transparent Pricing | No Hidden Charges
+          </div>
+        </div>
+
+        {/* Value Additions to Fill Space */}
+        <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          {/* Features */}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-8">
+            <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <CheckCircle2 className="w-6 h-6 text-primary" /> Why Choose Dr. Jhatka
+            </h3>
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                  <Clock className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900">10-15 Min Response Time</h4>
+                  <p className="text-sm text-gray-500 mt-0.5">Fastest dispatch system in the city for critical emergencies.</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                  <Heart className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900">ICU Trained Staff</h4>
+                  <p className="text-sm text-gray-500 mt-0.5">Highly qualified paramedics and nurses for transit care.</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                  <Shield className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-gray-900">100% Transparent</h4>
+                  <p className="text-sm text-gray-500 mt-0.5">No hidden charges or surge pricing during night times.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* How it works */}
+          <div className="bg-gray-50 rounded-2xl p-6 sm:p-8">
+            <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+              <Ambulance className="w-6 h-6 text-primary" /> How It Works
+            </h3>
+            <div className="relative border-l-2 border-primary/20 ml-6 space-y-6">
+              <div className="relative pl-8">
+                <div className="absolute -left-[17px] top-0.5 w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-sm shadow-sm ring-4 ring-gray-50">1</div>
+                <h4 className="font-bold text-gray-900">Call or Book Online</h4>
+                <p className="text-sm text-gray-500 mt-1">Share your location and patient condition with our dispatcher.</p>
+              </div>
+              <div className="relative pl-8">
+                <div className="absolute -left-[17px] top-0.5 w-8 h-8 bg-white border-2 border-primary rounded-full flex items-center justify-center text-primary font-bold text-sm ring-4 ring-gray-50">2</div>
+                <h4 className="font-bold text-gray-900">Instant Dispatch</h4>
+                <p className="text-sm text-gray-500 mt-1">The nearest fully-equipped ambulance is dispatched immediately.</p>
+              </div>
+              <div className="relative pl-8">
+                <div className="absolute -left-[17px] top-0.5 w-8 h-8 bg-white border-2 border-primary rounded-full flex items-center justify-center text-primary font-bold text-sm ring-4 ring-gray-50">3</div>
+                <h4 className="font-bold text-gray-900">Safe Hospital Transfer</h4>
+                <p className="text-sm text-gray-500 mt-1">Continuous monitoring and expert care during the entire journey.</p>
+              </div>
+            </div>
+            
+            <a href={`tel:${phone}`} className="mt-8 w-full bg-primary text-white py-3.5 rounded-xl font-bold flex items-center justify-center hover:bg-primary-dark transition active:scale-95 shadow-md">
+              <Phone className="w-5 h-5 mr-2" /> Request Ambulance Now
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <StickyBottomBar />
+    </main>
+  );
+}
+
 // ==================== MAIN PAGE ====================
 export default async function ServicePage({ params }) {
   const { slug } = await params; // ✅ FIX
+  
+  if (slug === "ambulance") {
+    return <AmbulancePage />;
+  }
+
   const service = SERVICES_CONFIG[slug];
 
   if (!service) {
