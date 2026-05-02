@@ -78,6 +78,7 @@ const services = [
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Services", href: "/services", hasSubmenu: true },
+  { label: "Our Team", href: "/our-medical-team" },
   { label: "Lab Tests", href: "/lab-test" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
@@ -118,7 +119,7 @@ function ServicesMegaMenu({ open }) {
             >
               <div>
                 <p
-                  className="text-[13px] font-black tracking-tight"
+                  className="text-[13px] font-normal tracking-tight"
                   style={{ color: TEXT }}
                 >
                   Our Services
@@ -129,7 +130,7 @@ function ServicesMegaMenu({ open }) {
               </div>
               <Link
                 href="/services"
-                className="flex items-center gap-1 text-[11px] font-bold px-3 py-1.5 rounded-xl transition-colors"
+                className="flex items-center gap-1 text-[11px] font-normal px-3 py-1.5 rounded-xl transition-colors"
                 style={{ color: PRIMARY, background: PRIMARY_LIGHT }}
               >
                 View all <ChevronRight className="w-3 h-3" />
@@ -167,7 +168,7 @@ function ServicesMegaMenu({ open }) {
                       </div>
                       <div>
                         <p
-                          className="text-[12.5px] font-bold leading-tight transition-colors group-hover:text-[#0F9D58]"
+                          className="text-[12.5px] font-normal leading-tight transition-colors group-hover:text-[#0F9D58]"
                           style={{ color: TEXT }}
                         >
                           {s.title}
@@ -190,7 +191,7 @@ function ServicesMegaMenu({ open }) {
               }}
             >
               <div>
-                <p className="text-[12px] font-bold text-white">
+                <p className="text-[12px] font-normal text-white">
                   Need help choosing a service?
                 </p>
                 <p className="text-[10px] mt-0.5" style={{ color: "#a7f3d0" }}>
@@ -199,7 +200,7 @@ function ServicesMegaMenu({ open }) {
               </div>
               <a
                 href="tel:+911800000000"
-                className="flex items-center gap-1.5 bg-white text-[11px] font-bold px-3.5 py-2 rounded-xl hover:bg-green-50 transition-colors"
+                className="flex items-center gap-1.5 bg-white text-[11px] font-normal px-3.5 py-2 rounded-xl hover:bg-green-50 transition-colors"
                 style={{ color: PRIMARY }}
               >
                 <Phone className="w-3.5 h-3.5" /> Call Now
@@ -281,14 +282,14 @@ function MobileDrawer({ open, onClose }) {
                         }}
                       >
                         <span
-                          className="text-[14px] font-black tracking-tight"
+                          className="text-[14px] font-normal tracking-tight"
                           style={{ color: servicesOpen ? PRIMARY : TEXT }}
                         >
                           Services
                         </span>
                         <div className="flex items-center gap-2">
                           <span
-                            className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                            className="text-[10px] font-normal px-2 py-0.5 rounded-full"
                             style={{
                               background: PRIMARY_LIGHT,
                               color: PRIMARY,
@@ -322,13 +323,13 @@ function MobileDrawer({ open, onClose }) {
                           >
                             {/* Sub-header */}
                             <div className="px-5 pt-3 pb-1.5 flex items-center justify-between">
-                              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                              <p className="text-[10px] font-normal text-gray-400 uppercase tracking-widest">
                                 All Services
                               </p>
                               <Link
                                 href="/services"
                                 onClick={onClose}
-                                className="text-[11px] font-bold flex items-center gap-0.5"
+                                className="text-[11px] font-normal flex items-center gap-0.5"
                                 style={{ color: PRIMARY }}
                               >
                                 View all <ChevronRight className="w-3 h-3" />
@@ -368,7 +369,7 @@ function MobileDrawer({ open, onClose }) {
                                       </div>
                                       <div className="flex-1 min-w-0">
                                         <p
-                                          className="text-[13px] font-bold leading-tight"
+                                          className="text-[13px] font-normal leading-tight"
                                           style={{ color: TEXT }}
                                         >
                                           {s.title}
@@ -395,7 +396,7 @@ function MobileDrawer({ open, onClose }) {
                       key={link.label}
                       href={link.href}
                       onClick={onClose}
-                      className="flex items-center justify-between px-5 py-4 text-[14px] font-black border-b border-gray-100 transition-colors"
+                      className="flex items-center justify-between px-5 py-4 text-[14px] font-normal border-b border-gray-100 transition-colors"
                       style={{ color: TEXT }}
                       onTouchStart={(e) =>
                         (e.currentTarget.style.background = PRIMARY_LIGHT)
@@ -416,7 +417,7 @@ function MobileDrawer({ open, onClose }) {
                 className="mx-4 mt-4 px-4 py-3 rounded-2xl"
                 style={{ background: PRIMARY_LIGHT }}
               >
-                <p className="text-[11px] font-bold" style={{ color: PRIMARY }}>
+                <p className="text-[11px] font-normal" style={{ color: PRIMARY }}>
                   🏥 Serving 50+ cities across India
                 </p>
                 <p className="text-[10px] text-gray-500 mt-0.5">
@@ -432,7 +433,7 @@ function MobileDrawer({ open, onClose }) {
             >
               <a
                 href="tel:+911800000000"
-                className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-white text-[14px] font-black tracking-tight active:scale-[0.97] transition-transform"
+                className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-white text-[14px] font-normal tracking-tight active:scale-[0.97] transition-transform"
                 style={{
                   background: `linear-gradient(135deg, ${PRIMARY}, ${PRIMARY_DARK})`,
                   boxShadow: `0 6px 20px rgba(15,157,88,0.28)`,
@@ -509,7 +510,7 @@ export default function Navbar() {
                     onMouseLeave={handleServicesLeave}
                   >
                     <button
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13.5px] font-bold transition-all duration-200"
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13.5px] font-normal transition-all duration-200"
                       style={{
                         color: servicesHover ? PRIMARY : TEXT,
                         background: servicesHover
@@ -531,7 +532,7 @@ export default function Navbar() {
                   <Link
                     key={link.label}
                     href={link.href}
-                    className="px-4 py-2 rounded-xl text-[13.5px] font-bold transition-all duration-200"
+                    className="px-4 py-2 rounded-xl text-[13.5px] font-normal transition-all duration-200"
                     style={{ color: TEXT }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.color = PRIMARY;
@@ -552,7 +553,7 @@ export default function Navbar() {
             <div className="hidden lg:flex items-center gap-2.5">
               <a
                 href="tel:+911800000000"
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-bold border transition-colors duration-200"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-normal border transition-colors duration-200"
                 style={{
                   color: PRIMARY,
                   borderColor: PRIMARY,
@@ -570,7 +571,7 @@ export default function Navbar() {
               </a>
               <Link
                 href="/book"
-                className="px-5 py-2 rounded-xl text-[13px] font-black text-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
+                className="px-5 py-2 rounded-xl text-[13px] font-normal text-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
                 style={{
                   background: `linear-gradient(135deg, ${PRIMARY}, ${PRIMARY_DARK})`,
                   boxShadow: `0 4px 14px rgba(15,157,88,0.28)`,

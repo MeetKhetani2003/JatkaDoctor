@@ -1,5 +1,5 @@
 import BlogSection from "@/components/Blogs";
-import DoctorsSection from "@/components/DoctorsSection";
+import MedicalTeamSection from "@/components/MedicalTeamSection";
 import EmergencyCTA from "@/components/EmergencyCTA";
 import Footer from "@/components/Footer";
 import FounderSection from "@/components/FounderSection";
@@ -33,7 +33,7 @@ export default function Home() {
       <StatsStrip />
       <WhyChooseUs />
       <HowItWorks />
-      <DoctorsSection />
+      <MedicalTeamSection />
       <PartnersSection />
       <Testimonials />
       <TrustBadges />
