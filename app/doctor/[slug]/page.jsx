@@ -13,7 +13,8 @@ import {
   ShieldCheck,
   CheckCircle2,
   Loader2,
-  ArrowRight
+  ArrowRight,
+  MapPin
 } from 'lucide-react';
 
 const PRIMARY = "#0F9D58";
@@ -59,98 +60,118 @@ export default function DoctorProfilePage() {
 
   return (
     <div className="min-h-screen bg-white pb-24">
+    <div className="min-h-screen bg-gray-50/50 pb-32">
       {/* Top Navigation */}
-      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md px-5 py-4 flex items-center justify-between border-b border-gray-50">
+      <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-md px-5 py-4 flex items-center justify-between border-b border-gray-100">
         <Link href="/" className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center active:scale-90 transition-transform">
           <ChevronLeft className="w-5 h-5 text-black" />
         </Link>
-        <h1 className="text-sm font-normal text-black tracking-tight">Doctor Profile</h1>
+        <h1 className="text-sm font-normal text-black tracking-tight">Expert Profile</h1>
         <div className="w-10 h-10"></div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-5 pt-8">
-        {/* Profile Header */}
-        <div className="flex items-center gap-6 mb-8">
-          <div className="relative w-28 h-28 rounded-[32px] overflow-hidden shadow-xl shadow-primary/10 border-4 border-white">
-            <Image 
-              src={doctor.image} 
-              alt={doctor.name} 
-              fill 
-              className="object-cover"
-            />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-2xl font-normal text-black tracking-tight">{doctor.name}</h2>
-              <ShieldCheck className="w-5 h-5 text-blue-500 fill-blue-50" />
-            </div>
-            <p className="text-primary text-sm font-normal mb-2">{doctor.role}</p>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-1 bg-yellow-50 px-2 py-0.5 rounded-lg">
-                <Star className="w-3 h-3 text-yellow-500 fill-current" />
-                <span className="text-[11px] font-normal text-yellow-700">{doctor.rating || '4.9'}</span>
+      <div className="max-w-2xl mx-auto">
+        {/* 1. Proper Doctor Image (Full Width on Mobile) */}
+        <div className="relative w-full aspect-square sm:aspect-video bg-gray-200 overflow-hidden sm:rounded-[40px] sm:mt-6 shadow-sm">
+          <Image 
+            src={doctor.image} 
+            alt={doctor.name} 
+            fill 
+            sizes="(max-width: 768px) 100vw, 672px"
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          <div className="absolute bottom-6 left-6 right-6">
+            <div className="flex items-center gap-2 mb-2">
+              {doctor.isVerified !== false && (
+                <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm text-blue-600 px-3 py-1 rounded-full shadow-sm">
+                   <ShieldCheck className="w-4 h-4 fill-blue-50" />
+                   <span className="text-[10px] font-bold uppercase tracking-wider">Verified Profile</span>
+                </div>
+              )}
+              <div className="flex items-center gap-1 bg-white/90 backdrop-blur-sm text-yellow-600 px-3 py-1 rounded-full shadow-sm">
+                 <Star className="w-3.5 h-3.5 fill-current" />
+                 <span className="text-[10px] font-bold">{doctor.rating || '4.9'}</span>
               </div>
-              <span className="text-gray-400 text-xs font-normal">•</span>
-              <span className="text-gray-500 text-xs font-normal">{doctor.experience} Experience</span>
+            </div>
+            <h2 className="text-3xl font-normal text-white tracking-tight mb-1">{doctor.name}</h2>
+            <p className="text-white/80 text-sm font-normal">{doctor.role}</p>
+          </div>
+        </div>
+
+        <div className="px-5 pt-8 space-y-8">
+          {/* 2. About That Doctor */}
+          <section className="bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm">
+            <h3 className="text-lg font-normal text-black tracking-tight mb-3">About {doctor.name.split(' ')[0]}</h3>
+            <p className="text-gray-500 text-sm font-normal leading-relaxed">
+              {doctor.description || `${doctor.name} is a highly experienced ${doctor.role} specializing in providing personalized medical care at home. Dedicated to delivering compassionate and effective treatment plans tailored to patient needs.`}
+            </p>
+          </section>
+
+          {/* 3. Degree of That Doctor */}
+          <section className="bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Award className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <p className="text-[10px] text-gray-400 font-normal uppercase tracking-widest mb-0.5">Professional Degree</p>
+              <h3 className="text-base font-normal text-black tracking-tight">
+                {doctor.degree || 'Certified Medical Professional'}
+              </h3>
+            </div>
+          </section>
+
+          {/* 4. Remain Details (Stats & Location) */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm">
+              <p className="text-[10px] text-gray-400 font-normal uppercase tracking-widest mb-2">Experience</p>
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-primary" />
+                <span className="text-base font-normal text-black">{doctor.experience}</span>
+              </div>
+            </div>
+            <div className="bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm">
+              <p className="text-[10px] text-gray-400 font-normal uppercase tracking-widest mb-2">Service Area</p>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                <span className="text-base font-normal text-black truncate">{doctor.area || 'Lucknow'}</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-3 mb-8">
-          <div className="bg-gray-50 p-4 rounded-3xl text-center">
-            <p className="text-[10px] text-gray-400 font-normal uppercase tracking-widest mb-1">Patients</p>
-            <p className="text-lg font-normal text-black">1.2k+</p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-3xl text-center">
-            <p className="text-[10px] text-gray-400 font-normal uppercase tracking-widest mb-1">Exp.</p>
-            <p className="text-lg font-normal text-black">{doctor.experience.split('+')[0]}Yrs</p>
-          </div>
-          <div className="bg-gray-50 p-4 rounded-3xl text-center">
-            <p className="text-[10px] text-gray-400 font-normal uppercase tracking-widest mb-1">Reviews</p>
-            <p className="text-lg font-normal text-black">480+</p>
-          </div>
-        </div>
+          {/* Specialization Tags */}
+          {doctor.specialization && doctor.specialization.length > 0 && (
+            <section className="bg-white rounded-[32px] p-6 border border-gray-100 shadow-sm">
+              <h3 className="text-lg font-normal text-black tracking-tight mb-4">Core Specializations</h3>
+              <div className="flex flex-wrap gap-2">
+                {doctor.specialization.map((spec, i) => (
+                  <span key={i} className="px-4 py-2 bg-gray-50 text-gray-600 rounded-2xl text-xs font-normal border border-gray-100">
+                    {spec}
+                  </span>
+                ))}
+              </div>
+            </section>
+          )}
 
-        {/* About */}
-        <div className="mb-8">
-          <h3 className="text-lg font-normal text-black tracking-tight mb-3">About Doctor</h3>
-          <p className="text-gray-500 text-sm font-normal leading-relaxed">
-            {doctor.description || `${doctor.name} is a highly experienced ${doctor.role} specializing in providing personalized medical care at home. With ${doctor.experience} of clinical practice, they focus on delivering compassionate and effective treatment plans tailored to patient needs.`}
-          </p>
-        </div>
-
-        {/* Specialization Tags */}
-        {doctor.specialization && doctor.specialization.length > 0 && (
-          <div className="mb-8">
-            <h3 className="text-lg font-normal text-black tracking-tight mb-4">Specialization</h3>
-            <div className="flex flex-wrap gap-2">
-              {doctor.specialization.map((spec, i) => (
-                <span key={i} className="px-4 py-2 bg-primary-light text-primary rounded-2xl text-[11px] font-normal">
-                  {spec}
-                </span>
+          {/* Benefits */}
+          <div className="bg-primary/5 rounded-[40px] p-8 border border-primary/10">
+            <h3 className="text-lg font-normal text-black tracking-tight mb-6">Patient Trust & Care</h3>
+            <div className="space-y-4">
+              {[
+                "Verified Background & Documents",
+                "Advanced Portable Equipment",
+                "Personalized Recovery Plan",
+                "Direct Access to Support Team"
+              ].map((item, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
+                  </div>
+                  <span className="text-sm text-gray-600 font-normal">{item}</span>
+                </div>
               ))}
             </div>
-          </div>
-        )}
-
-        {/* Services / Benefits */}
-        <div className="bg-gray-50 rounded-[40px] p-8 mb-8">
-          <h3 className="text-lg font-normal text-black tracking-tight mb-6">Why Choose {doctor.name}?</h3>
-          <div className="space-y-4">
-            {[
-              "Verified Background & Documents",
-              "Advanced Portable Equipment",
-              "24/7 Support for Emergencies",
-              "Personalized Recovery Plan"
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-3.5 h-3.5" style={{ color: PRIMARY }} />
-                </div>
-                <span className="text-sm text-gray-600 font-normal">{item}</span>
-              </div>
-            ))}
           </div>
         </div>
       </div>
@@ -171,7 +192,6 @@ export default function DoctorProfilePage() {
           >
             Book Appointment Now <ArrowRight className="w-4 h-4" />
           </Link>
-
         </div>
       </div>
     </div>

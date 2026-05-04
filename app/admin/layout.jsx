@@ -15,10 +15,9 @@ import {
 
 const sidebarLinks = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { label: 'Doctors', href: '/admin/doctors', icon: Users },
+  { label: 'Medical Staff', href: '/admin/doctors', icon: Users },
   { label: 'Physio Centers', href: '/admin/physio-centers', icon: MapPin },
   { label: 'Categories', href: '/admin/categories', icon: Tags },
-  { label: 'Staff', href: '/admin/staff', icon: UserCog },
   { label: 'Appointments', href: '/admin/appointments', icon: CalendarCheck },
 ];
 
@@ -46,7 +45,7 @@ export default function AdminLayout({ children }) {
                 href={link.href}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-normal transition-all ${
                   isActive 
-                    ? 'bg-primary text-white shadow-md shadow-primary/20' 
+                    ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-[1.02]' 
                     : 'text-gray-600 hover:bg-gray-50 hover:text-primary'
                 }`}
               >
@@ -72,7 +71,7 @@ export default function AdminLayout({ children }) {
       <main className="flex-1 flex flex-col min-w-0">
         <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-8 sticky top-0 z-10">
           <h2 className="text-lg font-normal text-black tracking-tight capitalize">
-            {pathname.split('/').pop() || 'Dashboard'}
+            {sidebarLinks.find(l => l.href === pathname)?.label || 'Dashboard'}
           </h2>
           <div className="flex items-center gap-4">
             <button className="p-2 text-gray-400 hover:text-black transition-colors">
@@ -90,30 +89,29 @@ export default function AdminLayout({ children }) {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 inset-x-0 bg-white border-t border-gray-100 flex md:hidden justify-around items-center p-2 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
-        {[
-          sidebarLinks[0], // Dashboard
-          sidebarLinks[1], // Doctors
-          sidebarLinks[2], // Physio
-          sidebarLinks[3], // Categories
-          sidebarLinks[5], // Appointments
-        ].map((link) => {
+      <nav className="fixed bottom-0 inset-x-0 bg-white/90 backdrop-blur-md border-t border-gray-100 flex md:hidden justify-around items-center p-2 z-50 shadow-[0_-8px_30px_rgba(0,0,0,0.08)]">
+        {sidebarLinks.map((link) => {
           const Icon = link.icon;
           const isActive = pathname === link.href;
           return (
             <Link
               key={link.href}
               href={link.href}
-              className={`flex flex-col items-center gap-1 p-2 transition-colors ${
-                isActive ? 'text-primary' : 'text-gray-400'
+              className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-all ${
+                isActive ? 'text-primary scale-110' : 'text-gray-400 hover:text-primary/70'
               }`}
             >
-              <Icon className="w-5 h-5" />
-              <span className="text-[10px] font-normal">{link.label.split(' ')[0]}</span>
+              <div className={`p-1.5 rounded-xl transition-colors ${isActive ? 'bg-primary/10' : 'bg-transparent'}`}>
+                <Icon className="w-5 h-5" />
+              </div>
+              <span className={`text-[10px] font-medium transition-all ${isActive ? 'opacity-100' : 'opacity-70'}`}>
+                {link.label.split(' ')[0]}
+              </span>
             </Link>
           );
         })}
       </nav>
+
 
     </div>
   );

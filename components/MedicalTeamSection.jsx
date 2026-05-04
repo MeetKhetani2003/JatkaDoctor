@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { User, ChevronRight, Star, Clock, Phone, Loader2 } from 'lucide-react';
+import { User, ChevronRight, Star, Clock, Phone, Loader2, MapPin } from 'lucide-react';
 import { medicalTeam as staticTeam } from '@/lib/medicalTeam';
 
 export default function MedicalTeamSection() {
@@ -58,6 +58,7 @@ export default function MedicalTeamSection() {
                     src={member.image} 
                     alt={member.name} 
                     fill 
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 25vw, 20vw"
                     className="object-cover"
                   />
                   <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] text-primary font-normal flex items-center gap-1 shadow-sm border border-primary/10">
@@ -73,36 +74,44 @@ export default function MedicalTeamSection() {
                       <span className="text-[10px] text-gray-400 font-normal">{member.rating || '4.9'}</span>
                     </div>
                   </div>
-                  <p className="text-primary text-xs font-normal mb-3">{member.role}</p>
+                  <p className="text-primary text-xs font-normal mb-2">{member.role}</p>
                   
+                  {member.area && (
+                    <div className="flex items-center gap-1.5 mb-3 text-[11px] text-gray-500">
+                      <MapPin className="w-3 h-3 text-primary" />
+                      <span className="truncate">{member.area}</span>
+                    </div>
+                  )}
+
                   <div className="flex items-center gap-4 mt-auto py-3 border-t border-gray-50">
                     <div className="flex flex-col">
                       <span className="text-[10px] text-gray-400 font-normal uppercase tracking-wider">Experience</span>
                       <span className="text-xs text-gray-700 font-normal">{member.experience}</span>
                     </div>
                     <div className="w-px h-6 bg-gray-100"></div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col flex-1 min-w-0">
                       <span className="text-[10px] text-gray-400 font-normal uppercase tracking-wider">Specialist</span>
-                      <span className="text-xs text-gray-700 font-normal truncate max-w-[80px]">
-                        {member.category?.name || member.category || 'Expert'}
+                      <span className="text-xs text-gray-700 font-normal truncate">
+                        {member.specialization?.[0] || member.category?.name || 'Expert'}
                       </span>
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2 mt-4">
-                    <a 
-                      href={`tel:8874744756`}
+                    <Link 
+                      href={member.slug ? `/doctor/${member.slug}` : "/our-medical-team"}
                       className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-gray-50 text-gray-700 text-xs font-normal border border-gray-100 hover:bg-gray-100 transition active:bg-gray-200"
                     >
-                      <Phone className="w-3 h-3" /> Call
-                    </a>
+                      <User className="w-3 h-3" /> Profile
+                    </Link>
                     <Link 
-                      href={member.slug ? `/doctor/${member.slug}` : "/book"}
+                      href={member.slug ? `/book?doctor=${member.slug}&category=${member.category?.slug || 'general'}` : "/book"}
                       className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-primary text-white text-xs font-normal shadow-md shadow-primary/20 hover:bg-primary-dark transition active:scale-95"
                     >
                       Book Now
                     </Link>
                   </div>
+
                 </div>
               </div>
             ))}

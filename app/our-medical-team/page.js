@@ -119,7 +119,12 @@ export default function MedicalTeamPage() {
               >
                 <Link href={member.slug ? `/doctor/${member.slug}` : "#"} className="flex items-center gap-4 mb-5">
                   <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-gray-100 shrink-0 shadow-inner">
-                    <Image src={member.image} alt={member.name} fill className="object-cover" />
+                    <Image src={member.image} alt={member.name} fill sizes="80px" className="object-cover" />
+                    {member.isVerified !== false && (
+                      <div className="absolute top-1 right-1 bg-white rounded-full p-1 shadow-sm">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-primary fill-primary/10" />
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 overflow-hidden">
                     <div className="flex items-center justify-between mb-1">
@@ -130,11 +135,19 @@ export default function MedicalTeamPage() {
                       </div>
                     </div>
                     <p className="text-primary text-[11px] font-normal mb-1">{member.role}</p>
+                    
+                    {member.area && (
+                      <div className="flex items-center gap-1.5 text-gray-400 text-[10px] font-normal mb-1">
+                        <MapPin className="w-2.5 h-2.5 text-primary" /> <span className="truncate">{member.area}</span>
+                      </div>
+                    )}
+
                     <div className="flex items-center gap-1.5 text-gray-400 text-[10px] font-normal">
                       <Clock className="w-3 h-3" /> {member.experience} Experience
                     </div>
                   </div>
                 </Link>
+
 
                 <div className="bg-gray-50 rounded-2xl p-4 mb-5 flex-1">
                   <p className="text-gray-600 text-[11px] font-normal leading-relaxed italic mb-3 line-clamp-2">

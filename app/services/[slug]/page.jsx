@@ -1508,6 +1508,8 @@ function BookingForm({ config, slug }) {
     time: 'Morning',
     notes: `Interested in ${slug} service.`
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [doctors, setDoctors] = useState([]);
 
   useEffect(() => {
@@ -1855,7 +1857,13 @@ function MeetOurExperts({ slug }) {
           {experts.map((member) => (
             <div key={member._id || member.id} className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden flex flex-col p-5 text-center group hover:shadow-md transition-all duration-300">
               <div className="relative w-24 h-24 rounded-3xl overflow-hidden mx-auto mb-4 shadow-sm group-hover:scale-105 transition-transform">
-                <Image src={member.image} alt={member.name} fill className="object-cover" />
+                <Image 
+                  src={member.image} 
+                  alt={member.name} 
+                  fill 
+                  sizes="96px"
+                  className="object-cover" 
+                />
               </div>
               <h3 className="text-base font-normal text-black mb-1 group-hover:text-primary transition-colors">{member.name}</h3>
               <p className="text-primary text-[11px] font-normal mb-3">{member.role}</p>
@@ -1880,119 +1888,6 @@ function MeetOurExperts({ slug }) {
 
 
 // ==================== PHYSIO CENTERS SECTION ====================
-function PhysioCentersSection() {
-  const [centers, setCenters] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCenters = async () => {
-      try {
-        const res = await fetch('/api/centers');
-        const data = await res.json();
-        setCenters(data);
-      } catch (e) { console.error(e); }
-      finally { setLoading(false); }
-    };
-    fetchCenters();
-  }, []);
-
-  if (loading || centers.length === 0) return null;
-
-  return (
-    <section className="py-16 px-5 bg-gray-50">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-10">
-          <h2 className="text-2xl sm:text-3xl font-normal text-black tracking-tight mb-3">Our Physiotherapy Centers</h2>
-          <p className="text-gray-500 text-sm font-normal">Visit our fully equipped clinics in Lucknow</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {centers.map((center) => (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              key={center._id} 
-              className="bg-white rounded-[40px] p-6 border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.03)] flex flex-col group hover:shadow-xl hover:shadow-primary/5 transition-all duration-500"
-            >
-              {/* Image Container */}
-              <div className="relative h-56 rounded-[32px] overflow-hidden bg-gray-50 mb-6">
-                {center.imageFileId ? (
-                  <Image src={`/api/images/${center.imageFileId}`} alt={center.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
-                ) : (
-                  <div className="flex items-center justify-center h-full text-gray-200">
-                    <ImageIcon className="w-16 h-16" />
-                  </div>
-                )}
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shadow-sm">
-                  <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
-                  <span className="text-xs font-bold text-gray-900">{center.rating}</span>
-                </div>
-              </div>
-
-              {/* Title & Info */}
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Center</p>
-                </div>
-                <h3 className="text-xl font-normal text-black tracking-tight mb-1">{center.name}</h3>
-                <p className="text-primary text-sm font-normal mb-4">{center.subtitle}</p>
-                
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {center.features?.slice(0, 3).map((feature, idx) => (
-                    <span key={idx} className="flex items-center gap-1.5 bg-gray-50 text-gray-500 px-3 py-1.5 rounded-xl text-[10px] font-normal border border-gray-100">
-                      <CheckCircle2 className="w-3 h-3 text-primary" />
-                      {feature}
-                    </span>
-                  ))}
-                </div>
-
-                {center.treatments?.length > 0 && (
-                  <div className="mb-6">
-                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Treatments Available</p>
-                    <div className="flex flex-wrap gap-2">
-                      {center.treatments.map((t, i) => (
-                        <span key={i} className="text-[10px] bg-primary/5 text-primary px-3 py-1.5 rounded-lg font-normal">
-                          {t}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex items-start gap-2.5 mb-6 p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
-                  <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                  <p className="text-xs text-gray-500 leading-relaxed font-normal">{center.location}</p>
-                </div>
-              </div>
-
-              {/* Actions */}
-              <div className="space-y-3 pt-4 border-t border-gray-50">
-                <Link 
-                  href={`/book?category=physiotherapy&doctor=Any Available&notes=Center: ${center.name}`}
-                  className="w-full bg-primary text-white py-4 rounded-2xl text-sm font-normal flex items-center justify-center gap-2 hover:bg-primary-dark transition shadow-lg shadow-primary/10 active:scale-[0.98]"
-                >
-                  <Calendar className="w-4 h-4" /> Book Appointment
-                </Link>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <a href={`tel:${center.numbers?.[0] || '8874744756'}`} className="flex items-center justify-center gap-2 py-3.5 bg-white border border-gray-100 rounded-2xl text-gray-700 text-xs font-normal hover:bg-gray-50 transition active:scale-[0.98]">
-                    <Phone className="w-3.5 h-3.5" /> Call
-                  </a>
-                  <a href={`https://wa.me/91${center.numbers?.[0] || '8874744756'}`} className="flex items-center justify-center gap-2 py-3.5 bg-green-50 border border-green-100 rounded-2xl text-green-600 text-xs font-normal hover:bg-green-100 transition active:scale-[0.98]">
-                    <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
-                  </a>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-      </div>
-    </section>
-  );
-}
 
 // ==================== AMBULANCE PAGE ====================
 function AmbulancePage() {
@@ -2537,6 +2432,7 @@ function DoctorPage() {
               src="/images/services/doctor.png"
               alt="Doctor Visit at Home"
               fill
+              sizes="(max-width: 768px) 100vw, 1200px"
               className="object-cover object-center opacity-90"
               priority
             />
