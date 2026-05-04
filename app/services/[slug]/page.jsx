@@ -42,6 +42,8 @@ import {
 } from "lucide-react";
 import Navbar from "@/components/Header";
 import FAQSection from "@/components/FAQSection";
+import AmbulanceNetwork from "@/components/AmbulanceNetwork";
+import PhysiotherapyCenters from "@/components/PhysiotherapyCenters";
 
 const phone = "8874744756";
 
@@ -1946,6 +1948,8 @@ function AmbulancePage() {
           </div>
         </div>
 
+        <AmbulanceNetwork />
+
         {/* Value Additions to Fill Space */}
         <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {/* Features */}
@@ -2144,6 +2148,8 @@ function PhysiotherapyPage() {
           </div>
         </div>
       </section>
+
+      <PhysiotherapyCenters />
 
       {/* Problem-Based Sections */}
       <section className="px-5 py-8 max-w-7xl mx-auto">
