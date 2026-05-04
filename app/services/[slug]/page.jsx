@@ -2,7 +2,7 @@
 import { medicalTeam } from '@/lib/medicalTeam';
 // app/services/[slug]/page.js
 
-import { useState, use } from "react";
+import { useState, useEffect, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -39,6 +39,7 @@ import {
   CreditCard,
   ShieldCheck,
   HeartPulse,
+  Image as ImageIcon,
 } from "lucide-react";
 import Navbar from "@/components/Header";
 import FAQSection from "@/components/FAQSection";
@@ -1496,7 +1497,78 @@ function ServiceAreas({ areas }) {
   );
 }
 
-function BookingForm({ config }) {
+function BookingForm({ config, slug }) {
+  const [formData, setFormData] = useState({
+    patientName: '',
+    phone: '',
+    email: '',
+    category: config.banner?.title || slug,
+    doctor: '',
+    date: '',
+    time: 'Morning',
+    notes: `Interested in ${slug} service.`
+  });
+  const [doctors, setDoctors] = useState([]);
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const res = await fetch('/api/doctors');
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          // Filter doctors by slug/category mapping
+          const mapping = {
+            'ambulance': ['emergency', 'critical', 'trauma'],
+            'physiotherapy': ['physio', 'rehab', 'ortho', 'exercise'],
+            'icu': ['icu', 'critical', 'ventilator', 'monitor'],
+            'home-care': ['caregiver', 'attendant', 'home'],
+            'nursing': ['nurse', 'nursing', 'medical assistant'],
+            'doctor': ['general', 'physician', 'specialist']
+          };
+          const searchTerms = mapping[slug] || [slug];
+          const filtered = data.filter(d => {
+            const catName = (d.category?.name || d.category || "").toLowerCase();
+            const role = (d.role || "").toLowerCase();
+            return searchTerms.some(term => catName.includes(term) || role.includes(term));
+          });
+          setDoctors(filtered.length > 0 ? filtered : data.slice(0, 5));
+        }
+      } catch (e) { console.error(e); }
+    };
+    fetchDoctors();
+  }, [slug]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const res = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      if (res.ok) setSuccess(true);
+    } catch (e) {
+      alert("Booking error. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <section className="px-4 pt-8 max-w-7xl mx-auto">
+        <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm">
+          <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <CheckCircle2 className="w-8 h-8 text-primary" />
+          </div>
+          <h3 className="text-xl font-normal text-black tracking-tight mb-2">Request Received!</h3>
+          <p className="text-gray-500 text-sm font-normal">Our team will call you within 15 minutes to confirm.</p>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="px-4 pt-8 max-w-7xl mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
@@ -1507,53 +1579,72 @@ function BookingForm({ config }) {
           className="lg:col-span-3 bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
         >
           <h2 className="text-lg font-normal text-black tracking-tight mb-5">
-            {config.formTitle || "Book Service"}
+            {config.formTitle || `Book ${config.banner?.title || 'Service'}`}
           </h2>
-          <form
-            className="flex flex-col gap-3"
-            onSubmit={(e) => {
-              e.preventDefault();
-              alert("Booking submitted! We'll contact you soon.");
-            }}
-          >
-            {config.formFields.map((field, i) => {
-              const Icon = field.icon;
-              return (
-                <div key={i} className="relative">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  {field.type === "select" ? (
-                    <div className="relative">
-                      <select className="w-full pl-10 pr-10 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition appearance-none text-gray-700">
-                        <option value="">{field.placeholder}</option>
-                        {field.options?.map((opt) => (
-                          <option key={opt} value={opt}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                    </div>
-                  ) : (
-                    <input
-                      type={field.type}
-                      placeholder={field.placeholder}
-                      className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-                    />
-                  )}
-                </div>
-              );
-            })}
+          <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                required
+                type="text"
+                placeholder="Patient Full Name"
+                value={formData.patientName}
+                onChange={e => setFormData({...formData, patientName: e.target.value})}
+                className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+              />
+            </div>
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                required
+                type="tel"
+                placeholder="Phone Number"
+                value={formData.phone}
+                onChange={e => setFormData({...formData, phone: e.target.value})}
+                className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+              />
+            </div>
+            
+            <div className="relative">
+              <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <select
+                required
+                value={formData.doctor}
+                onChange={e => setFormData({...formData, doctor: e.target.value})}
+                className="w-full pl-10 pr-10 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition appearance-none text-gray-700"
+              >
+                <option value="">Select Preferred Doctor (Optional)</option>
+                {doctors.map(doc => (
+                  <option key={doc._id} value={doc.name}>{doc.name} ({doc.role})</option>
+                ))}
+                <option value="Any Available">Any Available Expert</option>
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+            </div>
+
+            <div className="relative">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                required
+                type="date"
+                value={formData.date}
+                onChange={e => setFormData({...formData, date: e.target.value})}
+                className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+              />
+            </div>
+            
             <button
+              disabled={isSubmitting}
               type="submit"
-              className="w-full bg-primary text-white py-4 rounded-xl text-sm font-normal active:scale-95 transition hover:bg-primary-dark flex items-center justify-center gap-2 mt-2"
+              className="w-full bg-primary text-white py-4 rounded-xl text-sm font-normal active:scale-95 transition hover:bg-primary-dark flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
             >
-              <Calendar className="w-4 h-4" />
-              {config.submitButtonText || "Book Now"}
+              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
+              {config.submitButtonText || "Confirm Booking Now"}
             </button>
           </form>
         </motion.div>
+
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -1703,8 +1794,53 @@ function StickyBottomBar() {
 
 // ==================== RELEVANT EXPERTS SECTION ====================
 function MeetOurExperts({ slug }) {
-  const experts = medicalTeam.filter(m => m.services.includes(slug)).slice(0, 4);
+  const [experts, setExperts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchExperts = async () => {
+      try {
+        const res = await fetch('/api/doctors');
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          // Map slug to search terms
+          const mapping = {
+            'ambulance': ['emergency', 'critical', 'trauma'],
+            'physiotherapy': ['physio', 'rehab', 'ortho', 'exercise'],
+            'icu': ['icu', 'critical', 'ventilator', 'monitor'],
+            'home-care': ['caregiver', 'attendant', 'home'],
+            'nursing': ['nurse', 'nursing', 'medical assistant'],
+            'doctor': ['general', 'physician', 'specialist']
+          };
+
+          const searchTerms = mapping[slug] || [slug];
+          
+          const filtered = data.filter(m => {
+            const catName = (m.category?.name || m.category || "").toLowerCase();
+            const role = (m.role || "").toLowerCase();
+            const specs = (m.specialization || []).map(s => s.toLowerCase());
+            
+            return searchTerms.some(term => 
+              catName.includes(term) || 
+              role.includes(term) || 
+              specs.some(s => s.includes(term))
+            );
+          });
+
+          setExperts(filtered.length > 0 ? filtered.slice(0, 4) : data.slice(0, 4));
+        } else {
+          setExperts(medicalTeam.filter(m => m.services.includes(slug)).slice(0, 4));
+        }
+      } catch (e) {
+        setExperts(medicalTeam.filter(m => m.services.includes(slug)).slice(0, 4));
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchExperts();
+  }, [slug]);
   
+  if (loading) return null;
   if (experts.length === 0) return null;
 
   return (
@@ -1717,16 +1853,19 @@ function MeetOurExperts({ slug }) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {experts.map((member) => (
-            <div key={member.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col p-4 text-center">
-              <div className="relative w-24 h-24 rounded-2xl overflow-hidden mx-auto mb-4 shadow-sm">
+            <div key={member._id || member.id} className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden flex flex-col p-5 text-center group hover:shadow-md transition-all duration-300">
+              <div className="relative w-24 h-24 rounded-3xl overflow-hidden mx-auto mb-4 shadow-sm group-hover:scale-105 transition-transform">
                 <Image src={member.image} alt={member.name} fill className="object-cover" />
               </div>
-              <h3 className="text-base font-normal text-black mb-1">{member.name}</h3>
+              <h3 className="text-base font-normal text-black mb-1 group-hover:text-primary transition-colors">{member.name}</h3>
               <p className="text-primary text-[11px] font-normal mb-3">{member.role}</p>
-              <div className="text-[10px] text-gray-400 font-normal mb-4 bg-gray-50 py-1 px-3 rounded-full inline-block mx-auto">
+              <div className="text-[10px] text-gray-400 font-normal mb-6 bg-gray-50 py-1.5 px-4 rounded-full inline-block mx-auto">
                 {member.experience} Experience
               </div>
-              <Link href="/our-medical-team" className="mt-auto py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl text-[11px] font-normal transition active:scale-95 border border-gray-100">
+              <Link 
+                href={member.slug ? `/doctor/${member.slug}` : "/our-medical-team"} 
+                className="mt-auto py-3 bg-primary text-white rounded-2xl text-[11px] font-normal transition active:scale-95 shadow-lg shadow-primary/10 hover:bg-primary-dark"
+              >
                 View Profile
               </Link>
             </div>
@@ -1737,6 +1876,123 @@ function MeetOurExperts({ slug }) {
   );
 }
 
+
+
+
+// ==================== PHYSIO CENTERS SECTION ====================
+function PhysioCentersSection() {
+  const [centers, setCenters] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchCenters = async () => {
+      try {
+        const res = await fetch('/api/centers');
+        const data = await res.json();
+        setCenters(data);
+      } catch (e) { console.error(e); }
+      finally { setLoading(false); }
+    };
+    fetchCenters();
+  }, []);
+
+  if (loading || centers.length === 0) return null;
+
+  return (
+    <section className="py-16 px-5 bg-gray-50">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-10">
+          <h2 className="text-2xl sm:text-3xl font-normal text-black tracking-tight mb-3">Our Physiotherapy Centers</h2>
+          <p className="text-gray-500 text-sm font-normal">Visit our fully equipped clinics in Lucknow</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {centers.map((center) => (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              key={center._id} 
+              className="bg-white rounded-[40px] p-6 border border-gray-100 shadow-[0_4px_24px_rgba(0,0,0,0.03)] flex flex-col group hover:shadow-xl hover:shadow-primary/5 transition-all duration-500"
+            >
+              {/* Image Container */}
+              <div className="relative h-56 rounded-[32px] overflow-hidden bg-gray-50 mb-6">
+                {center.imageFileId ? (
+                  <Image src={`/api/images/${center.imageFileId}`} alt={center.name} fill className="object-cover group-hover:scale-105 transition-transform duration-700" />
+                ) : (
+                  <div className="flex items-center justify-center h-full text-gray-200">
+                    <ImageIcon className="w-16 h-16" />
+                  </div>
+                )}
+                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-1.5 shadow-sm">
+                  <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" />
+                  <span className="text-xs font-bold text-gray-900">{center.rating}</span>
+                </div>
+              </div>
+
+              {/* Title & Info */}
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                  <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Active Center</p>
+                </div>
+                <h3 className="text-xl font-normal text-black tracking-tight mb-1">{center.name}</h3>
+                <p className="text-primary text-sm font-normal mb-4">{center.subtitle}</p>
+                
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {center.features?.slice(0, 3).map((feature, idx) => (
+                    <span key={idx} className="flex items-center gap-1.5 bg-gray-50 text-gray-500 px-3 py-1.5 rounded-xl text-[10px] font-normal border border-gray-100">
+                      <CheckCircle2 className="w-3 h-3 text-primary" />
+                      {feature}
+                    </span>
+                  ))}
+                </div>
+
+                {center.treatments?.length > 0 && (
+                  <div className="mb-6">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Treatments Available</p>
+                    <div className="flex flex-wrap gap-2">
+                      {center.treatments.map((t, i) => (
+                        <span key={i} className="text-[10px] bg-primary/5 text-primary px-3 py-1.5 rounded-lg font-normal">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-start gap-2.5 mb-6 p-4 bg-gray-50 rounded-2xl border border-gray-100/50">
+                  <MapPin className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                  <p className="text-xs text-gray-500 leading-relaxed font-normal">{center.location}</p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="space-y-3 pt-4 border-t border-gray-50">
+                <Link 
+                  href={`/book?category=physiotherapy&doctor=Any Available&notes=Center: ${center.name}`}
+                  className="w-full bg-primary text-white py-4 rounded-2xl text-sm font-normal flex items-center justify-center gap-2 hover:bg-primary-dark transition shadow-lg shadow-primary/10 active:scale-[0.98]"
+                >
+                  <Calendar className="w-4 h-4" /> Book Appointment
+                </Link>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <a href={`tel:${center.numbers?.[0] || '8874744756'}`} className="flex items-center justify-center gap-2 py-3.5 bg-white border border-gray-100 rounded-2xl text-gray-700 text-xs font-normal hover:bg-gray-50 transition active:scale-[0.98]">
+                    <Phone className="w-3.5 h-3.5" /> Call
+                  </a>
+                  <a href={`https://wa.me/91${center.numbers?.[0] || '8874744756'}`} className="flex items-center justify-center gap-2 py-3.5 bg-green-50 border border-green-100 rounded-2xl text-green-600 text-xs font-normal hover:bg-green-100 transition active:scale-[0.98]">
+                    <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+                  </a>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+      </div>
+    </section>
+  );
+}
 
 // ==================== AMBULANCE PAGE ====================
 function AmbulancePage() {
@@ -2017,8 +2273,9 @@ function AmbulancePage() {
           </div>
         </div>
 
-
       </section>
+
+      <MeetOurExperts slug="ambulance" />
 
       <FAQSection 
         title="FAQ SECTION – AMBULANCE SERVICE" 
@@ -2239,6 +2496,10 @@ function PhysiotherapyPage() {
         </div>
       </section>
 
+      <PhysioCentersSection />
+
+      <MeetOurExperts slug="physiotherapy" />
+
       <FAQSection 
         title="FAQ SECTION – PHYSIOTHERAPY AT HOME" 
         faqs={[
@@ -2373,39 +2634,8 @@ function DoctorPage() {
         <div className="text-center text-xs text-gray-500 mt-4">Save ₹300–₹500 Today | Only limited slots available per day</div>
       </section>
 
-      {/* Doctor Display Section */}
-      <section className="px-5 py-8 max-w-7xl mx-auto">
-        <h3 className="text-lg font-normal text-black tracking-tight mb-2">Doctor Available in Your Area (Lucknow)</h3>
-        <p className="text-xs text-gray-500 mb-4">Nearest available doctor will be assigned</p>
-        
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-          {[
-            { name: "Dr. A. Sharma", spec: "General Physician", img: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=300&h=300&fit=crop" },
-            { name: "Dr. R. Verma", spec: "Orthopedic", img: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=300&h=300&fit=crop" },
-            { name: "Dr. S. Singh", spec: "Pediatrician", img: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?w=300&h=300&fit=crop" }
-          ].map((doc, i) => (
-            <div key={i} className="bg-white rounded-2xl p-3 border border-gray-100 flex items-center gap-3 shadow-[0_2px_8px_rgba(0,0,0,0.02)]">
-              <div className="w-12 h-12 rounded-xl overflow-hidden relative shrink-0">
-                <Image src={doc.img} alt={doc.name} fill className="object-cover" />
-              </div>
-              <div>
-                <h4 className="font-normal text-black tracking-tight text-xs sm:text-sm">{doc.name}</h4>
-                <p className="text-gray-500 text-[10px]">{doc.spec}</p>
-              </div>
-            </div>
-          ))}
-          <div className="bg-primary/5 rounded-2xl p-3 border border-primary/20 flex items-center justify-center gap-2 shadow-[0_2px_8px_rgba(0,0,0,0.02)] cursor-pointer hover:bg-primary/10 transition">
-             <UserPlus className="w-5 h-5 text-primary" />
-             <span className="font-normal text-primary text-xs">+ More Doctors</span>
-          </div>
-        </div>
-        
-        <div className="mt-4 flex justify-between items-center bg-blue-50/50 p-3 rounded-xl border border-blue-100">
-          <div className="text-xs font-normal text-blue-700 flex items-center gap-1">
-             <Shield className="w-4 h-4" /> 10+ Verified Doctors Available Across Lucknow
-          </div>
-        </div>
-      </section>
+      <MeetOurExperts slug="doctor" />
+
 
       {/* Value Additions / Steps */}
       <div className="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto px-5 mb-10">
@@ -2901,7 +3131,9 @@ export default function ServicePage({ params }) {
       <Benefits benefits={service.benefits} />
       <Packages packages={service.packages} />
       <ServiceAreas areas={service.serviceAreas} />
-      <BookingForm config={service} />
+      <MeetOurExperts slug={slug} />
+      <BookingForm config={service} slug={slug} />
+
       <Testimonials testimonials={service.testimonials} />
       <StickyBottomBar />
     </main>

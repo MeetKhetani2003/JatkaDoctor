@@ -57,22 +57,44 @@ export default function Footer() {
           {/* FORM */}
           <form
             className="flex flex-col gap-3"
-            onSubmit={(e) => e.preventDefault()}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const formData = new FormData(e.target);
+              const data = Object.fromEntries(formData.entries());
+              try {
+                const res = await fetch('/api/appointments', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    patientName: data.name,
+                    phone: data.phone,
+                    category: data.service || 'General Inquiry',
+                    doctor: data.doctor || 'Any Available',
+                    notes: data.message
+                  })
+                });
+                if (res.ok) alert("Request submitted successfully!");
+              } catch (err) { alert("Error submitting request."); }
+            }}
           >
             <input
+              name="name"
+              required
               type="text"
               placeholder="Your Name"
               className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
             />
 
             <input
+              name="phone"
+              required
               type="tel"
               placeholder="Phone Number"
               className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
             />
 
-            <select className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-gray-600">
-              <option>Select Service</option>
+            <select name="service" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-gray-600">
+              <option value="">Select Service</option>
               <option>Ambulance Service</option>
               <option>Doctor at Home</option>
               <option>ICU at Home</option>
@@ -82,7 +104,16 @@ export default function Footer() {
               <option>Equipment Rental</option>
             </select>
 
+            <select name="doctor" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-gray-600">
+              <option value="">Select Preferred Doctor (Optional)</option>
+              <option value="Any Available">Any Available Expert</option>
+              <option value="Dr. Jhatka">Dr. Jhatka (Physiotherapist)</option>
+              <option value="Dr. Sharma">Dr. Sharma (General Physician)</option>
+              <option value="Dr. Verma">Dr. Verma (Orthopedic)</option>
+            </select>
+
             <textarea
+              name="message"
               placeholder="Your Message"
               rows={3}
               className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition resize-none"
@@ -96,6 +127,7 @@ export default function Footer() {
               Submit Request
             </button>
           </form>
+
 
           {/* QUICK ACTIONS */}
           <div className="grid grid-cols-2 gap-3 mt-5">

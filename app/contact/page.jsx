@@ -55,21 +55,51 @@ export default function ContactPage() {
           
           <div className="bg-gray-50 rounded-[40px] p-8 border border-gray-100">
             <h2 className="text-xl font-normal text-black tracking-tight mb-6">Inquiry Form</h2>
-            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); alert("Enquiry submitted!"); }}>
+            <form className="space-y-4" onSubmit={async (e) => { 
+              e.preventDefault(); 
+              const formData = new FormData(e.target);
+              const data = Object.fromEntries(formData.entries());
+              try {
+                const res = await fetch('/api/appointments', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    patientName: data.name,
+                    phone: data.phone,
+                    category: 'General Enquiry',
+                    doctor: data.doctor || 'Any Available',
+                    notes: data.message
+                  })
+                });
+                if (res.ok) alert("Enquiry submitted successfully!");
+              } catch (err) {
+                alert("Error submitting enquiry.");
+              }
+            }}>
               <div>
-                <input type="text" placeholder="Your Name" className="w-full bg-white border border-gray-200 py-4 px-6 rounded-2xl text-sm font-normal outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+                <input name="name" required type="text" placeholder="Your Name" className="w-full bg-white border border-gray-200 py-4 px-6 rounded-2xl text-sm font-normal outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
               </div>
               <div>
-                <input type="tel" placeholder="Phone Number" className="w-full bg-white border border-gray-200 py-4 px-6 rounded-2xl text-sm font-normal outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
+                <input name="phone" required type="tel" placeholder="Phone Number" className="w-full bg-white border border-gray-200 py-4 px-6 rounded-2xl text-sm font-normal outline-none focus:ring-2 focus:ring-primary/20 transition-all" />
               </div>
               <div>
-                <textarea placeholder="Message / Service Required" rows="4" className="w-full bg-white border border-gray-200 py-4 px-6 rounded-2xl text-sm font-normal outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"></textarea>
+                <select name="doctor" className="w-full bg-white border border-gray-200 py-4 px-6 rounded-2xl text-sm font-normal outline-none focus:ring-2 focus:ring-primary/20 transition-all appearance-none text-gray-700">
+                  <option value="">Select Preferred Doctor (Optional)</option>
+                  <option value="Any Available">Any Available Expert</option>
+                  <option value="Dr. Jhatka">Dr. Jhatka (Physiotherapist)</option>
+                  <option value="Dr. Sharma">Dr. Sharma (General Physician)</option>
+                  <option value="Dr. Verma">Dr. Verma (Orthopedic)</option>
+                </select>
+              </div>
+              <div>
+                <textarea name="message" placeholder="Message / Service Required" rows="4" className="w-full bg-white border border-gray-200 py-4 px-6 rounded-2xl text-sm font-normal outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"></textarea>
               </div>
               <button type="submit" className="w-full bg-primary text-white py-4 rounded-2xl text-sm font-normal shadow-lg shadow-primary/20 active:scale-95 transition-all">
                 Send Enquiry
               </button>
             </form>
           </div>
+
         </div>
       </div>
       <StickyBottomBar />
