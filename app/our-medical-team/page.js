@@ -115,11 +115,14 @@ export default function MedicalTeamPage() {
             {filteredTeam.map((member) => (
               <div 
                 key={member._id || member.id} 
-                className="bg-white rounded-[32px] p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group active:scale-[0.99]"
+                onClick={() => {
+                  if (member.slug) window.location.href = `/doctor/${member.slug}`;
+                }}
+                className="bg-white rounded-[32px] p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group active:scale-[0.99] cursor-pointer"
               >
-                <Link href={member.slug ? `/doctor/${member.slug}` : "#"} className="flex items-center gap-4 mb-5">
+                <div className="flex items-center gap-4 mb-5">
                   <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-gray-100 shrink-0 shadow-inner">
-                    <Image src={member.image} alt={member.name} fill sizes="80px" className="object-cover" />
+                    <Image src={member.image} alt={member.name} fill sizes="80px" className="object-cover transition-transform duration-500 group-hover:scale-110" />
                     {member.isVerified !== false && (
                       <div className="absolute top-1 right-1 bg-white rounded-full p-1 shadow-sm">
                         <CheckCircle2 className="w-3.5 h-3.5 text-primary fill-primary/10" />
@@ -146,7 +149,7 @@ export default function MedicalTeamPage() {
                       <Clock className="w-3 h-3" /> {member.experience} Experience
                     </div>
                   </div>
-                </Link>
+                </div>
 
 
                 <div className="bg-gray-50 rounded-2xl p-4 mb-5 flex-1">
@@ -165,7 +168,7 @@ export default function MedicalTeamPage() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
                   <Link 
                     href={member.slug ? `/doctor/${member.slug}` : "/book"}
                     className="flex items-center justify-center gap-2 py-3.5 bg-primary text-white rounded-2xl text-xs font-normal shadow-lg shadow-primary/10 hover:bg-primary-dark transition active:scale-95"
@@ -174,6 +177,8 @@ export default function MedicalTeamPage() {
                   </Link>
                   <a 
                     href={`https://wa.me/918874744756`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="flex items-center justify-center gap-2 py-3.5 bg-white border border-gray-100 text-gray-700 rounded-2xl text-xs font-normal hover:bg-gray-50 transition active:bg-gray-100"
                   >
                     <MessageSquare className="w-4 h-4 text-green-500" /> WhatsApp Enquiry
@@ -182,6 +187,7 @@ export default function MedicalTeamPage() {
               </div>
             ))}
           </div>
+
         )}
 
         {!loading && filteredTeam.length === 0 && (

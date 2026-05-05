@@ -7,6 +7,7 @@ export default function AdminCategories() {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(null);
   const [formData, setFormData] = useState({ name: '', description: '' });
 
   const fetchData = async () => {
@@ -30,20 +31,40 @@ export default function AdminCategories() {
     setIsSubmitting(true);
     try {
       const slug = formData.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
-      const res = await fetch('/api/categories', {
-        method: 'POST',
+      const url = editingCategory ? `/api/categories/${editingCategory._id}` : '/api/categories';
+      const method = editingCategory ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...formData, slug })
       });
       if (res.ok) {
         setShowModal(false);
+        setEditingCategory(null);
         fetchData();
         setFormData({ name: '', description: '' });
       }
     } catch (e) {
-      alert("Error adding category");
+      alert("Error saving category");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleEdit = (cat) => {
+    setEditingCategory(cat);
+    setFormData({ name: cat.name, description: cat.description || '' });
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this category?")) return;
+    try {
+      const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
+      if (res.ok) fetchData();
+    } catch (e) {
+      alert("Error deleting category");
     }
   };
 
@@ -54,7 +75,11 @@ export default function AdminCategories() {
           <Tags className="w-4 h-4" /> Category List
         </h3>
         <button 
-          onClick={() => setShowModal(true)}
+          onClick={() => {
+            setEditingCategory(null);
+            setFormData({ name: '', description: '' });
+            setShowModal(true);
+          }}
           className="bg-primary text-white px-5 py-2.5 rounded-xl text-sm font-normal flex items-center gap-2 hover:bg-primary-dark transition shadow-lg shadow-primary/20"
         >
           <Plus className="w-4 h-4" /> New Category
@@ -79,10 +104,16 @@ export default function AdminCategories() {
                 <code className="text-[10px] bg-gray-50 text-gray-400 px-2 py-1 rounded mt-4 inline-block">slug: {cat.slug}</code>
               </div>
               <div className="mt-6 flex justify-end gap-2 border-t border-gray-50 pt-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button className="p-2 text-gray-400 hover:text-primary hover:bg-primary-light rounded-lg">
+                <button 
+                  onClick={() => handleEdit(cat)}
+                  className="p-2 text-gray-400 hover:text-primary hover:bg-primary-light rounded-lg"
+                >
                   <Edit2 className="w-4 h-4" />
                 </button>
-                <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
+                <button 
+                  onClick={() => handleDelete(cat._id)}
+                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
+                >
                   <Trash2 className="w-4 h-4" />
                 </button>
               </div>
@@ -95,7 +126,7 @@ export default function AdminCategories() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="bg-white rounded-[32px] w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="px-8 py-6 bg-primary text-white flex justify-between items-center">
-              <h3 className="text-xl font-normal tracking-tight">Create Category</h3>
+              <h3 className="text-xl font-normal tracking-tight">{editingCategory ? 'Edit Category' : 'Create Category'}</h3>
               <button onClick={() => setShowModal(false)} className="p-2 hover:bg-white/20 rounded-full transition-colors">
                 <X className="w-5 h-5" />
               </button>
@@ -136,7 +167,7 @@ export default function AdminCategories() {
                   className="flex-1 px-6 py-4 bg-primary text-white rounded-2xl text-sm font-normal hover:bg-primary-dark transition shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
-                  Create Category
+                  {editingCategory ? 'Update Category' : 'Create Category'}
                 </button>
               </div>
             </form>

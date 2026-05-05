@@ -40,6 +40,7 @@ import {
   ShieldCheck,
   HeartPulse,
   Image as ImageIcon,
+  Loader2,
 } from "lucide-react";
 import Navbar from "@/components/Header";
 import FAQSection from "@/components/FAQSection";
@@ -1891,6 +1892,38 @@ function MeetOurExperts({ slug }) {
 
 // ==================== AMBULANCE PAGE ====================
 function AmbulancePage() {
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const ICON_MAP = {
+    Ambulance,
+    Activity,
+    Bed,
+    Shield,
+    Monitor,
+    Stethoscope,
+    Heart,
+    Syringe,
+    TestTube
+  };
+
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const res = await fetch('/api/service-packages?type=ambulance');
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setPackages(data);
+        }
+      } catch (e) {
+        console.error("Failed to fetch ambulance packages:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPackages();
+  }, []);
+
   return (
     <main className="min-h-screen bg-white ">
       <Navbar />
@@ -1918,159 +1951,80 @@ function AmbulancePage() {
 
       {/* Pricing Cards */}
       <section className="px-4 py-8 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-          
-          {/* Card 1 */}
-          <div className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-            {/* Header */}
-            <div className="p-3.5 flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 text-primary group-hover:scale-105 transition-transform">
-                <Ambulance className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-[15px] font-normal text-black tracking-tight leading-tight">Normal Ambulance</h3>
-                <div className="text-[11px] text-gray-500 font-normal">Standard emergency transport</div>
-              </div>
-            </div>
-            
-            {/* Image Box */}
-            <div className="w-full h-64 relative bg-gray-50 overflow-hidden border-y border-gray-100/50">
-              <img src="/images/services/basic_ambulance.png" alt="Normal Ambulance" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
-              <div className="absolute top-2 right-2 bg-red-50/95 backdrop-blur-sm text-red-600 text-[9px] font-normal px-2 py-1 rounded-md uppercase tracking-wider shadow-sm">
-                Most Used
-              </div>
-              <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1.5">
-                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-normal px-2 py-1 rounded-md shadow-sm">Stretcher</span>
-                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-normal px-2 py-1 rounded-md shadow-sm">First Aid</span>
-                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-normal px-2 py-1 rounded-md shadow-sm">Trained Driver</span>
-              </div>
-            </div>
-
-            {/* Pricing Footer */}
-            <div className="p-3.5 flex items-center justify-between bg-white mt-auto">
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[18px] font-normal text-black tracking-tight leading-none">₹1,199</span>
-                  <span className="text-gray-400 line-through text-[12px]">₹1,499</span>
-                  <span className="bg-green-50 text-primary border border-primary/20 text-[9px] font-normal px-1.5 py-0.5 rounded uppercase tracking-wide">20% OFF</span>
-                </div>
-                <div className="text-[10px] text-gray-500 mt-1">Base (5km) • After 10km: <span className="font-normal text-gray-700">₹18/km</span></div>
-              </div>
-              <a href={`tel:${phone}`} className="bg-primary text-white h-10 px-5 rounded-xl flex justify-center items-center text-[13px] font-normal hover:bg-primary-dark transition-all active:scale-95 shadow-[0_2px_10px_0_rgba(15,157,88,0.2)] hover:shadow-[0_4px_14px_0_rgba(15,157,88,0.3)]">
-                Book
-              </a>
-            </div>
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {packages.map((pkg) => {
+              const Icon = ICON_MAP[pkg.icon] || Ambulance;
+              const isIcu = pkg.title?.toLowerCase().includes('icu');
+              
+              return (
+                <div key={pkg._id} className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+                  {/* Header */}
+                  <div className="p-3.5 flex items-center gap-3">
+                    <div className={`w-10 h-10 ${isIcu ? 'bg-primary/5' : 'bg-primary/10'} rounded-xl flex items-center justify-center shrink-0 text-primary group-hover:scale-105 transition-transform`}>
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-[15px] font-normal text-black tracking-tight leading-tight">{pkg.title}</h3>
+                      <div className="text-[11px] text-gray-500 font-normal">{pkg.description}</div>
+                    </div>
+                  </div>
+                  
+                  {/* Image Box */}
+                  <div className="w-full h-64 relative bg-gray-50 overflow-hidden border-y border-gray-100/50">
+                    <img 
+                      src={pkg.imageFileId ? `/api/images/${pkg.imageFileId}` : pkg.image} 
+                      alt={pkg.title} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
+                    />
+                    {pkg.badge && (
+                      <div className="absolute top-2 right-2 bg-red-50/95 backdrop-blur-sm text-red-600 text-[9px] font-normal px-2 py-1 rounded-md uppercase tracking-wider shadow-sm">
+                        {pkg.badge}
+                      </div>
+                    )}
+                    <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1.5">
+                      {pkg.features?.map((feature, i) => (
+                        <span key={i} className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-normal px-2 py-1 rounded-md shadow-sm">
+                          {feature}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
 
-          {/* Card 2 */}
-          <div className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-            <div className="p-3.5 flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center shrink-0 text-primary group-hover:scale-105 transition-transform">
-                <Activity className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-[15px] font-normal text-black tracking-tight leading-tight">Oxygen Ambulance</h3>
-                <div className="text-[11px] text-gray-500 font-normal">With oxygen cylinder support</div>
-              </div>
-            </div>
-            
-            <div className="w-full h-64 relative bg-gray-50 overflow-hidden border-y border-gray-100/50">
-              <img src="/images/services/oxygen_ambulance.png" alt="Oxygen Ambulance" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
-              <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1.5">
-                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-normal px-2 py-1 rounded-md shadow-sm">O2 Cylinder</span>
-                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-normal px-2 py-1 rounded-md shadow-sm">Oximeter</span>
-                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-normal px-2 py-1 rounded-md shadow-sm">Attendant</span>
-              </div>
-            </div>
-
-            <div className="p-3.5 flex items-center justify-between bg-white mt-auto">
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[18px] font-normal text-black tracking-tight leading-none">₹1,699</span>
-                  <span className="text-gray-400 line-through text-[12px]">₹1,999</span>
-                  <span className="bg-green-50 text-primary border border-primary/20 text-[9px] font-normal px-1.5 py-0.5 rounded uppercase tracking-wide">15% OFF</span>
+                  {/* Pricing Footer */}
+                  <div className="p-3.5 flex items-center justify-between bg-white mt-auto">
+                    <div>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className={`text-[18px] font-normal ${isIcu ? 'text-primary' : 'text-black'} tracking-tight leading-none`}>₹{pkg.price?.toLocaleString()}</span>
+                        {pkg.originalPrice && <span className="text-gray-400 line-through text-[12px]">₹{pkg.originalPrice?.toLocaleString()}</span>}
+                        {pkg.discount && <span className="bg-green-50 text-primary border border-primary/20 text-[9px] font-normal px-1.5 py-0.5 rounded uppercase tracking-wide">{pkg.discount}</span>}
+                      </div>
+                      <div className="text-[10px] text-gray-500 mt-1">
+                        Base ({pkg.baseKm}km) 
+                        {pkg.originalPrice && ` • 5-10km: ₹${pkg.originalPrice.toLocaleString()}`} 
+                        • After 10km: <span className="font-normal text-gray-700">₹{pkg.pricePerKm || '20'}/km</span>
+                      </div>
+                    </div>
+                    <a 
+                      href={`tel:${phone}`} 
+                      className={`h-10 px-5 rounded-xl flex justify-center items-center text-[13px] font-normal transition-all active:scale-95 ${
+                        isIcu 
+                        ? 'bg-primary/10 text-primary hover:bg-primary hover:text-white' 
+                        : 'bg-primary text-white hover:bg-primary-dark shadow-[0_2px_10px_0_rgba(15,157,88,0.2)] hover:shadow-[0_4px_144px_0_rgba(15,157,88,0.3)]'
+                      }`}
+                    >
+                      Book
+                    </a>
+                  </div>
                 </div>
-                <div className="text-[10px] text-gray-500 mt-1">Base (5km) • After 10km: <span className="font-normal text-gray-700">₹22/km</span></div>
-              </div>
-              <a href={`tel:${phone}`} className="bg-primary/10 text-primary h-10 px-5 rounded-xl flex justify-center items-center text-[13px] font-normal hover:bg-primary hover:text-white transition-all active:scale-95">
-                Book
-              </a>
-            </div>
+              );
+            })}
           </div>
-
-          {/* Card 3 */}
-          <div className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-            <div className="p-3.5 flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center shrink-0 text-primary group-hover:scale-105 transition-transform">
-                <Monitor className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-[15px] font-normal text-black tracking-tight leading-tight">ICU Ambulance</h3>
-                <div className="text-[11px] text-gray-500 font-normal">Advanced life support systems</div>
-              </div>
-            </div>
-            
-            <div className="w-full h-64 relative bg-gray-50 overflow-hidden border-y border-gray-100/50">
-              <img src="/images/services/icu_ambulance.png" alt="ICU Ambulance" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
-              <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1.5">
-                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-normal px-2 py-1 rounded-md shadow-sm">Ventilator</span>
-                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-normal px-2 py-1 rounded-md shadow-sm">Monitor</span>
-                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-normal px-2 py-1 rounded-md shadow-sm">Medical Staff</span>
-              </div>
-            </div>
-
-            <div className="p-3.5 flex items-center justify-between bg-white mt-auto">
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[18px] font-normal text-primary leading-none tracking-tight">₹4,999</span>
-                  <span className="text-gray-400 line-through text-[12px]">₹6,999</span>
-                  <span className="bg-green-50 text-primary border border-primary/20 text-[9px] font-normal px-1.5 py-0.5 rounded uppercase tracking-wide">28% OFF</span>
-                </div>
-                <div className="text-[10px] text-gray-500 mt-1">Base (5km) • After 10km: <span className="font-normal text-gray-700">₹30/km</span></div>
-              </div>
-              <a href={`tel:${phone}`} className="bg-primary/10 text-primary h-10 px-5 rounded-xl flex justify-center items-center text-[13px] font-normal hover:bg-primary hover:text-white transition-all active:scale-95">
-                Book
-              </a>
-            </div>
-          </div>
-
-          {/* Card 4 */}
-          <div className="group relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-md transition-all duration-300">
-            <div className="p-3.5 flex items-center gap-3">
-              <div className="w-10 h-10 bg-primary/5 rounded-xl flex items-center justify-center shrink-0 text-primary group-hover:scale-105 transition-transform">
-                <Shield className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-[15px] font-normal text-black tracking-tight leading-tight">Dead Body</h3>
-                <div className="text-[11px] text-gray-500 font-normal">Respectful mortuary transport</div>
-              </div>
-            </div>
-            
-            <div className="w-full h-64 relative bg-gray-50 overflow-hidden border-y border-gray-100/50">
-              <img src="/images/services/mortuary_ambulance.png" alt="Mortuary Ambulance" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" />
-              <div className="absolute bottom-2 left-2 right-2 flex flex-wrap gap-1.5">
-                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-normal px-2 py-1 rounded-md shadow-sm">Freezer Box</span>
-                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-normal px-2 py-1 rounded-md shadow-sm">Safe Handling</span>
-                <span className="bg-white/95 backdrop-blur-sm text-gray-800 text-[10px] font-normal px-2 py-1 rounded-md shadow-sm">Doorstep</span>
-              </div>
-            </div>
-
-            <div className="p-3.5 flex items-center justify-between bg-white mt-auto">
-              <div>
-                <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-[18px] font-normal text-black tracking-tight leading-none">₹1,799</span>
-                  <span className="text-gray-400 line-through text-[12px]">₹2,499</span>
-                  <span className="bg-green-50 text-primary border border-primary/20 text-[9px] font-normal px-1.5 py-0.5 rounded uppercase tracking-wide">28% OFF</span>
-                </div>
-                <div className="text-[10px] text-gray-500 mt-1">Base (5km) • After 10km: <span className="font-normal text-gray-700">₹20/km</span></div>
-              </div>
-              <a href={`tel:${phone}`} className="bg-primary/10 text-primary h-10 px-5 rounded-xl flex justify-center items-center text-[13px] font-normal hover:bg-primary hover:text-white transition-all active:scale-95">
-                Book
-              </a>
-            </div>
-          </div>
-
-        </div>
+        )}
 
         {/* Extra Charges */}
         <div className="mt-10 bg-gray-50 rounded-2xl p-6 border border-gray-100 max-w-4xl mx-auto">

@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Plus, Trash2, MapPin, Star, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Plus, Trash2, MapPin, Star, Image as ImageIcon, Loader2, Edit } from "lucide-react";
 import Navbar from "@/components/Header";
 
 export default function AdminPhysioCenters() {
   const [centers, setCenters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState(null);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -55,12 +56,16 @@ export default function AdminPhysioCenters() {
     if (image) data.append("image", image);
 
     try {
-      const res = await fetch("/api/centers", {
-        method: "POST",
+      const url = editingId ? `/api/centers/${editingId}` : "/api/centers";
+      const method = editingId ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         body: data,
       });
       if (res.ok) {
         setIsAdding(false);
+        setEditingId(null);
         fetchCenters();
         // Reset form
         setFormData({
@@ -79,6 +84,32 @@ export default function AdminPhysioCenters() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEdit = (center) => {
+    setEditingId(center._id);
+    setFormData({
+      name: center.name,
+      subtitle: center.subtitle || "",
+      location: center.location || "",
+      rating: center.rating || "5.0",
+      experience: center.experience || "",
+      features: center.features || [],
+      treatments: center.treatments || [],
+      numbers: center.numbers || [],
+    });
+    setIsAdding(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this center?")) return;
+    try {
+      const res = await fetch(`/api/centers/${id}`, { method: 'DELETE' });
+      if (res.ok) fetchCenters();
+    } catch (e) {
+      alert("Error deleting center");
     }
   };
 
@@ -107,7 +138,25 @@ export default function AdminPhysioCenters() {
             <p className="text-gray-500 mt-1">Manage your physiotherapy network</p>
           </div>
           <button 
-            onClick={() => setIsAdding(!isAdding)}
+            onClick={() => {
+              if (isAdding) {
+                setIsAdding(false);
+                setEditingId(null);
+                setFormData({
+                  name: "Dr Jhatka Medicare Physiotherapy Center",
+                  subtitle: "",
+                  location: "",
+                  rating: "5.0",
+                  experience: "",
+                  features: ["Certified Physiotherapist", "Background Verified", "Advance physiotherapy Equipment"],
+                  treatments: [],
+                  numbers: ["8874744756", "9026365448"],
+                });
+                setImage(null);
+              } else {
+                setIsAdding(true);
+              }
+            }}
             className="bg-emerald-600 text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 hover:bg-emerald-700 transition shadow-lg"
           >
             {isAdding ? "Cancel" : <><Plus className="w-5 h-5" /> Add New Center</>}
@@ -116,7 +165,7 @@ export default function AdminPhysioCenters() {
 
         {isAdding && (
           <div className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-xl mb-12">
-            <h2 className="text-xl font-bold mb-6">Add New Physiotherapy Center</h2>
+            <h2 className="text-xl font-bold mb-6">{editingId ? "Edit Physiotherapy Center" : "Add New Physiotherapy Center"}</h2>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
@@ -234,7 +283,7 @@ export default function AdminPhysioCenters() {
                     disabled={loading}
                     className="w-full bg-emerald-600 text-white py-4 rounded-[20px] font-bold shadow-xl shadow-emerald-200 hover:bg-emerald-700 transition active:scale-95 flex items-center justify-center gap-2"
                   >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save Center & Publish"}
+                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (editingId ? "Update Center & Save" : "Save Center & Publish")}
                   </button>
                 </div>
               </div>
@@ -264,9 +313,20 @@ export default function AdminPhysioCenters() {
                 <MapPin className="w-3 h-3 text-gray-400 shrink-0 mt-0.5" />
                 <p className="text-[10px] text-gray-500 line-clamp-2">{center.location}</p>
               </div>
-              <button className="mt-auto w-full py-2.5 rounded-xl border-2 border-red-50 text-red-500 text-[11px] font-bold hover:bg-red-50 transition flex items-center justify-center gap-2">
-                <Trash2 className="w-3.5 h-3.5" /> Delete Center
-              </button>
+              <div className="mt-auto grid grid-cols-2 gap-2">
+                <button 
+                  onClick={() => handleEdit(center)}
+                  className="w-full py-2.5 rounded-xl border-2 border-emerald-50 text-emerald-600 text-[11px] font-bold hover:bg-emerald-50 transition flex items-center justify-center gap-2"
+                >
+                  <Edit className="w-3.5 h-3.5" /> Edit
+                </button>
+                <button 
+                  onClick={() => handleDelete(center._id)}
+                  className="w-full py-2.5 rounded-xl border-2 border-red-50 text-red-500 text-[11px] font-bold hover:bg-red-50 transition flex items-center justify-center gap-2"
+                >
+                  <Trash2 className="w-3.5 h-3.5" /> Delete
+                </button>
+              </div>
             </div>
           ))}
         </div>

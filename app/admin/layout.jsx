@@ -10,16 +10,23 @@ import {
   Tags,
   ChevronLeft,
   Settings,
-  MapPin
+  MapPin,
+  Truck,
+  Activity
 } from 'lucide-react';
 
 const sidebarLinks = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { label: 'Medical Staff', href: '/admin/doctors', icon: Users },
+  { label: 'Ambulance Hub', href: '/admin/ambulances', icon: Truck },
+  { label: 'Service Cards', href: '/admin/service-cards', icon: Activity },
+
+
   { label: 'Physio Centers', href: '/admin/physio-centers', icon: MapPin },
   { label: 'Categories', href: '/admin/categories', icon: Tags },
   { label: 'Appointments', href: '/admin/appointments', icon: CalendarCheck },
 ];
+
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();

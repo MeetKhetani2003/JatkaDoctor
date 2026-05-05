@@ -2,12 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { User, ChevronRight, Star, Clock, Phone, Loader2, MapPin } from 'lucide-react';
 import { medicalTeam as staticTeam } from '@/lib/medicalTeam';
 
 export default function MedicalTeamSection() {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -27,6 +29,14 @@ export default function MedicalTeamSection() {
     };
     fetchDoctors();
   }, []);
+
+  const handleCardClick = (slug) => {
+    if (slug) {
+      router.push(`/doctor/${slug}`);
+    } else {
+      router.push('/our-medical-team');
+    }
+  };
 
   return (
     <section className="py-16 px-5 bg-gray-50">
@@ -51,7 +61,8 @@ export default function MedicalTeamSection() {
             {doctors.map((member) => (
               <div 
                 key={member._id || member.id} 
-                className="min-w-[280px] bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col group active:scale-[0.98] transition-transform duration-200"
+                onClick={() => handleCardClick(member.slug)}
+                className="min-w-[280px] bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col group active:scale-[0.98] transition-transform duration-200 cursor-pointer"
               >
                 <div className="relative h-48 w-full bg-gray-100">
                   <Image 
@@ -59,7 +70,7 @@ export default function MedicalTeamSection() {
                     alt={member.name} 
                     fill 
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 25vw, 20vw"
-                    className="object-cover"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                   <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] text-primary font-normal flex items-center gap-1 shadow-sm border border-primary/10">
                     <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span>
@@ -68,7 +79,7 @@ export default function MedicalTeamSection() {
                 </div>
                 <div className="p-5 flex flex-col flex-1">
                   <div className="flex justify-between items-start mb-1">
-                    <h3 className="text-lg font-normal text-black leading-tight truncate mr-2">{member.name}</h3>
+                    <h3 className="text-lg font-normal text-black leading-tight truncate mr-2 group-hover:text-primary transition-colors">{member.name}</h3>
                     <div className="flex items-center gap-1 text-yellow-500 shrink-0">
                       <Star className="w-3 h-3 fill-current" />
                       <span className="text-[10px] text-gray-400 font-normal">{member.rating || '4.9'}</span>
@@ -97,7 +108,7 @@ export default function MedicalTeamSection() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 mt-4">
+                  <div className="grid grid-cols-2 gap-2 mt-4" onClick={(e) => e.stopPropagation()}>
                     <Link 
                       href={member.slug ? `/doctor/${member.slug}` : "/our-medical-team"}
                       className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-gray-50 text-gray-700 text-xs font-normal border border-gray-100 hover:bg-gray-100 transition active:bg-gray-200"
@@ -130,3 +141,4 @@ export default function MedicalTeamSection() {
     </section>
   );
 }
+
