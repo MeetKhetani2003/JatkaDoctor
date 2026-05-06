@@ -64,7 +64,7 @@ const services = [
   {
     title: "Lab Test at Home",
     icon: TestTube,
-    link: "/lab-test",
+    link: "/services/lab-test",
     desc: "NABL Certified labs",
   },
   {
@@ -79,7 +79,7 @@ const navLinks = [
   { label: "Home", href: "/" },
   { label: "Services", href: "/services", hasSubmenu: true },
   { label: "Our Team", href: "/our-medical-team" },
-  { label: "Lab Tests", href: "/lab-test" },
+  { label: "Lab Tests", href: "/services/lab-test" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
@@ -199,7 +199,7 @@ function ServicesMegaMenu({ open }) {
                 </p>
               </div>
               <a
-                href="tel:+911800000000"
+                href="tel:+918874744756"
                 className="flex items-center gap-1.5 bg-white text-[11px] font-normal px-3.5 py-2 rounded-xl hover:bg-green-50 transition-colors"
                 style={{ color: PRIMARY }}
               >
@@ -432,11 +432,11 @@ function MobileDrawer({ open, onClose }) {
               style={{ background: "#FAFAFA" }}
             >
               <a
-                href="tel:+911800000000"
-                className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-white text-[14px] font-normal tracking-tight active:scale-[0.97] transition-transform"
+                href="tel:+918874744756"
+                className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-white text-[14px] font-normal tracking-tight active:scale-[0.97] transition-transform animate-pulse-red"
                 style={{
-                  background: `linear-gradient(135deg, ${PRIMARY}, ${PRIMARY_DARK})`,
-                  boxShadow: `0 6px 20px rgba(15,157,88,0.28)`,
+                  background: `linear-gradient(135deg, #ef4444, #b91c1c)`,
+                  boxShadow: `0 6px 20px rgba(239,68,68,0.28)`,
                 }}
               >
                 <Phone className="w-4 h-4" />
@@ -552,25 +552,25 @@ export default function Navbar() {
             {/* Desktop CTAs */}
             <div className="hidden lg:flex items-center gap-2.5">
               <a
-                href="tel:+911800000000"
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-normal border transition-colors duration-200"
+                href="tel:+918874744756"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13px] font-normal border transition-all duration-200 animate-pulse-red"
                 style={{
-                  color: PRIMARY,
-                  borderColor: PRIMARY,
+                  color: "#ef4444",
+                  borderColor: "#ef4444",
                   background: "white",
                 }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = PRIMARY_LIGHT)
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "white")
-                }
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = "#fee2e2";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = "white";
+                }}
               >
                 <Phone className="w-3.5 h-3.5" />
-                1800-000-000
+                +91 8874744756
               </a>
               <Link
-                href="/book"
+                href="/services/lab-test"
                 className="px-5 py-2 rounded-xl text-[13px] font-normal text-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
                 style={{
                   background: `linear-gradient(135deg, ${PRIMARY}, ${PRIMARY_DARK})`,
@@ -584,7 +584,7 @@ export default function Navbar() {
             {/* Mobile right controls */}
             <div className="flex lg:hidden items-center gap-2">
               <a
-                href="tel:+911800000000"
+                href="tel:+918874744756"
                 className="w-9 h-9 rounded-xl flex items-center justify-center border"
                 style={{
                   borderColor: PRIMARY,

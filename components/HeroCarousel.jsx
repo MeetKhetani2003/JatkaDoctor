@@ -72,7 +72,7 @@ export default function HeroCarousel() {
         <div className="flex gap-3">
           <a
             href="tel:8707790677"
-            className="bg-emerald-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 active:scale-95"
+            className="bg-red-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 active:scale-95 animate-pulse-red shadow-lg"
           >
             <Phone className="w-4 h-4" />
             Call

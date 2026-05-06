@@ -52,7 +52,7 @@ export default function EmergencyCTA() {
           <div className="flex gap-3 mt-5 sm:mt-0">
             <a
               href={`tel:${phone}`}
-              className="flex-1 sm:flex-none bg-white text-primary px-6 py-3.5 rounded-xl font-bold shadow-lg active:scale-95 transition flex items-center justify-center gap-2 hover:bg-gray-50"
+              className="flex-1 sm:flex-none bg-white text-red-600 px-6 py-3.5 rounded-xl font-bold shadow-lg active:scale-95 transition flex items-center justify-center gap-2 hover:bg-red-50 animate-pulse-red"
             >
               <Phone className="w-5 h-5" />
               Call Now

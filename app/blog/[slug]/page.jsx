@@ -4,6 +4,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { ChevronLeft, Clock, Share2, Phone, MessageCircle } from "lucide-react";
 import Link from "next/link";
+import StickyBottomBar from "@/components/StickyBottomBar";
 
 const phone = "8707790677";
 
@@ -122,7 +123,7 @@ export default function BlogPostPage() {
           <div className="flex gap-3 mt-4">
             <a
               href={`tel:${phone}`}
-              className="flex-1 bg-primary text-white py-3 rounded-xl text-sm font-bold text-center active:scale-95 transition"
+              className="flex-1 bg-red-600 text-white py-3 rounded-xl text-sm font-bold text-center active:scale-95 transition animate-pulse-red shadow-lg"
             >
               Call Now
             </a>
@@ -136,24 +137,7 @@ export default function BlogPostPage() {
         </div>
       </article>
 
-      {/* Sticky Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-primary sm:hidden">
-        <div className="flex items-center">
-          <a
-            href={`tel:${phone}`}
-            className="flex-1 flex items-center justify-center gap-2 text-white py-3.5 font-bold text-sm"
-          >
-            <Phone className="w-5 h-5" /> Call Now
-          </a>
-          <div className="w-px h-8 bg-white/20" />
-          <a
-            href={`https://wa.me/91${phone}`}
-            className="flex-1 flex items-center justify-center gap-2 text-white py-3.5 font-bold text-sm"
-          >
-            <MessageCircle className="w-5 h-5" /> WhatsApp
-          </a>
-        </div>
-      </div>
+      <StickyBottomBar phone={phone} />
     </main>
   );
 }

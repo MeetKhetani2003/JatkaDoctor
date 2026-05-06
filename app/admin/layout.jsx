@@ -1,32 +1,30 @@
 "use client";
-import React from 'react';
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Users, 
-  UserCog, 
-  CalendarCheck, 
+import React from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  Users,
+  UserCog,
+  CalendarCheck,
   Tags,
   ChevronLeft,
   Settings,
   MapPin,
   Truck,
-  Activity
-} from 'lucide-react';
+  Activity,
+} from "lucide-react";
 
 const sidebarLinks = [
-  { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-  { label: 'Medical Staff', href: '/admin/doctors', icon: Users },
-  { label: 'Ambulance Hub', href: '/admin/ambulances', icon: Truck },
-  { label: 'Service Cards', href: '/admin/service-cards', icon: Activity },
+  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Medical Staff", href: "/admin/doctors", icon: Users },
+  // { label: 'Ambulance Hub', href: '/admin/ambulances', icon: Truck },
+  { label: "Ambulance service", href: "/admin/service-cards", icon: Activity },
 
-
-  { label: 'Physio Centers', href: '/admin/physio-centers', icon: MapPin },
-  { label: 'Categories', href: '/admin/categories', icon: Tags },
-  { label: 'Appointments', href: '/admin/appointments', icon: CalendarCheck },
+  { label: "Physio Centers", href: "/admin/physio-centers", icon: MapPin },
+  { label: "Categories", href: "/admin/categories", icon: Tags },
+  { label: "Appointments", href: "/admin/appointments", icon: CalendarCheck },
 ];
-
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();
@@ -39,7 +37,9 @@ export default function AdminLayout({ children }) {
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">
             A
           </div>
-          <span className="font-normal text-black tracking-tight text-lg">Dr Jhatka Admin</span>
+          <span className="font-normal text-black tracking-tight text-lg">
+            Dr Jhatka Admin
+          </span>
         </div>
 
         <nav className="flex-1 p-4 space-y-1">
@@ -51,9 +51,9 @@ export default function AdminLayout({ children }) {
                 key={link.href}
                 href={link.href}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-normal transition-all ${
-                  isActive 
-                    ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-[1.02]' 
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-primary'
+                  isActive
+                    ? "bg-primary text-white shadow-lg shadow-primary/30 scale-[1.02]"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-primary"
                 }`}
               >
                 <Icon className="w-5 h-5" />
@@ -78,7 +78,8 @@ export default function AdminLayout({ children }) {
       <main className="flex-1 flex flex-col min-w-0">
         <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-8 sticky top-0 z-10">
           <h2 className="text-lg font-normal text-black tracking-tight capitalize">
-            {sidebarLinks.find(l => l.href === pathname)?.label || 'Dashboard'}
+            {sidebarLinks.find((l) => l.href === pathname)?.label ||
+              "Dashboard"}
           </h2>
           <div className="flex items-center gap-4">
             <button className="p-2 text-gray-400 hover:text-black transition-colors">
@@ -90,9 +91,7 @@ export default function AdminLayout({ children }) {
           </div>
         </header>
 
-        <div className="p-8 pb-24 md:pb-8">
-          {children}
-        </div>
+        <div className="p-8 pb-24 md:pb-8">{children}</div>
       </main>
 
       {/* Mobile Bottom Navigation */}
@@ -105,21 +104,25 @@ export default function AdminLayout({ children }) {
               key={link.href}
               href={link.href}
               className={`flex flex-col items-center gap-1 p-2 min-w-[64px] transition-all ${
-                isActive ? 'text-primary scale-110' : 'text-gray-400 hover:text-primary/70'
+                isActive
+                  ? "text-primary scale-110"
+                  : "text-gray-400 hover:text-primary/70"
               }`}
             >
-              <div className={`p-1.5 rounded-xl transition-colors ${isActive ? 'bg-primary/10' : 'bg-transparent'}`}>
+              <div
+                className={`p-1.5 rounded-xl transition-colors ${isActive ? "bg-primary/10" : "bg-transparent"}`}
+              >
                 <Icon className="w-5 h-5" />
               </div>
-              <span className={`text-[10px] font-medium transition-all ${isActive ? 'opacity-100' : 'opacity-70'}`}>
-                {link.label.split(' ')[0]}
+              <span
+                className={`text-[10px] font-medium transition-all ${isActive ? "opacity-100" : "opacity-70"}`}
+              >
+                {link.label.split(" ")[0]}
               </span>
             </Link>
           );
         })}
       </nav>
-
-
     </div>
   );
 }

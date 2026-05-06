@@ -169,7 +169,7 @@ export default function AmbulanceNetwork() {
                         href={isAvailable ? `tel:${phone}` : "#"}
                         className={`w-full py-3.5 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-2 ${
                           isAvailable 
-                          ? 'bg-[#0F9D58] text-white hover:bg-[#0B7A44] shadow-md shadow-emerald-500/20' 
+                          ? 'bg-red-600 text-white hover:bg-red-700 shadow-md shadow-red-500/20 animate-pulse-red' 
                           : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                         }`}
                       >

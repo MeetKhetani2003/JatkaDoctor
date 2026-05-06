@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 const phone = "8874744756";
 
-export default function StickyBottomBar() {
+export default function StickyBottomBar({ phone = "8874744756" }) {
   return (
     <motion.div
       initial={{ y: 100 }}
@@ -16,7 +16,7 @@ export default function StickyBottomBar() {
       <div className="flex items-center">
         <a
           href={`tel:${phone}`}
-          className="flex-1 flex items-center justify-center gap-2 text-white py-3.5 font-bold text-sm active:bg-primary-dark transition"
+          className="flex-1 flex items-center justify-center gap-2 text-white py-3.5 font-bold text-sm bg-red-600 animate-pulse-red transition"
         >
           <Phone className="w-5 h-5" />
           <div className="text-left leading-tight">

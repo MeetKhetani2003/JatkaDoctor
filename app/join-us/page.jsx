@@ -16,6 +16,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
+import StickyBottomBar from "@/components/StickyBottomBar";
 
 const phone = "8707790677";
 
@@ -245,31 +246,14 @@ export default function JoinUsPage() {
         <div className="flex justify-center gap-3 mt-3">
           <a
             href={`tel:${phone}`}
-            className="flex items-center gap-2 bg-primary-light text-primary px-4 py-2 rounded-full text-sm font-bold"
+            className="flex items-center gap-2 bg-red-50 text-red-600 px-4 py-2 rounded-full text-sm font-bold animate-pulse-red"
           >
             <Phone className="w-4 h-4" /> {phone}
           </a>
         </div>
       </section>
 
-      {/* Sticky Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-primary sm:hidden">
-        <div className="flex items-center">
-          <a
-            href={`tel:${phone}`}
-            className="flex-1 flex items-center justify-center gap-2 text-white py-3.5 font-bold text-sm"
-          >
-            <Phone className="w-5 h-5" /> Call Now
-          </a>
-          <div className="w-px h-8 bg-white/20" />
-          <a
-            href={`https://wa.me/91${phone}`}
-            className="flex-1 flex items-center justify-center gap-2 text-white py-3.5 font-bold text-sm"
-          >
-            <MessageCircle className="w-5 h-5" /> WhatsApp
-          </a>
-        </div>
-      </div>
+      <StickyBottomBar phone={phone} />
     </main>
   );
 }
