@@ -264,7 +264,6 @@ export default function MedicalTeamPage() {
         )}
       </div>
 
-      <Footer />
       <StickyBottomBar />
     </main>
   );

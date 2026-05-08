@@ -218,16 +218,15 @@ export default function JoinUsPage() {
             </p>
           </div>
 
-          <div className="flex items-start gap-2 pt-2">
+          <div className="flex items-start gap-3 mt-4 mb-2">
             <input
               type="checkbox"
-              id="terms"
-              className="mt-0.5 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+              id="terms-join"
+              className="mt-1 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
               required
             />
-            <label htmlFor="terms" className="text-xs text-gray-500">
-              I confirm all information is accurate and agree to verification by
-              Dr. Jhatka Medicare team.
+            <label htmlFor="terms-join" className="text-[11px] text-gray-500 leading-tight cursor-pointer">
+              I agree to the <Link href="/policies/terms-and-conditions" className="text-primary hover:underline">Terms & Conditions</Link> and <Link href="/policies/partner-registration-policy" className="text-primary hover:underline">Partner Policy</Link>. I understand that my details will be verified by Dr Jhatka Medicare.
             </label>
           </div>
 

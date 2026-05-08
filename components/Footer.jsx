@@ -1,197 +1,259 @@
 "use client";
 
-import { Phone, MessageCircle, Mail, MapPin, Send } from "lucide-react";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
+import { 
+  Phone, 
+  Mail, 
+  MapPin, 
+  Facebook, 
+  Instagram, 
+  Youtube, 
+  Linkedin, 
+  ChevronDown, 
+  ShieldCheck,
+  Clock,
+  Zap,
+  Home,
+  MessageCircle
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-const phone = "8874744756";
+const Footer = () => {
+  const [openSection, setOpenSection] = useState(null);
 
-export default function Footer() {
+  const toggleSection = (section) => {
+    setOpenSection(openSection === section ? null : section);
+  };
+
+  const quickLinks = [
+    { name: "Home", href: "/" },
+    { name: "About Us", href: "/about" },
+    { name: "Services", href: "/services" },
+    { name: "Contact Us", href: "/contact" },
+    { name: "Book Appointment", href: "/book" },
+    { name: "Emergency Support", href: "/contact" },
+    { name: "Partner With Us", href: "/join-us" },
+  ];
+
+  const coreServices = [
+    { name: "Ambulance Service", href: "/services/ambulance-service" },
+    { name: "Physiotherapy", href: "/services/physiotherapy" },
+    { name: "Home Care", href: "/services/home-care" },
+    { name: "ICU at Home", href: "/services/icu-at-home" },
+    { name: "Nursing Care", href: "/services/nursing-care" },
+    { name: "Doctor Visit at Home", href: "/services/doctor-visit-at-home" },
+    { name: "Lab Test", href: "/lab-test" },
+    { name: "Medical Equipment Rental", href: "/services/medical-equipment-rental" },
+  ];
+
+  const policies = [
+    { name: "Privacy Policy", href: "/policies/privacy-policy" },
+    { name: "Terms & Conditions", href: "/policies/terms-and-conditions" },
+    { name: "Refund Policy", href: "/policies/refund-policy" },
+    { name: "Cancellation Policy", href: "/policies/cancellation-policy" },
+    { name: "Ambulance Policy", href: "/policies/ambulance-service-policy" },
+    { name: "Home Care Policy", href: "/policies/home-care-policy" },
+    { name: "Physio Policy", href: "/policies/physiotherapy-service-policy" },
+    { name: "Partner Policy", href: "/policies/partner-registration-policy" },
+    { name: "Doctor Partner", href: "/policies/doctor-partner-policy" },
+    { name: "Clinic Partner", href: "/policies/clinic-partner-policy" },
+    { name: "Ambulance Partner", href: "/policies/ambulance-partner-policy" },
+    { name: "Hospital Partner", href: "/policies/hospital-partner-policy" },
+    { name: "Lab Partner", href: "/policies/lab-partner-policy" },
+    { name: "Physio Partner", href: "/policies/physiotherapist-partner-policy" },
+    { name: "Home Care Partner", href: "/policies/home-care-partner-policy" },
+    { name: "Verification & Approval", href: "/policies/verification-approval-policy" },
+    { name: "Franchise Policy", href: "/policies/franchise-policy" },
+  ];
+
+
+  const joinNetwork = [
+    { name: "Join as Doctor", href: "/doctor-registration" },
+    { name: "Join as Physiotherapist", href: "/physiotherapist-registration" },
+    { name: "Join as Clinic", href: "/clinic-partner" },
+    { name: "Join as Ambulance Partner", href: "/ambulance-partner" },
+    { name: "Join as Home Care Partner", href: "/partner-registration" },
+    { name: "Join as Lab Partner", href: "/lab-partner" },
+    { name: "Join as Hospital Partner", href: "/hospital-partner" },
+  ];
+
+  const trustBadges = [
+    { icon: <Clock size={14} />, text: "24×7 Support" },
+    { icon: <ShieldCheck size={14} />, text: "Verified Partner" },
+    { icon: <Zap size={14} />, text: "Fast Response" },
+    { icon: <Home size={14} />, text: "Home Healthcare" },
+  ];
+
+  const FooterSection = ({ title, links, id }) => (
+    <div className="flex flex-col gap-4">
+      <h3 className="hidden md:block text-white font-semibold text-base mb-2">{title}</h3>
+      <button 
+        onClick={() => toggleSection(id)}
+        className="md:hidden flex items-center justify-between w-full py-3 border-b border-white/10 text-white font-medium text-sm"
+      >
+        <span>{title}</span>
+        <ChevronDown 
+          size={16} 
+          className={`transition-transform duration-300 ${openSection === id ? "rotate-180" : ""}`} 
+        />
+      </button>
+      
+      <AnimatePresence>
+        {(openSection === id || (typeof window !== 'undefined' && window.innerWidth >= 768)) && (
+          <motion.ul 
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="flex flex-col gap-2.5 overflow-hidden md:!h-auto md:!opacity-100"
+          >
+            {links.map((link, idx) => (
+              <li key={idx}>
+                <Link 
+                  href={link.href}
+                  className="text-gray-400 hover:text-[#0F9D58] transition-colors duration-200 text-sm"
+                >
+                  {link.name}
+                </Link>
+              </li>
+            ))}
+          </motion.ul>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+
   return (
-    <footer className="mt-10 bg-primary-soft border-t border-primary/10">
-      {/* TOP CTA STRIP */}
-      <div className="px-4 pt-6 max-w-7xl mx-auto">
-        <div className="rounded-2xl bg-primary p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-center sm:text-left">
-            <p className="text-white font-bold text-lg">
-              Need Immediate Assistance?
+    <footer className="bg-[#111111] bg-gradient-to-b from-[#111111] to-[#0a140f] text-white pt-16 pb-8 px-6 md:px-12">
+      <div className="max-w-7xl mx-auto">
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
+          
+          {/* BRAND COL */}
+          <div className="flex flex-col gap-6 lg:col-span-1">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="relative w-10 h-10 bg-white rounded-lg p-1.5">
+                <Image src="/Dr.Jhatka.png" alt="Logo" fill className="object-contain" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold leading-none tracking-tight">DR JHATKA MEDICARE</h2>
+                <p className="text-[#0F9D58] text-[10px] font-medium mt-1 leading-none uppercase tracking-wider">“Speed, Care & Trust – All in One.”</p>
+              </div>
+            </Link>
+            
+            <p className="text-gray-400 text-sm leading-relaxed">
+              Emergency, Home Healthcare, Physiotherapy, Ambulance & Medical Support Services. We provide quality medical care at your doorstep.
             </p>
-            <p className="text-white/80 text-sm">
-              Ambulance within 10–15 mins • 24/7 Available
-            </p>
+
+            {/* Recognition */}
+            <div className="flex flex-wrap gap-2">
+              <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[9px] font-bold text-gray-400 uppercase">MSME</span>
+              <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[9px] font-bold text-gray-400 uppercase">Startup India</span>
+              <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[9px] font-bold text-gray-400 uppercase">ISO Certified</span>
+            </div>
+
+            {/* Trust Badges */}
+            <div className="grid grid-cols-2 gap-3 pt-2">
+              {trustBadges.map((badge, idx) => (
+                <div key={idx} className="flex items-center gap-2 text-[11px] text-gray-400">
+                  <div className="text-[#0F9D58]">{badge.icon}</div>
+                  <span>{badge.text}</span>
+                </div>
+              ))}
+            </div>
           </div>
 
-          <a
-            href={`tel:${phone}`}
-            className="bg-white text-primary px-6 py-3 rounded-xl text-sm font-bold active:scale-95 transition hover:bg-gray-50 shadow-lg flex items-center gap-2"
-          >
-            <Phone className="w-4 h-4" />
-            Call {phone}
-          </a>
+          {/* QUICK LINKS */}
+          <FooterSection title="Quick Links" links={quickLinks} id="links" />
+
+          {/* CORE SERVICES */}
+          <FooterSection title="Core Services" links={coreServices} id="services" />
+
+
+          {/* CONTACT INFO */}
+          <div className="lg:col-span-1 flex flex-col gap-6">
+            <h3 className="text-white font-semibold text-base mb-2">Connect With Us</h3>
+            
+            <div className="flex flex-col gap-4">
+              <a href="tel:8874744756" className="flex items-center gap-3 text-gray-400 hover:text-[#0F9D58] transition-colors group">
+                <div className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#0F9D58]/10">
+                  <Phone size={16} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase tracking-wider text-gray-500">Call 24/7</span>
+                  <span className="text-sm font-medium text-white">+91 8874744756</span>
+                </div>
+              </a>
+
+              <a href="https://wa.me/918874744756" className="flex items-center gap-3 text-gray-400 hover:text-[#0F9D58] transition-colors group">
+                <div className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#0F9D58]/10">
+                  <MessageCircle size={16} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase tracking-wider text-gray-500">WhatsApp</span>
+                  <span className="text-sm font-medium text-white">Instant Support</span>
+                </div>
+              </a>
+
+              <div className="flex items-center gap-3 text-gray-400">
+                <div className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center">
+                  <Mail size={16} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase tracking-wider text-gray-500">Email</span>
+                  <span className="text-sm font-medium text-white">support@drjhatka.com</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 text-gray-400">
+                <div className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center">
+                  <MapPin size={16} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] uppercase tracking-wider text-gray-500">Location</span>
+                  <span className="text-sm font-medium text-white">Lucknow, Uttar Pradesh</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-4 mt-2">
+              <Link href="#" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#0F9D58] transition-all"><Facebook size={14} /></Link>
+              <Link href="#" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#0F9D58] transition-all"><Instagram size={14} /></Link>
+              <Link href="#" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#0F9D58] transition-all"><Linkedin size={14} /></Link>
+              <Link href="#" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#0F9D58] transition-all"><Youtube size={14} /></Link>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* CONTACT CARD */}
-      <div className="px-4 py-8 max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="bg-white rounded-2xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100"
-        >
-          <div className="flex items-center gap-3 mb-5">
-            <div className="relative w-12 h-12">
-              <Image
-                src="/Dr.Jhatka.png"
-                alt="Dr Jhatka Medicare"
-                fill
-                className="object-contain"
-              />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-gray-900">Get in Touch</h2>
-              <p className="text-sm text-gray-500">We respond within minutes</p>
+        {/* POLICIES & JOIN NETWORK - Horizontal Bar */}
+        <div className="pt-10 border-t border-white/10 grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="flex flex-col gap-4">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-gray-500">Policies & Network</h4>
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
+              {policies.map((p, idx) => (
+                <Link key={idx} href={p.href} className="text-[12px] text-gray-400 hover:text-[#0F9D58] transition-colors">{p.name}</Link>
+              ))}
             </div>
           </div>
-
-          {/* FORM */}
-          <form
-            className="flex flex-col gap-3"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const formData = new FormData(e.target);
-              const data = Object.fromEntries(formData.entries());
-              try {
-                const res = await fetch('/api/appointments', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    patientName: data.name,
-                    phone: data.phone,
-                    category: data.service || 'General Inquiry',
-                    doctor: data.doctor || 'Any Available',
-                    notes: data.message
-                  })
-                });
-                if (res.ok) alert("Request submitted successfully!");
-              } catch (err) { alert("Error submitting request."); }
-            }}
-          >
-            <input
-              name="name"
-              required
-              type="text"
-              placeholder="Your Name"
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-            />
-
-            <input
-              name="phone"
-              required
-              type="tel"
-              placeholder="Phone Number"
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-            />
-
-            <select name="service" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-gray-600">
-              <option value="">Select Service</option>
-              <option>Ambulance Service</option>
-              <option>Doctor at Home</option>
-              <option>ICU at Home</option>
-              <option>Physiotherapy</option>
-              <option>Lab Test</option>
-              <option>Nursing Care</option>
-              <option>Equipment Rental</option>
-            </select>
-
-            <select name="doctor" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-gray-600">
-              <option value="">Select Preferred Doctor (Optional)</option>
-              <option value="Any Available">Any Available Expert</option>
-              <option value="Dr. Jhatka">Dr. Jhatka (Physiotherapist)</option>
-              <option value="Dr. Sharma">Dr. Sharma (General Physician)</option>
-              <option value="Dr. Verma">Dr. Verma (Orthopedic)</option>
-            </select>
-
-            <textarea
-              name="message"
-              placeholder="Your Message"
-              rows={3}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition resize-none"
-            />
-
-            <button
-              type="submit"
-              className="bg-primary text-white py-3.5 rounded-xl font-bold mt-1 active:scale-95 transition hover:bg-primary-dark flex items-center justify-center gap-2"
-            >
-              <Send className="w-4 h-4" />
-              Submit Request
-            </button>
-          </form>
-
-
-          {/* QUICK ACTIONS */}
-          <div className="grid grid-cols-2 gap-3 mt-5">
-            <a
-              href={`tel:${phone}`}
-              className="flex items-center justify-center gap-2 bg-primary-light text-primary py-3 rounded-xl text-sm font-bold active:scale-95 transition hover:bg-primary/10"
-            >
-              <Phone className="w-4 h-4" />
-              Call Now
-            </a>
-
-            <a
-              href={`https://wa.me/91${phone}`}
-              className="flex items-center justify-center gap-2 bg-primary-light text-primary py-3 rounded-xl text-sm font-bold active:scale-95 transition hover:bg-primary/10"
-            >
-              <MessageCircle className="w-4 h-4" />
-              WhatsApp
-            </a>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* FOOTER INFO */}
-      <div className="px-4 pb-8 max-w-7xl mx-auto">
-        <div className="pt-6 border-t border-primary/10">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-gray-600 mb-6">
-            <div className="flex items-center gap-2">
-              <Mail className="w-4 h-4 text-primary" />
-              support@drjhatka.com
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Phone className="w-4 h-4 text-primary" />
-              +91 {phone}
-            </div>
-
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-primary" />
-              Lucknow, Uttar Pradesh
+          <div className="flex flex-col gap-4">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-gray-500">Join Dr Jhatka Network</h4>
+            <div className="flex flex-wrap gap-2">
+              {joinNetwork.map((j, idx) => (
+                <Link key={idx} href={j.href} className="px-3 py-1 bg-white/5 hover:bg-[#0F9D58] rounded text-[11px] font-medium transition-all">{j.name}</Link>
+              ))}
             </div>
           </div>
+        </div>
 
-          {/* MINI NAV */}
-          <div className="flex justify-center sm:justify-between items-center pt-4 border-t border-gray-200">
-            <div className="flex gap-6 text-xs text-gray-500 font-medium">
-              <span className="hover:text-primary cursor-pointer transition">
-                Privacy Policy
-              </span>
-              <span className="hover:text-primary cursor-pointer transition">
-                Terms
-              </span>
-              <span className="hover:text-primary cursor-pointer transition">
-                Support
-              </span>
-            </div>
-          </div>
-
-          {/* COPYRIGHT */}
-          <div className="mt-4 text-xs text-gray-400 text-center">
-            © 2026 Dr. Jhatka Medicare. All rights reserved. | ISO 9001:2015
-            Certified
-          </div>
+        {/* COPYRIGHT */}
+        <div className="mt-16 pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-gray-500 font-medium">
+          <p>© 2026 Dr Jhatka Medicare Pvt Ltd. All Rights Reserved.</p>
+          <p className="uppercase tracking-widest">24×7 Emergency Support • Lucknow</p>
         </div>
       </div>
     </footer>
   );
-}
+};
+
+export default Footer;

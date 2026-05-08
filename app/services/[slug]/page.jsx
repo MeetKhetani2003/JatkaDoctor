@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { motion } from "framer-motion";
+import BookingForm from "@/components/BookingForm";
 import {
   Phone,
   MessageCircle,
@@ -1398,6 +1399,22 @@ const SERVICES_CONFIG = {
       image: "/services/lab-test/hero.png",
     },
   },
+  doctor: {
+    banner: { title: "Doctor Visit at Home" },
+    trustBadge: {
+      title: "Trusted Doctors",
+      points: ["Verified MBBS/MD", "30-60 Min Response", "Home Treatment"],
+      image: "/images/services/doctor.png"
+    }
+  },
+  icu: {
+    banner: { title: "ICU Setup at Home" },
+    trustBadge: {
+      title: "Critical Care Support",
+      points: ["24/7 Monitoring", "Advanced Equipment", "Expert Staff"],
+      image: "/images/services/icu_hero.png"
+    }
+  }
 };
 
 // ==================== COMPONENTS ====================
@@ -1714,223 +1731,6 @@ function ServiceAreas({ areas, detailedAreas }) {
             )}
           </div>
         </div>
-      </div>
-    </section>
-  );
-}
-
-function BookingForm({ config, slug }) {
-  const [formData, setFormData] = useState({
-    patientName: "",
-    phone: "",
-    email: "",
-    category: config.banner?.title || slug,
-    doctor: "",
-    date: "",
-    time: "Morning",
-    notes: `Interested in ${slug} service.`,
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [doctors, setDoctors] = useState([]);
-
-  useEffect(() => {
-    const fetchDoctors = async () => {
-      try {
-        const res = await fetch("/api/doctors");
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          // Filter doctors by slug/category mapping
-          const mapping = {
-            ambulance: ["emergency", "critical", "trauma"],
-            physiotherapy: ["physio", "rehab", "ortho", "exercise"],
-            icu: ["icu", "critical", "ventilator", "monitor"],
-            "home-care": ["caregiver", "attendant", "home"],
-            nursing: ["nurse", "nursing", "medical assistant"],
-            doctor: ["general", "physician", "specialist"],
-            "lab-test": ["lab", "pathology", "test", "technician"],
-            equipment: ["equipment", "technician", "support"],
-          };
-          const searchTerms = mapping[slug] || [slug];
-          const filtered = data.filter((d) => {
-            const catName = (
-              d.category?.name ||
-              d.category ||
-              ""
-            ).toLowerCase();
-            const role = (d.role || "").toLowerCase();
-            return searchTerms.some(
-              (term) => catName.includes(term) || role.includes(term),
-            );
-          });
-          setDoctors(filtered.length > 0 ? filtered : data.slice(0, 5));
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    };
-    fetchDoctors();
-  }, [slug]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      const res = await fetch("/api/appointments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      if (res.ok) setSuccess(true);
-    } catch (e) {
-      alert("Booking error. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (success) {
-    return (
-      <section className="px-4 pt-8 max-w-7xl mx-auto">
-        <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center shadow-sm">
-          <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle2 className="w-8 h-8 text-primary" />
-          </div>
-          <h3 className="text-xl font-normal text-black tracking-tight mb-2">
-            Request Received!
-          </h3>
-          <p className="text-gray-500 text-sm font-normal">
-            Our team will call you within 15 minutes to confirm.
-          </p>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section className="px-4 pt-8 max-w-7xl mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="lg:col-span-3 bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-[0_2px_12px_rgba(0,0,0,0.04)]"
-        >
-          <h2 className="text-lg font-normal text-black tracking-tight mb-5">
-            {config.formTitle || `Book ${config.banner?.title || "Service"}`}
-          </h2>
-          <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                required
-                type="text"
-                placeholder="Patient Full Name"
-                value={formData.patientName}
-                onChange={(e) =>
-                  setFormData({ ...formData, patientName: e.target.value })
-                }
-                className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-              />
-            </div>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                required
-                type="tel"
-                placeholder="Phone Number"
-                value={formData.phone}
-                onChange={(e) =>
-                  setFormData({ ...formData, phone: e.target.value })
-                }
-                className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-              />
-            </div>
-
-            <div className="relative">
-              <UserPlus className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <select
-                required
-                value={formData.doctor}
-                onChange={(e) =>
-                  setFormData({ ...formData, doctor: e.target.value })
-                }
-                className="w-full pl-10 pr-10 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition appearance-none text-gray-700"
-              >
-                <option value="">Select Preferred Doctor (Optional)</option>
-                {doctors.map((doc) => (
-                  <option key={doc._id} value={doc.name}>
-                    {doc.name} ({doc.role})
-                  </option>
-                ))}
-                <option value="Any Available">Any Available Expert</option>
-              </select>
-              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-            </div>
-
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                required
-                type="date"
-                value={formData.date}
-                onChange={(e) =>
-                  setFormData({ ...formData, date: e.target.value })
-                }
-                className="w-full pl-10 pr-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
-              />
-            </div>
-
-            <button
-              disabled={isSubmitting}
-              type="submit"
-              className="w-full bg-primary text-white py-4 rounded-xl text-sm font-normal active:scale-95 transition hover:bg-primary-dark flex items-center justify-center gap-2 mt-2 disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Calendar className="w-4 h-4" />
-              )}
-              {config.submitButtonText || "Confirm Booking Now"}
-            </button>
-          </form>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.1 }}
-          className="lg:col-span-2 bg-primary-soft rounded-2xl p-5 sm:p-6 flex flex-col justify-between"
-        >
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Shield className="w-5 h-5 text-primary" />
-              <h3 className="text-base font-normal text-primary-dark">
-                {config.trustBadge.title}
-              </h3>
-            </div>
-            <ul className="space-y-3">
-              {config.trustBadge.points.map((point, i) => (
-                <li
-                  key={i}
-                  className="flex items-center gap-2 text-sm text-gray-700"
-                >
-                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                  {point}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="mt-4 relative h-40 rounded-xl overflow-hidden bg-white">
-            <Image
-              src={config.trustBadge.image}
-              alt="Trusted Service"
-              fill
-              className="object-cover object-top"
-            />
-          </div>
-        </motion.div>
       </div>
     </section>
   );
@@ -2314,16 +2114,16 @@ function AmbulancePage() {
                         </span>
                       </div>
                     </div>
-                    <a
-                      href={`tel:${phone}`}
+                    <Link
+                      href={`/book?service=ambulance&package=${pkg.title}`}
                       className={`h-10 px-5 rounded-xl flex justify-center items-center text-[13px] font-normal transition-all active:scale-95 ${
                         isIcu
                           ? "bg-primary/10 text-primary hover:bg-primary hover:text-white"
                           : "bg-primary text-white hover:bg-primary-dark shadow-[0_2px_10px_0_rgba(15,157,88,0.2)] hover:shadow-[0_4px_144px_0_rgba(15,157,88,0.3)]"
                       }`}
                     >
-                      Book
-                    </a>
+                      Book Now
+                    </Link>
                   </div>
                 </div>
               );
@@ -2476,6 +2276,15 @@ function AmbulancePage() {
 
       <MeetOurExperts slug="ambulance" />
 
+      <div className="bg-gray-50 py-16 px-4">
+        <div className="max-w-4xl mx-auto">
+          <BookingForm 
+            defaultService={SERVICES_CONFIG.ambulance.banner.title}
+            title={`Book ${SERVICES_CONFIG.ambulance.banner.title || "Service"}`}
+          />
+        </div>
+      </div>
+
       <FAQSection
         title="FAQ SECTION – AMBULANCE SERVICE"
         faqs={[
@@ -2580,12 +2389,12 @@ function PhysiotherapyPage() {
                 ₹999
               </span>
             </div>
-            <a
-              href={`tel:${phone}`}
+            <Link
+              href={`/book?service=physiotherapy&package=trial`}
               className="mt-5 w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-gray-100 transition active:scale-95"
             >
               Book Trial
-            </a>
+            </Link>
           </div>
 
           {/* Card 2 */}
@@ -2604,12 +2413,12 @@ function PhysiotherapyPage() {
                 ₹3999
               </span>
             </div>
-            <a
-              href={`tel:${phone}`}
+            <Link
+              href={`/book?service=physiotherapy&package=7days`}
               className="mt-5 w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-gray-100 transition active:scale-95"
             >
               Book Package
-            </a>
+            </Link>
           </div>
 
           {/* Card 3 - MOST POPULAR (Soft Highlight) */}
@@ -2631,12 +2440,12 @@ function PhysiotherapyPage() {
             <p className="text-[11px] text-gray-500 mt-2">
               Recommended for optimal recovery
             </p>
-            <a
-              href={`tel:${phone}`}
+            <Link
+              href={`/book?service=physiotherapy&package=15days`}
               className="mt-5 w-full bg-primary text-white py-3.5 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-primary-dark transition active:scale-95 shadow-sm"
             >
               Book 15 Days Now
-            </a>
+            </Link>
           </div>
 
           {/* Card 4 */}
@@ -2655,12 +2464,12 @@ function PhysiotherapyPage() {
                 ₹12999
               </span>
             </div>
-            <a
-              href={`tel:${phone}`}
+            <Link
+              href={`/book?service=physiotherapy&package=30days`}
               className="mt-5 w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-gray-100 transition active:scale-95"
             >
               Book 30 Days
-            </a>
+            </Link>
           </div>
 
           {/* Card 5 */}
@@ -2679,12 +2488,12 @@ function PhysiotherapyPage() {
                 ₹1499
               </span>
             </div>
-            <a
-              href={`tel:${phone}`}
+            <Link
+              href={`/book?service=physiotherapy&package=emergency`}
               className="mt-5 w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-gray-100 transition active:scale-95"
             >
               Request Emergency
-            </a>
+            </Link>
           </div>
         </div>
       </section>
@@ -2826,6 +2635,15 @@ function PhysiotherapyPage() {
       {/* <PhysiotherapyCenters /> */}
 
       <MeetOurExperts slug="physiotherapy" />
+
+      <div className="bg-gray-50 py-16 px-4">
+        <div className="max-w-4xl mx-auto">
+          <BookingForm 
+            defaultService={SERVICES_CONFIG.physiotherapy.banner?.title || "Physiotherapy"} 
+            title={`Book ${SERVICES_CONFIG.physiotherapy.banner?.title || "Physiotherapy"}`}
+          />
+        </div>
+      </div>
 
       <FAQSection
         title="FAQ SECTION – PHYSIOTHERAPY AT HOME"
@@ -3300,6 +3118,14 @@ function DoctorPage() {
       </section>
 
       <MeetOurExperts slug="doctor" />
+      <div className="bg-gray-50 py-16 px-4">
+        <div className="max-w-4xl mx-auto">
+          <BookingForm 
+            defaultService={SERVICES_CONFIG.doctor.banner?.title || "Doctor Visit"} 
+            title={`Book ${SERVICES_CONFIG.doctor.banner?.title || "Doctor Visit"}`}
+          />
+        </div>
+      </div>
       <FAQSection
         title="FAQ SECTION – DOCTOR VISIT AT HOME"
         faqs={[
@@ -3712,6 +3538,14 @@ function IcuPage() {
       </section>
 
       <MeetOurExperts slug="icu" />
+      <div className="bg-gray-50 py-16 px-4">
+        <div className="max-w-4xl mx-auto">
+          <BookingForm 
+            defaultService={SERVICES_CONFIG.icu.banner?.title || "ICU at Home"} 
+            title={`Book ${SERVICES_CONFIG.icu.banner?.title || "ICU at Home"}`}
+          />
+        </div>
+      </div>
       <FAQSection
         title="FAQ SECTION – ICU AT HOME"
         faqs={[
@@ -4026,7 +3860,15 @@ export default function ServicePage({ params }) {
           detailedAreas={service.detailedServiceAreas}
         />
         <MeetOurExperts slug={slug} />
-        <BookingForm config={service} slug={slug} />
+        <div className="bg-gray-50 py-16 px-4">
+          <div className="max-w-4xl mx-auto">
+            <BookingForm 
+              defaultService={service.banner?.title || slug} 
+              title={`Book ${service.banner?.title || "Service"}`}
+              hideService={true}
+            />
+          </div>
+        </div>
 
         {service.faqs && (
           <FAQSection
@@ -4053,7 +3895,15 @@ export default function ServicePage({ params }) {
         detailedAreas={service.detailedServiceAreas}
       />
       <MeetOurExperts slug={slug} />
-      <BookingForm config={service} slug={slug} />
+      <div className="bg-gray-50 py-16 px-4">
+        <div className="max-w-4xl mx-auto">
+          <BookingForm 
+            defaultService={service.banner?.title || slug} 
+            title={`Book ${service.banner?.title || "Service"}`}
+            hideService={true}
+          />
+        </div>
+      </div>
 
       {service.faqs && (
         <FAQSection

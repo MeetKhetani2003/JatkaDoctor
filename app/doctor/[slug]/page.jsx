@@ -16,6 +16,7 @@ import {
   ArrowRight,
   MapPin,
 } from "lucide-react";
+import BookingForm from "@/components/BookingForm";
 
 const PRIMARY = "#0F9D58";
 
@@ -218,6 +219,16 @@ export default function DoctorProfilePage() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            <div className="bg-gray-50 py-16 px-5 rounded-[40px] mt-8 mb-12">
+              <BookingForm 
+                title={`Book Appointment with ${doctor.name.split(' ')[0]}`}
+                subtitle="Expert Care at Your Doorstep"
+                defaultService={doctor.category?.name || doctor.category || ""}
+                defaultDoctor={doctor.name}
+                hideService={true}
+              />
             </div>
           </div>
         </div>

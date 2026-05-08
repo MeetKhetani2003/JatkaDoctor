@@ -10,11 +10,11 @@ import PartnersSection from "@/components/OurClinicsAndPartners";
 import ServiceArea from "@/components/ServiceArea";
 import ServicesGrid from "@/components/ServiceGrid";
 import StatsStrip from "@/components/StatsStrip";
-import StickyBottomBar from "@/components/StickyBottomBar";
 import Testimonials from "@/components/Testimonials";
 import TrustBadges from "@/components/TrustBadges";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import FAQSection from "@/components/FAQSection";
+import BookingForm from "@/components/BookingForm";
 
 const homeFaqs = [
   { q: "Q1. Kya sach me doctor ghar par available hai 24/7?", a: "Haan, Dr Jhatka Medicare me 24/7 doctor support available hai. Emergency aur urgent cases me nearest available doctor ko turant assign kiya jata hai." },
@@ -41,8 +41,12 @@ export default function Home() {
       <FounderSection />
       <EmergencyCTA />
       <FAQSection title="FREQUENTLY ASKED QUESTIONS" faqs={homeFaqs} />
+      <div className="bg-gray-50 py-16 px-4">
+        <div className="max-w-4xl mx-auto">
+          <BookingForm title="Book Appointment" subtitle="Trusted Healthcare at Home" />
+        </div>
+      </div>
       <ServiceArea />
-      <StickyBottomBar />
     </main>
   );
 }

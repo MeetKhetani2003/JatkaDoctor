@@ -570,14 +570,14 @@ export default function Navbar() {
                 +91 8874744756
               </a>
               <Link
-                href="/services/lab-test"
+                href="/book"
                 className="px-5 py-2 rounded-xl text-[13px] font-normal text-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
                 style={{
                   background: `linear-gradient(135deg, ${PRIMARY}, ${PRIMARY_DARK})`,
                   boxShadow: `0 4px 14px rgba(15,157,88,0.28)`,
                 }}
               >
-                Book Now
+                Book Appointment
               </Link>
             </div>
 
