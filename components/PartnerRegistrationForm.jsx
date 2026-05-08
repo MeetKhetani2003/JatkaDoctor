@@ -2,16 +2,58 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Send, CheckCircle2 } from "lucide-react";
+import { Send, CheckCircle2, Upload } from "lucide-react";
 
 export default function PartnerRegistrationForm({ title, type }) {
   const [submitted, setSubmitted] = useState(false);
   const [agreed, setAgreed] = useState(false);
 
-  const handleSubmit = (e) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    phone: "",
+    email: "",
+    location: "",
+    bio: ""
+  });
+
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!agreed) return;
-    setSubmitted(true);
+    
+    setIsSubmitting(true);
+    try {
+      const data = new FormData();
+      data.append('name', formData.name);
+      data.append('phone', formData.phone);
+      data.append('email', formData.email);
+      data.append('location', formData.location);
+      data.append('bio', formData.bio);
+      data.append('type', type || 'General Partner');
+      if (selectedFile) {
+        data.append('idFile', selectedFile);
+      }
+
+      const res = await fetch('/api/partners', {
+        method: 'POST',
+        body: data
+      });
+      
+      if (res.ok) {
+        setSubmitted(true);
+      } else {
+        alert("Error submitting registration. Please try again.");
+      }
+    } catch (err) {
+      alert("Something went wrong.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {
@@ -51,6 +93,8 @@ export default function PartnerRegistrationForm({ title, type }) {
             <label className="text-sm font-bold text-gray-700 ml-1">Full Name / Organization Name</label>
             <input 
               required
+              value={formData.name}
+              onChange={e => setFormData({...formData, name: e.target.value})}
               type="text" 
               placeholder="e.g. Dr. John Doe or City Hospital"
               className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#0F9D58]/20 focus:border-[#0F9D58] transition-all"
@@ -60,6 +104,8 @@ export default function PartnerRegistrationForm({ title, type }) {
             <label className="text-sm font-bold text-gray-700 ml-1">Contact Number</label>
             <input 
               required
+              value={formData.phone}
+              onChange={e => setFormData({...formData, phone: e.target.value})}
               type="tel" 
               placeholder="Enter 10-digit mobile number"
               className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#0F9D58]/20 focus:border-[#0F9D58] transition-all"
@@ -69,6 +115,8 @@ export default function PartnerRegistrationForm({ title, type }) {
             <label className="text-sm font-bold text-gray-700 ml-1">Email Address</label>
             <input 
               required
+              value={formData.email}
+              onChange={e => setFormData({...formData, email: e.target.value})}
               type="email" 
               placeholder="example@gmail.com"
               className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#0F9D58]/20 focus:border-[#0F9D58] transition-all"
@@ -78,6 +126,8 @@ export default function PartnerRegistrationForm({ title, type }) {
             <label className="text-sm font-bold text-gray-700 ml-1">City / Location</label>
             <input 
               required
+              value={formData.location}
+              onChange={e => setFormData({...formData, location: e.target.value})}
               type="text" 
               placeholder="e.g. Lucknow, Kanpur"
               className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#0F9D58]/20 focus:border-[#0F9D58] transition-all"
@@ -89,6 +139,8 @@ export default function PartnerRegistrationForm({ title, type }) {
           <label className="text-sm font-bold text-gray-700 ml-1">Professional Experience / Bio</label>
           <textarea 
             rows={4}
+            value={formData.bio}
+            onChange={e => setFormData({...formData, bio: e.target.value})}
             placeholder="Tell us about your experience and why you want to join us..."
             className="w-full px-4 py-3 rounded-2xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-[#0F9D58]/20 focus:border-[#0F9D58] transition-all resize-none"
           />
@@ -96,9 +148,20 @@ export default function PartnerRegistrationForm({ title, type }) {
 
         <div className="flex flex-col gap-2">
           <label className="text-sm font-bold text-gray-700 ml-1">Upload ID/License Proof (Optional)</label>
-          <div className="w-full p-8 border-2 border-dashed border-gray-200 rounded-2xl bg-gray-50 flex flex-col items-center justify-center gap-2 cursor-pointer hover:bg-gray-100 transition-colors">
-            <div className="text-gray-400">Click to upload or drag and drop</div>
-            <div className="text-[10px] text-gray-400">PDF, JPG, PNG up to 5MB</div>
+          <div className="relative group">
+            <input 
+              type="file"
+              onChange={handleFileChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              accept=".pdf,.jpg,.jpeg,.png"
+            />
+            <div className={`w-full p-8 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-2 transition-colors ${selectedFile ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200 group-hover:bg-gray-100'}`}>
+              <Upload className={`w-6 h-6 ${selectedFile ? 'text-[#0F9D58]' : 'text-gray-400'}`} />
+              <div className="text-sm font-medium text-gray-700">
+                {selectedFile ? selectedFile.name : 'Click to upload or drag and drop'}
+              </div>
+              <div className="text-[10px] text-gray-400">PDF, JPG, PNG up to 5MB</div>
+            </div>
           </div>
         </div>
 
@@ -118,11 +181,20 @@ export default function PartnerRegistrationForm({ title, type }) {
 
         <button 
           type="submit"
-          disabled={!agreed}
+          disabled={!agreed || isSubmitting}
           className="w-full py-4 bg-[#0F9D58] text-white rounded-2xl font-black text-lg shadow-lg shadow-[#0F9D58]/20 hover:bg-[#0c8047] hover:scale-[1.01] active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Send size={20} />
-          <span>SUBMIT REGISTRATION</span>
+          {isSubmitting ? (
+            <div className="flex items-center gap-2">
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span>SUBMITTING...</span>
+            </div>
+          ) : (
+            <>
+              <Send size={20} />
+              <span>SUBMIT REGISTRATION</span>
+            </>
+          )}
         </button>
         
         <p className="text-center text-[10px] text-gray-400">

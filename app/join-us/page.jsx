@@ -50,6 +50,11 @@ const categories = [
 export default function JoinUsPage() {
   const [selected, setSelected] = useState("doctor");
   const [submitted, setSubmitted] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
 
   if (submitted) {
     return (
@@ -151,20 +156,44 @@ export default function JoinUsPage() {
           Your Details
         </h2>
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            setSubmitted(true);
+            const target = e.target;
+            const data = new FormData();
+            data.append('name', `${target.firstName.value} ${target.lastName.value}`);
+            data.append('phone', target.phone.value);
+            data.append('email', target.email.value);
+            data.append('experience', target.experience.value);
+            data.append('location', target.location.value);
+            data.append('bio', target.bio.value);
+            data.append('type', categories.find(c => c.id === selected)?.name || "General Partner");
+            
+            if (selectedFile) {
+              data.append('idFile', selectedFile);
+            }
+
+            try {
+              const res = await fetch('/api/partners', {
+                method: 'POST',
+                body: data
+              });
+              if (res.ok) setSubmitted(true);
+            } catch (err) {
+              alert("Error submitting application");
+            }
           }}
           className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm space-y-3"
         >
           <div className="grid grid-cols-2 gap-3">
             <input
+              name="firstName"
               type="text"
               placeholder="First Name"
               className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
               required
             />
             <input
+              name="lastName"
               type="text"
               placeholder="Last Name"
               className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
@@ -173,19 +202,21 @@ export default function JoinUsPage() {
           </div>
 
           <input
+            name="phone"
             type="tel"
             placeholder="Phone Number"
             className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
             required
           />
           <input
+            name="email"
             type="email"
             placeholder="Email Address"
             className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
           />
 
           <div className="relative">
-            <select className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary appearance-none text-gray-700">
+            <select name="experience" className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary appearance-none text-gray-700">
               <option>Years of Experience</option>
               <option>0-2 Years</option>
               <option>2-5 Years</option>
@@ -196,26 +227,37 @@ export default function JoinUsPage() {
           </div>
 
           <input
+            name="location"
             type="text"
             placeholder="City / Location"
             className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+            required
           />
 
           <textarea
+            name="bio"
             placeholder="Tell us about yourself..."
             rows={3}
             className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary resize-none"
           />
 
           {/* Document Upload */}
-          <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-primary/30 transition cursor-pointer">
-            <Upload className="w-6 h-6 text-gray-400 mx-auto mb-2" />
-            <p className="text-xs text-gray-500 font-medium">
-              Upload CV / Certificate
-            </p>
-            <p className="text-[10px] text-gray-400 mt-0.5">
-              PDF, JPG up to 5MB
-            </p>
+          <div className="relative group">
+            <input 
+              type="file"
+              onChange={handleFileChange}
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              accept=".pdf,.jpg,.jpeg,.png"
+            />
+            <div className={`border-2 border-dashed rounded-xl p-4 text-center transition ${selectedFile ? 'bg-primary/5 border-primary/30' : 'border-gray-200 bg-gray-50 hover:border-primary/30'}`}>
+              <Upload className={`w-6 h-6 mx-auto mb-2 ${selectedFile ? 'text-primary' : 'text-gray-400'}`} />
+              <p className="text-xs text-gray-500 font-medium">
+                {selectedFile ? selectedFile.name : 'Upload CV / Certificate'}
+              </p>
+              <p className="text-[10px] text-gray-400 mt-0.5">
+                PDF, JPG up to 5MB
+              </p>
+            </div>
           </div>
 
           <div className="flex items-start gap-3 mt-4 mb-2">

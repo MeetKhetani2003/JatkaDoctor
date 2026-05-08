@@ -24,6 +24,7 @@ const sidebarLinks = [
   { label: "Physio Centers", href: "/admin/physio-centers", icon: MapPin },
   { label: "Categories", href: "/admin/categories", icon: Tags },
   { label: "Appointments", href: "/admin/appointments", icon: CalendarCheck },
+  { label: "Join Requests", href: "/admin/partners", icon: UserCog },
 ];
 
 export default function AdminLayout({ children }) {
