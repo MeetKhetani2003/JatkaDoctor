@@ -7,20 +7,25 @@ import Image from "next/image";
 
 const slides = [
   {
-    image: "/ad.png",
+    image: "/hero-physio.jpeg",
     title: "24x7 Ambulance Service",
     subtitle: "Fast response in Lucknow",
   },
   {
-    image: "/df.png",
+    image: "/hero-icu.jpeg",
     title: "ICU Ambulance Available",
     subtitle: "Advanced life support",
   },
   {
-    image: "/ds.png",
+    image: "/hero-doctor.jpeg",
     title: "Doctor at Home",
     subtitle: "Trusted medical care",
   },
+  {
+    image:"/hero-physio.jpeg",
+    title:"Physiotherapy",
+    subtitle:"Trusted medical care",
+  }
 ];
 
 export default function HeroCarousel() {
@@ -35,7 +40,7 @@ export default function HeroCarousel() {
   }, []);
 
   return (
-    <section className="relative w-full h-[320px] sm:h-[380px] mt-20 overflow-hidden lg:mt-20">
+    <section className="relative w-full h-[380px] sm:h-[380px] mt-20 overflow-hidden lg:mt-20">
       {/* SLIDES */}
       <AnimatePresence>
         <motion.div
