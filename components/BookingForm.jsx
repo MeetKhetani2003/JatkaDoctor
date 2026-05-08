@@ -6,11 +6,12 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 const PRIMARY = "#0F9D58";
 const phone = "8874744756";
 
-export default function BookingForm({ 
+function BookingFormInner({ 
   defaultService = "", 
   title = "Get in Touch", 
   subtitle = "We respond within minutes",
@@ -299,5 +300,13 @@ export default function BookingForm({
         </a>
       </div>
     </motion.div>
+  );
+}
+
+export default function BookingForm(props) {
+  return (
+    <Suspense fallback={<div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+      <BookingFormInner {...props} />
+    </Suspense>
   );
 }
