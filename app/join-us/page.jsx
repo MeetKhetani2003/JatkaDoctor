@@ -66,7 +66,7 @@ export default function JoinUsPage() {
           animate={{ scale: 1, opacity: 1 }}
           className="text-center"
         >
-          <div className="w-20 h-20 rounded-full bg-primary-light flex items-center justify-center mx-auto mb-4">
+          <div className="w-20 h-20 rounded-full bg-primary-soft flex items-center justify-center mx-auto mb-4">
             <CheckCircle2 className="w-10 h-10 text-primary" />
           </div>
           <h2 className="text-xl font-bold text-gray-900">
@@ -269,6 +269,15 @@ export default function JoinUsPage() {
             </div>
           </div>
 
+          <div className="flex items-start gap-3 mt-4 mb-2">
+            <input
+              type="checkbox"
+              id="terms-join"
+              className="mt-1 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+              required
+            />
+            <label htmlFor="terms-join" className="text-[11px] text-gray-500 leading-tight cursor-pointer">
+              I agree to the <Link href="/policies/terms-and-conditions" className="text-primary hover:underline">Terms & Conditions</Link> and <Link href="/policies/partner-registration-policy" className="text-primary hover:underline">Partner Policy</Link>. I understand that my details will be verified by Dr Jhatka Medicare.
             </label>
           </div>
 
