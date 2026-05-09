@@ -81,7 +81,7 @@ export default function MedicalTeamSection() {
                 onClick={() => handleCardClick(member.slug)}
                 className="min-w-[280px] bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col group active:scale-[0.98] transition-transform duration-200 cursor-pointer"
               >
-                <div className="relative h-48 w-full bg-gray-100">
+                <div className="relative h-[320px] w-full bg-gray-100">
                   <Image
                     src={
                       member.imageFileId
