@@ -18,6 +18,22 @@ export async function POST(req) {
     await connectDB();
     const formData = await req.formData();
     
+    const recaptchaToken = formData.get('recaptchaToken');
+
+    // Verify reCAPTCHA
+    if (!recaptchaToken) {
+      return NextResponse.json({ error: 'reCAPTCHA token is missing' }, { status: 400 });
+    }
+
+    const recaptchaRes = await fetch(`https://www.google.com/recaptcha/api/siteverify?secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}`, {
+      method: 'POST'
+    });
+    const recaptchaData = await recaptchaRes.json();
+
+    if (!recaptchaData.success) {
+      return NextResponse.json({ error: 'reCAPTCHA verification failed' }, { status: 400 });
+    }
+    
     const type = formData.get('type');
     if (!type) {
       return NextResponse.json({ error: "Partner type (collection) is required" }, { status: 400 });

@@ -6,7 +6,8 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useRef } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const PRIMARY = "#0F9D58";
 const phone = "8874744756";
@@ -22,6 +23,7 @@ function BookingFormInner({
   const [agreed, setAgreed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const recaptchaRef = useRef(null);
   
   const [categories, setCategories] = useState([]);
   const [allDoctors, setAllDoctors] = useState([]);
@@ -129,6 +131,13 @@ function BookingFormInner({
     
     setIsSubmitting(true);
     try {
+      const token = recaptchaRef.current.getValue();
+      if (!token) {
+        alert("Please complete the reCAPTCHA");
+        setIsSubmitting(false);
+        return;
+      }
+
       const res = await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -139,7 +148,8 @@ function BookingFormInner({
           doctor: formData.doctor || 'Any Available',
           appointmentDate: formData.appointmentDate || new Date().toISOString().split('T')[0],
           appointmentTime: formData.appointmentTime || '09:00',
-          notes: formData.message
+          notes: formData.message,
+          recaptchaToken: token
         })
       });
       if (res.ok) {
@@ -319,6 +329,14 @@ function BookingFormInner({
           <label htmlFor="agreement-universal" className="text-[11px] text-gray-500 leading-tight cursor-pointer">
             I agree to the <Link href="/policies/terms-and-conditions" className="text-primary hover:underline" target="_blank">Terms</Link> & <Link href="/policies/privacy-policy" className="text-primary hover:underline" target="_blank">Privacy Policy</Link>. I consent to be contacted by Dr Jhatka Medicare.
           </label>
+        </div>
+
+        <div className="mb-2 overflow-hidden flex justify-center">
+          <ReCAPTCHA
+            ref={recaptchaRef}
+            sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+            size="normal"
+          />
         </div>
 
         <button

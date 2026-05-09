@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Send, CheckCircle2, Upload } from "lucide-react";
+import { useRef } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 
 export default function PartnerRegistrationForm({ title, type }) {
   const [submitted, setSubmitted] = useState(false);
@@ -10,6 +12,7 @@ export default function PartnerRegistrationForm({ title, type }) {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const recaptchaRef = useRef(null);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -28,7 +31,15 @@ export default function PartnerRegistrationForm({ title, type }) {
     
     setIsSubmitting(true);
     try {
+      const token = recaptchaRef.current.getValue();
+      if (!token) {
+        alert("Please complete the reCAPTCHA");
+        setIsSubmitting(false);
+        return;
+      }
+
       const data = new FormData();
+      data.append('recaptchaToken', token);
       data.append('name', formData.name);
       data.append('phone', formData.phone);
       data.append('email', formData.email);
@@ -177,6 +188,14 @@ export default function PartnerRegistrationForm({ title, type }) {
           <label htmlFor="agreement-partner" className="text-[11px] text-gray-500 leading-tight cursor-pointer">
             I agree to the <a href="/policies/terms-and-conditions" className="text-[#0F9D58] hover:underline" target="_blank">Terms & Conditions</a> and <a href="/policies/partner-registration-policy" className="text-[#0F9D58] hover:underline" target="_blank">Partner Policy</a>. I understand my data will be used for registration verification.
           </label>
+        </div>
+
+        <div className="mb-4 flex justify-center overflow-hidden">
+          <ReCAPTCHA
+            ref={recaptchaRef}
+            sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+            size="normal"
+          />
         </div>
 
         <button 

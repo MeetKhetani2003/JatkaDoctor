@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import ReCAPTCHA from "react-google-recaptcha";
 import { motion } from "framer-motion";
 import {
   ChevronLeft,
@@ -51,6 +52,7 @@ export default function JoinUsPage() {
   const [selected, setSelected] = useState("doctor");
   const [submitted, setSubmitted] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const recaptchaRef = useRef(null);
 
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
@@ -158,8 +160,15 @@ export default function JoinUsPage() {
         <form
           onSubmit={async (e) => {
             e.preventDefault();
+            const token = recaptchaRef.current.getValue();
+            if (!token) {
+              alert("Please complete the reCAPTCHA");
+              return;
+            }
+
             const target = e.target;
             const data = new FormData();
+            data.append('recaptchaToken', token);
             data.append('name', `${target.firstName.value} ${target.lastName.value}`);
             data.append('phone', target.phone.value);
             data.append('email', target.email.value);
@@ -260,16 +269,15 @@ export default function JoinUsPage() {
             </div>
           </div>
 
-          <div className="flex items-start gap-3 mt-4 mb-2">
-            <input
-              type="checkbox"
-              id="terms-join"
-              className="mt-1 w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
-              required
-            />
-            <label htmlFor="terms-join" className="text-[11px] text-gray-500 leading-tight cursor-pointer">
-              I agree to the <Link href="/policies/terms-and-conditions" className="text-primary hover:underline">Terms & Conditions</Link> and <Link href="/policies/partner-registration-policy" className="text-primary hover:underline">Partner Policy</Link>. I understand that my details will be verified by Dr Jhatka Medicare.
             </label>
+          </div>
+
+          <div className="flex justify-center mb-2 overflow-hidden">
+            <ReCAPTCHA
+              ref={recaptchaRef}
+              sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+              size="normal"
+            />
           </div>
 
           <button

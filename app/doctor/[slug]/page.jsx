@@ -268,11 +268,18 @@ export default function DoctorProfilePage() {
                   <p className="text-sm text-gray-600 mb-4">
                     Skip the travel! Get expert medical advice via video call. Supports Google Meet, WhatsApp Video, and our secure platform.
                   </p>
+                  <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-purple-100 shadow-sm">
+                      <span className="text-xs font-bold text-gray-500 uppercase tracking-tight">Fees</span>
+                      <span className="text-sm font-black text-purple-700">₹199/-</span>
+                      <span className="text-[10px] text-gray-400 font-medium">Starting</span>
+                    </div>
+                  </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-purple-700 bg-white px-3 py-1 rounded-full">
+                    <span className="text-[10px] font-bold text-purple-700 bg-white/50 px-3 py-1 rounded-full uppercase tracking-wider border border-purple-100">
                       WhatsApp Video
                     </span>
-                    <span className="text-xs font-bold text-purple-700 bg-white px-3 py-1 rounded-full">
+                    <span className="text-[10px] font-bold text-purple-700 bg-white/50 px-3 py-1 rounded-full uppercase tracking-wider border border-purple-100">
                       Google Meet
                     </span>
                   </div>
