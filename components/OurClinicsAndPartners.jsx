@@ -16,13 +16,20 @@ import {
   Zap,
 } from "lucide-react";
 
+import Image from "next/image";
+
 const partners = [
-  { name: "City Hospital", type: "Multi-Specialty", icon: Hospital },
-  { name: "Care Clinic", type: "Primary Care", icon: Home },
-  { name: "Apollo Care", type: "Specialist Network", icon: Heart },
-  { name: "MedLife Center", type: "Diagnostics", icon: Microscope },
-  { name: "HealthPlus", type: "Wellness", icon: PlusCircle },
-  { name: "Prime Diagnostics", type: "Pathology", icon: Activity },
+  { name: "Lakshay Cancer Hospital", type: "Verified Partner", image: "/healthcarepartner/partner1.jpeg" },
+  { name: "PHC Multi Speciality Hospital", type: "Verified Partner", image: "/healthcarepartner/partner2.jpeg" },
+  { name: "Lucknow CISRO Hospital", type: "Verified Partner", image: "/healthcarepartner/partner3.jpeg" },
+  { name: "SRS Hospital", type: "Verified Partner", image: "/healthcarepartner/partner4.jpeg" },
+  { name: "Amrut Hospital", type: "Verified Partner", image: "/healthcarepartner/partner5.jpeg" },
+  { name: "Lakshay Janta Hospital", type: "Verified Partner", image: "/healthcarepartner/partner6.jpeg" },
+  { name: "Lucknow CISRO", type: "Verified Partner", image: "/healthcarepartner/partner7.jpeg" },
+  { name: "LabCare Diagnostics", type: "Verified Partner", image: "/healthcarepartner/partner8.jpeg" },
+  { name: "GoodHealth Diagnostic", type: "Verified Partner", image: "/healthcarepartner/partner9.jpeg" },
+  { name: "Dhruv Hospital", type: "Verified Partner", image: "/healthcarepartner/partner10.jpeg" },
+  { name: "National Pathology Centre", type: "Verified Partner", image: "/healthcarepartner/partner11.jpeg" },
 ];
 
 export default function PartnersSection() {
@@ -32,7 +39,7 @@ export default function PartnersSection() {
   // Motion values for smooth dragging
   const x = useMotionValue(0);
   const containerWidth = useRef(0);
-  const itemWidth = 176; // 160px + 16px gap
+  const itemWidth = 240; // 224px + 16px gap
 
   // Calculate drag constraints
   const minX = -(partners.length * itemWidth - containerWidth.current);
@@ -85,7 +92,7 @@ export default function PartnersSection() {
           dragMomentum={true}
           onDragEnd={handleDragEnd}
           style={{ x }}
-          className="flex gap-4 pb-6"
+          className="flex gap-4 pb-6 items-stretch"
         >
           {partners.map((partner, i) => {
             const Icon = partner.icon;
@@ -100,9 +107,9 @@ export default function PartnersSection() {
                 animate={{
                   scale: isActive ? 1.05 : 1,
                 }}
-                className="shrink-0 w-[160px]"
+                className="shrink-0 w-[224px] flex"
               >
-                <div className="group relative bg-white rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 hover:border-emerald-200 overflow-hidden">
+                <div className="group relative w-full bg-white rounded-2xl p-5 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 hover:border-emerald-200 overflow-hidden flex flex-col flex-1">
                   {/* Subtle gradient overlay on hover */}
                   <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
@@ -112,24 +119,30 @@ export default function PartnersSection() {
                   </div>
 
                   {/* LOGO */}
-                  <div className="relative z-10 flex flex-col items-center">
+                  <div className="relative z-10 flex flex-col items-center w-full h-full flex-1">
                     <div
-                      className={`w-16 h-16 rounded-2xl bg-white shadow-md border border-gray-100 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform ${
+                      className={`relative w-full h-28 shrink-0 rounded-xl bg-white shadow-sm border border-gray-100 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform overflow-hidden ${
                         isActive ? "ring-2 ring-emerald-300" : ""
                       }`}
                     >
-                      <Icon className="w-7 h-7 text-emerald-600" />
+                      <Image 
+                        src={partner.image} 
+                        alt={partner.name} 
+                        fill 
+                        className="object-contain p-2" 
+                      />
                     </div>
 
-                    {/* NAME */}
-                    <h3 className="text-sm font-bold text-gray-900 text-center leading-tight">
-                      {partner.name}
-                    </h3>
+                    <div className="flex flex-col items-center mt-auto">
+                      {/* NAME */}
+                      <h3 className="text-sm font-bold text-gray-900 text-center leading-tight">
+                        {partner.name}
+                      </h3>
 
-                    {/* TYPE */}
-                    <p className="text-xs text-emerald-600 font-medium mt-1">
-                      {partner.type}
-                    </p>
+                      {/* TYPE */}
+                      <p className="text-xs text-emerald-600 font-medium mt-1">
+                        {partner.type}
+                      </p>
 
                     {/* RATING */}
                     <div className="flex items-center gap-1 mt-2">
@@ -145,6 +158,7 @@ export default function PartnersSection() {
                       <span className="text-[10px] text-gray-500 ml-1">
                         5.0
                       </span>
+                    </div>
                     </div>
                   </div>
                 </div>

@@ -1,8 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { Phone, Star, BadgeCheck } from "lucide-react";
+import { Phone, Star, BadgeCheck, CalendarCheck } from "lucide-react";
 
 const doctors = [
   {
@@ -112,15 +113,15 @@ export default function DoctorsSection() {
 
               {/* BUTTON - always at bottom */}
               <div className="mt-auto pt-3">
-                <button
-                  onClick={() => (window.location.href = `tel:${phone}`)}
+                <Link
+                  href={`/book?service=doctor&doctor=${doc.name}`}
                   className="w-full flex items-center justify-center gap-2 
                   bg-primary text-white py-2.5 rounded-xl text-xs sm:text-sm font-bold 
                   active:scale-95 transition hover:bg-primary-dark"
                 >
-                  <Phone className="w-3.5 h-3.5" />
+                  <CalendarCheck className="w-3.5 h-3.5" />
                   Book Now
-                </button>
+                </Link>
               </div>
             </div>
           </motion.div>

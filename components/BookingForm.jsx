@@ -64,17 +64,40 @@ function BookingFormInner({
         const doctorParam = searchParams.get('doctor');
 
         if (serviceParam) {
-          setFormData(prev => ({ ...prev, service: serviceParam }));
+          const slugMapping = {
+            'ambulance': 'Ambulance Service',
+            'physiotherapy': 'Physiotherapy',
+            'doctor': 'Doctor at Home',
+            'icu': 'ICU at Home',
+            'home-care': 'Home Care Services',
+            'nursing': 'Nursing Care',
+            'lab-test': 'Lab Test',
+            'equipment': 'Equipment Rental'
+          };
+          
+          const mappedName = slugMapping[serviceParam] || serviceParam;
+          
+          // Try to find matching category by name or slug
+          const matchedCat = cats.find(c => 
+            c.slug === serviceParam || 
+            c.name.toLowerCase() === serviceParam.toLowerCase() ||
+            c.name === mappedName
+          );
+
+          setFormData(prev => ({ ...prev, service: matchedCat ? matchedCat.name : mappedName }));
         }
 
         if (doctorParam) {
           const doc = docs.find(d => d.slug === doctorParam || d.name.toLowerCase().includes(doctorParam.toLowerCase()));
           if (doc) {
-            setFormData(prev => ({ 
-              ...prev, 
-              doctor: doc.name,
-              service: doc.category?.name || doc.category || prev.service
-            }));
+            setFormData(prev => {
+              const matchedCatName = doc.category?.name || doc.category || prev.service;
+              return { 
+                ...prev, 
+                doctor: doc.name,
+                service: matchedCatName
+              };
+            });
           }
         }
       } catch (e) {

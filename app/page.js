@@ -15,6 +15,7 @@ import TrustBadges from "@/components/TrustBadges";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import FAQSection from "@/components/FAQSection";
 import BookingForm from "@/components/BookingForm";
+import GalleryCarousel from "@/components/GalleryCarousel";
 
 const homeFaqs = [
   { q: "Q1. Kya sach me doctor ghar par available hai 24/7?", a: "Haan, Dr Jhatka Medicare me 24/7 doctor support available hai. Emergency aur urgent cases me nearest available doctor ko turant assign kiya jata hai." },
@@ -39,6 +40,7 @@ export default function Home() {
       <TrustBadges />
       <BlogSection />
       <FounderSection />
+      <GalleryCarousel />
       <EmergencyCTA />
       <FAQSection title="FREQUENTLY ASKED QUESTIONS" faqs={homeFaqs} />
       <div className="bg-gray-50 py-16 px-4">

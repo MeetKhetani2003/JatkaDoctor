@@ -7,7 +7,7 @@ import Image from "next/image";
 
 const slides = [
   {
-    image: "/hero-physio.jpeg",
+    image: "/hero-ambulance.jpeg",
     title: "24x7 Ambulance Service",
     subtitle: "Fast response in Lucknow",
   },
@@ -22,9 +22,9 @@ const slides = [
     subtitle: "Trusted medical care",
   },
   {
-    image:"/hero-physio.jpeg",
-    title:"Physiotherapy",
-    subtitle:"Trusted medical care",
+    image: "/hero-physio.jpeg",
+    title: "Physiotherapy",
+    subtitle: "Trusted medical care",
   }
 ];
 
@@ -98,9 +98,8 @@ export default function HeroCarousel() {
         {slides.map((_, i) => (
           <div
             key={i}
-            className={`h-1.5 rounded-full transition-all ${
-              i === index ? "w-6 bg-white" : "w-2 bg-white/50"
-            }`}
+            className={`h-1.5 rounded-full transition-all ${i === index ? "w-6 bg-white" : "w-2 bg-white/50"
+              }`}
           />
         ))}
       </div>

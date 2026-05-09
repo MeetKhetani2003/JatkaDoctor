@@ -45,7 +45,7 @@ export default function FounderSection() {
                 Dr. Jhatka Medicare
               </h3>
               <p className="text-primary font-bold text-lg mt-1">
-                Founder & CEO
+                Founder & Director
               </p>
             </div>
 
@@ -71,7 +71,8 @@ export default function FounderSection() {
                 <GraduationCap className="w-6 h-6 text-primary" />
                 <div>
                   <p className="text-sm font-bold text-gray-900">
-                    Healthcare MBA
+                    Healthcare
+                    Medical Support
                   </p>
                   <p className="text-xs text-gray-500 uppercase">Education</p>
                 </div>

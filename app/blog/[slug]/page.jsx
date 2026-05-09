@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ChevronLeft, Clock, Share2, Phone, MessageCircle } from "lucide-react";
+import { useState, useEffect, use } from "react";
+import { ChevronLeft, Clock, Share2, Phone, MessageCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import StickyBottomBar from "@/components/StickyBottomBar";
 
@@ -42,7 +43,42 @@ const blogContent = {
   ],
 };
 
-export default function BlogPostPage() {
+export default function BlogPostPage(props) {
+  const params = use(props.params);
+  const [blogData, setBlogData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchBlog() {
+      try {
+        const res = await fetch(`/api/blogs/${params.slug}`);
+        if (res.ok) {
+          const data = await res.json();
+          setBlogData(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch blog:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (params.slug) {
+      fetchBlog();
+    }
+  }, [params.slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // Fallback to static if not found or no content
+  const displayBlog = blogData || blogContent;
+  const content = blogData && blogData.content ? [{ heading: "Insight Detail", text: blogData.content }] : blogContent.content;
+
   return (
     <main className="min-h-screen bg-white pb-24">
       {/* Header */}
@@ -56,7 +92,7 @@ export default function BlogPostPage() {
               <ChevronLeft className="w-5 h-5 text-gray-700" />
             </Link>
             <span className="font-bold text-gray-900 truncate max-w-[200px]">
-              {blogContent.title}
+              {displayBlog.title}
             </span>
           </div>
           <button className="p-2 rounded-full hover:bg-gray-100 transition">
@@ -68,15 +104,15 @@ export default function BlogPostPage() {
       {/* Hero Image */}
       <section className="mt-14 relative w-full aspect-[16/10]">
         <Image
-          src={blogContent.image}
-          alt={blogContent.title}
+          src={displayBlog.image}
+          alt={displayBlog.title}
           fill
           className="object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-5">
           <span className="text-[10px] bg-primary text-white px-2.5 py-1 rounded-full font-bold uppercase">
-            {blogContent.category}
+            {displayBlog.category}
           </span>
         </div>
       </section>
@@ -84,17 +120,17 @@ export default function BlogPostPage() {
       {/* Content */}
       <article className="px-4 pt-6 max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">
-          {blogContent.title}
+          {displayBlog.title}
         </h1>
         <div className="flex items-center gap-3 mt-3 text-xs text-gray-500">
           <span className="flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5" /> {blogContent.readTime}
+            <Clock className="w-3.5 h-3.5" /> {displayBlog.readTime}
           </span>
-          <span>{blogContent.date}</span>
+          <span>{displayBlog.date}</span>
         </div>
 
         <div className="mt-6 space-y-6">
-          {blogContent.content.map((section, i) => (
+          {content.map((section, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 15 }}

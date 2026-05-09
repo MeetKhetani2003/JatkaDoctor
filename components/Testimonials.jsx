@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, ChevronLeft, ChevronRight, Quote } from "lucide-react";
+import { FcGoogle } from "react-icons/fc";
 
 const testimonials = [
   {
@@ -85,10 +86,16 @@ export default function Testimonials() {
 
             <div className="flex items-center justify-between pt-4 border-t border-gray-50">
               <div>
-                <p className="font-bold text-gray-900 text-sm">
-                  {testimonials[active].name}
-                </p>
-                <p className="text-xs text-gray-500">
+                <div className="flex items-center gap-1.5">
+                  <p className="font-bold text-gray-900 text-sm">
+                    {testimonials[active].name}
+                  </p>
+                  <div className="flex items-center gap-0.5 text-[10px] bg-gray-50 text-gray-600 px-1.5 py-0.5 rounded-full border border-gray-100">
+                    <FcGoogle className="w-3 h-3" />
+                    <span className="font-medium">Verified</span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-0.5">
                   {testimonials[active].location}
                 </p>
               </div>

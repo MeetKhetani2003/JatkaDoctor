@@ -19,9 +19,11 @@ import {
   MessageCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { usePathname } from "next/navigation";
 
 const Footer = () => {
   const [openSection, setOpenSection] = useState(null);
+  const pathname = usePathname();
 
   const toggleSection = (section) => {
     setOpenSection(openSection === section ? null : section);
@@ -123,6 +125,8 @@ const Footer = () => {
       </AnimatePresence>
     </div>
   );
+
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <footer className="bg-[#111111] bg-gradient-to-b from-[#111111] to-[#0a140f] text-white pt-16 pb-8 px-6 md:px-12">

@@ -16,6 +16,7 @@ import {
   Loader2
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useEffect } from "react";
 
 const centers = [
@@ -215,10 +216,13 @@ export default function PhysiotherapyCenters() {
                         <MessageCircle className="w-4 h-4" /> WhatsApp
                       </a>
                     </div>
-                    <button className="w-full bg-gray-900 text-white py-4 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold active:scale-95 transition-all group/btn">
+                    <Link 
+                      href="/book?service=physiotherapy"
+                      className="w-full bg-gray-900 text-white py-4 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold active:scale-95 transition-all group/btn"
+                    >
                       Book Appointment
                       <ChevronRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </motion.div>

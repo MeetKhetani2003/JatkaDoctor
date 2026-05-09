@@ -18,6 +18,7 @@ import {
   ChevronRight,
   Phone,
 } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 const PRIMARY = "#0F9D58";
 const PRIMARY_LIGHT = "#E8F8F1";
@@ -455,15 +456,23 @@ function MobileDrawer({ open, onClose }) {
 
 /* ─── Main Navbar ──────────────────────────────────────── */
 export default function Navbar() {
+  const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [servicesHover, setServicesHover] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const closeTimer = useRef(null);
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 8);
-    window.addEventListener("scroll", handler, { passive: true });
-    return () => window.removeEventListener("scroll", handler);
+    const scrollHandler = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", scrollHandler, { passive: true });
+    
+    const menuHandler = () => setMenuOpen(true);
+    window.addEventListener("open-mobile-menu", menuHandler);
+    
+    return () => {
+      window.removeEventListener("scroll", scrollHandler);
+      window.removeEventListener("open-mobile-menu", menuHandler);
+    };
   }, []);
 
   const handleServicesEnter = () => {
@@ -473,6 +482,8 @@ export default function Navbar() {
   const handleServicesLeave = () => {
     closeTimer.current = setTimeout(() => setServicesHover(false), 160);
   };
+
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
     <>
@@ -570,7 +581,7 @@ export default function Navbar() {
                 +91 8874744756
               </a>
               <Link
-                href="/book"
+                href={pathname?.startsWith('/services/') ? `/book?service=${pathname.split('/services/')[1]}` : "/book"}
                 className="px-5 py-2 rounded-xl text-[13px] font-normal text-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
                 style={{
                   background: `linear-gradient(135deg, ${PRIMARY}, ${PRIMARY_DARK})`,

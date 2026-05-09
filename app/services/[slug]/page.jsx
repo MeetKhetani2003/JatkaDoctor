@@ -8,6 +8,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { motion } from "framer-motion";
 import BookingForm from "@/components/BookingForm";
+import { FcGoogle } from "react-icons/fc";
 import {
   Phone,
   MessageCircle,
@@ -60,6 +61,7 @@ import Navbar from "@/components/Header";
 import FAQSection from "@/components/FAQSection";
 import AmbulanceNetwork from "@/components/AmbulanceNetwork";
 import PhysiotherapyCenters from "@/components/PhysiotherapyCenters";
+
 
 const phone = "8874744756";
 
@@ -1619,11 +1621,10 @@ function Packages({ packages }) {
             viewport={{ once: true }}
             transition={{ delay: i * 0.05 }}
             onClick={() => setSelectedPackage(i)}
-            className={`relative rounded-2xl border-2 p-5 cursor-pointer transition-all ${
-              selectedPackage === i
-                ? "border-primary bg-primary-soft"
-                : "border-gray-100 bg-white hover:border-primary/30"
-            }`}
+            className={`relative rounded-2xl border-2 p-5 cursor-pointer transition-all ${selectedPackage === i
+              ? "border-primary bg-primary-soft"
+              : "border-gray-100 bg-white hover:border-primary/30"
+              }`}
           >
             {pkg.popular && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-white text-[10px] font-normal px-3 py-1 rounded-full">
@@ -1651,11 +1652,10 @@ function Packages({ packages }) {
               ))}
             </ul>
             <button
-              className={`w-full mt-5 py-3 rounded-xl text-sm font-normal transition active:scale-95 ${
-                selectedPackage === i
-                  ? "bg-primary text-white"
-                  : "bg-primary-light text-primary hover:bg-primary hover:text-white"
-              }`}
+              className={`w-full mt-5 py-3 rounded-xl text-sm font-normal transition active:scale-95 ${selectedPackage === i
+                ? "bg-primary text-white"
+                : "bg-primary-light text-primary hover:bg-primary hover:text-white"
+                }`}
             >
               Select Package
             </button>
@@ -1767,10 +1767,16 @@ function Testimonials({ testimonials }) {
           </p>
           <div className="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between">
             <div>
-              <p className="font-normal text-black tracking-tight text-sm">
-                {testimonials[active].name}
-              </p>
-              <p className="text-xs text-gray-500">
+              <div className="flex items-center gap-1.5">
+                <p className="font-normal text-black tracking-tight text-sm">
+                  {testimonials[active].name}
+                </p>
+                <div className="flex items-center gap-0.5 text-[10px] bg-gray-50 text-gray-600 px-1.5 py-0.5 rounded-full border border-gray-100">
+                  <FcGoogle className="w-3 h-3" />
+                  <span className="font-medium">Verified</span>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-0.5">
                 {testimonials[active].location}
               </p>
             </div>
@@ -1788,9 +1794,8 @@ function Testimonials({ testimonials }) {
               <button
                 key={i}
                 onClick={() => setActive(i)}
-                className={`h-2 rounded-full transition-all ${
-                  i === active ? "w-6 bg-primary" : "w-2 bg-gray-300"
-                }`}
+                className={`h-2 rounded-full transition-all ${i === active ? "w-6 bg-primary" : "w-2 bg-gray-300"
+                  }`}
               />
             ))}
           </div>
@@ -1882,9 +1887,7 @@ function MeetOurExperts({ slug }) {
             );
           });
 
-          setExperts(
-            filtered.length > 0 ? filtered.slice(0, 4) : data.slice(0, 4),
-          );
+          setExperts(filtered.slice(0, 4));
         } else {
           setExperts(
             medicalTeam.filter((m) => m.services.includes(slug)).slice(0, 4),
@@ -1926,7 +1929,7 @@ function MeetOurExperts({ slug }) {
                 <Image
                   src={
                     typeof member.image === "string" &&
-                    member.image.startsWith("http")
+                      member.image.startsWith("http")
                       ? member.image
                       : "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d"
                   }
@@ -2116,11 +2119,10 @@ function AmbulancePage() {
                     </div>
                     <Link
                       href={`/book?service=ambulance&package=${pkg.title}`}
-                      className={`h-10 px-5 rounded-xl flex justify-center items-center text-[13px] font-normal transition-all active:scale-95 ${
-                        isIcu
-                          ? "bg-primary/10 text-primary hover:bg-primary hover:text-white"
-                          : "bg-primary text-white hover:bg-primary-dark shadow-[0_2px_10px_0_rgba(15,157,88,0.2)] hover:shadow-[0_4px_144px_0_rgba(15,157,88,0.3)]"
-                      }`}
+                      className={`h-10 px-5 rounded-xl flex justify-center items-center text-[13px] font-normal transition-all active:scale-95 ${isIcu
+                        ? "bg-primary/10 text-primary hover:bg-primary hover:text-white"
+                        : "bg-primary text-white hover:bg-primary-dark shadow-[0_2px_10px_0_rgba(15,157,88,0.2)] hover:shadow-[0_4px_144px_0_rgba(15,157,88,0.3)]"
+                        }`}
                     >
                       Book Now
                     </Link>
@@ -2130,7 +2132,7 @@ function AmbulancePage() {
             })}
           </div>
         )}
-
+        <AmbulanceNetwork />
         {/* Extra Charges */}
         <div className="mt-10 bg-gray-50 rounded-2xl p-6 border border-gray-100 max-w-4xl mx-auto">
           <h4 className="text-lg font-normal text-black tracking-tight mb-5 flex items-center gap-2 justify-center sm:justify-start">
@@ -2167,7 +2169,7 @@ function AmbulancePage() {
           </div>
         </div>
 
-        <AmbulanceNetwork />
+
 
         {/* Value Additions to Fill Space */}
         <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
@@ -2278,7 +2280,7 @@ function AmbulancePage() {
 
       <div className="bg-gray-50 py-16 px-4">
         <div className="max-w-4xl mx-auto">
-          <BookingForm 
+          <BookingForm
             defaultService={SERVICES_CONFIG.ambulance.banner.title}
             title={`Book ${SERVICES_CONFIG.ambulance.banner.title || "Service"}`}
           />
@@ -2623,9 +2625,15 @@ function PhysiotherapyPage() {
                 <div className="w-6 h-6 bg-primary-light rounded-full flex items-center justify-center text-primary text-xs font-normal">
                   {r.name.charAt(0)}
                 </div>
-                <h4 className="font-normal text-black tracking-tight text-xs">
-                  {r.name}
-                </h4>
+                <div className="flex items-center gap-1.5">
+                  <h4 className="font-normal text-black tracking-tight text-xs">
+                    {r.name}
+                  </h4>
+                  <div className="flex items-center gap-0.5 text-[10px] bg-gray-50 text-gray-600 px-1.5 py-0.5 rounded-full border border-gray-100">
+                    <FcGoogle className="w-3 h-3" />
+                    <span className="font-medium">Verified</span>
+                  </div>
+                </div>
               </div>
             </div>
           ))}
@@ -2638,8 +2646,8 @@ function PhysiotherapyPage() {
 
       <div className="bg-gray-50 py-16 px-4">
         <div className="max-w-4xl mx-auto">
-          <BookingForm 
-            defaultService={SERVICES_CONFIG.physiotherapy.banner?.title || "Physiotherapy"} 
+          <BookingForm
+            defaultService={SERVICES_CONFIG.physiotherapy.banner?.title || "Physiotherapy"}
             title={`Book ${SERVICES_CONFIG.physiotherapy.banner?.title || "Physiotherapy"}`}
           />
         </div>
@@ -2799,12 +2807,12 @@ function DoctorPage() {
                 General consultation
               </li>
             </ul>
-            <a
-              href={`tel:${phone}`}
+            <Link
+              href="/book?service=doctor"
               className="mt-auto w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-gray-100 transition active:scale-95"
             >
               Book Doctor Now
-            </a>
+            </Link>
           </div>
 
           {/* Card 2 - Priority */}
@@ -2833,12 +2841,12 @@ function DoctorPage() {
                 Preferred time slot
               </li>
             </ul>
-            <a
-              href={`tel:${phone}`}
+            <Link
+              href="/book?service=doctor"
               className="mt-auto w-full bg-primary text-white py-3.5 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-primary-dark transition active:scale-95 shadow-sm"
             >
               Book Doctor Now
-            </a>
+            </Link>
           </div>
 
           {/* Card 3 - Emergency */}
@@ -2986,12 +2994,12 @@ function DoctorPage() {
             </div>
           </div>
 
-          <a
-            href={`tel:${phone}`}
+          <Link
+            href="/book?service=doctor"
             className="mt-8 w-full bg-primary text-white py-3.5 rounded-xl font-normal flex items-center justify-center hover:bg-primary-dark transition active:scale-95 shadow-md"
           >
             <Phone className="w-5 h-5 mr-2" /> Book Doctor Now
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -3104,9 +3112,15 @@ function DoctorPage() {
                   {r.name.charAt(0)}
                 </div>
                 <div>
-                  <h4 className="font-normal text-black tracking-tight text-xs">
-                    {r.name}
-                  </h4>
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="font-normal text-black tracking-tight text-xs">
+                      {r.name}
+                    </h4>
+                    <div className="flex items-center gap-0.5 text-[10px] bg-gray-50 text-gray-600 px-1.5 py-0.5 rounded-full border border-gray-100">
+                      <FcGoogle className="w-3 h-3" />
+                      <span className="font-medium">Verified</span>
+                    </div>
+                  </div>
                   <span className="text-[10px] text-gray-500">
                     {r.loc}, Lucknow
                   </span>
@@ -3120,8 +3134,8 @@ function DoctorPage() {
       <MeetOurExperts slug="doctor" />
       <div className="bg-gray-50 py-16 px-4">
         <div className="max-w-4xl mx-auto">
-          <BookingForm 
-            defaultService={SERVICES_CONFIG.doctor.banner?.title || "Doctor Visit"} 
+          <BookingForm
+            defaultService={SERVICES_CONFIG.doctor.banner?.title || "Doctor Visit"}
             title={`Book ${SERVICES_CONFIG.doctor.banner?.title || "Doctor Visit"}`}
           />
         </div>
@@ -3210,12 +3224,12 @@ function IcuPage() {
                 24/7 Monitoring
               </p>
               <div className="flex flex-wrap gap-4">
-                <a
-                  href={`tel:${phone}`}
+                <Link
+                  href="/book?service=icu"
                   className="bg-primary text-white px-6 py-3.5 rounded-xl font-normal flex items-center gap-2 shadow-lg hover:bg-primary-dark transition active:scale-95 text-sm sm:text-base"
                 >
-                  <Phone className="w-5 h-5" /> Call Now (8874744756)
-                </a>
+                  <Phone className="w-5 h-5" /> Book Now
+                </Link>
                 <a
                   href={`https://wa.me/91${phone}`}
                   className="bg-white text-black tracking-tight px-6 py-3.5 rounded-xl font-normal flex items-center gap-2 shadow-lg hover:bg-gray-100 transition active:scale-95 text-sm sm:text-base"
@@ -3540,8 +3554,8 @@ function IcuPage() {
       <MeetOurExperts slug="icu" />
       <div className="bg-gray-50 py-16 px-4">
         <div className="max-w-4xl mx-auto">
-          <BookingForm 
-            defaultService={SERVICES_CONFIG.icu.banner?.title || "ICU at Home"} 
+          <BookingForm
+            defaultService={SERVICES_CONFIG.icu.banner?.title || "ICU at Home"}
             title={`Book ${SERVICES_CONFIG.icu.banner?.title || "ICU at Home"}`}
           />
         </div>
@@ -3585,12 +3599,12 @@ function IcuPage() {
             >
               Call Now
             </a>
-            <a
-              href={`https://wa.me/91${phone}`}
+            <Link
+              href="/book?service=icu"
               className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-10 py-4 rounded-2xl font-normal text-lg hover:bg-white/20 transition active:scale-95"
             >
-              Book ICU Service
-            </a>
+              Book Online
+            </Link>
           </div>
         </div>
       </section>
@@ -3665,11 +3679,10 @@ export default function ServicePage({ params }) {
                   <button
                     key={tag}
                     onClick={() => setSearchQuery(tag)}
-                    className={`text-xs font-normal px-4 py-2 rounded-xl border transition-all ${
-                      searchQuery === tag
-                        ? "bg-primary text-white border-primary"
-                        : "bg-white text-gray-600 border-gray-100 hover:border-primary/30"
-                    }`}
+                    className={`text-xs font-normal px-4 py-2 rounded-xl border transition-all ${searchQuery === tag
+                      ? "bg-primary text-white border-primary"
+                      : "bg-white text-gray-600 border-gray-100 hover:border-primary/30"
+                      }`}
                   >
                     {tag}
                   </button>
@@ -3862,8 +3875,8 @@ export default function ServicePage({ params }) {
         <MeetOurExperts slug={slug} />
         <div className="bg-gray-50 py-16 px-4">
           <div className="max-w-4xl mx-auto">
-            <BookingForm 
-              defaultService={service.banner?.title || slug} 
+            <BookingForm
+              defaultService={service.banner?.title || slug}
               title={`Book ${service.banner?.title || "Service"}`}
               hideService={true}
             />
@@ -3897,8 +3910,8 @@ export default function ServicePage({ params }) {
       <MeetOurExperts slug={slug} />
       <div className="bg-gray-50 py-16 px-4">
         <div className="max-w-4xl mx-auto">
-          <BookingForm 
-            defaultService={service.banner?.title || slug} 
+          <BookingForm
+            defaultService={service.banner?.title || slug}
             title={`Book ${service.banner?.title || "Service"}`}
             hideService={true}
           />
