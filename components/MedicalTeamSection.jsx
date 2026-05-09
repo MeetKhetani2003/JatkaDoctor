@@ -43,11 +43,9 @@ export default function MedicalTeamSection() {
   }, []);
 
   const handleCardClick = (slug) => {
-    if (slug) {
-      router.push(`/doctor/${slug}`);
-    } else {
-      router.push("/our-medical-team");
-    }
+
+    router.push(`/doctor/${slug}`);
+
   };
 
   return (
@@ -86,8 +84,8 @@ export default function MedicalTeamSection() {
                 <div className="relative h-48 w-full bg-gray-100">
                   <Image
                     src={
-                      member.imageFileId 
-                        ? `/api/images/${member.imageFileId}` 
+                      member.imageFileId
+                        ? `/api/images/${member.imageFileId}`
                         : (member.image && member.image.startsWith("http")
                           ? member.image
                           : "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d")
