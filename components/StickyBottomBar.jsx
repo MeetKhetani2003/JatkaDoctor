@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { FaUserMd, FaWhatsapp } from "react-icons/fa";
-import { CalendarCheck, PhoneCall, Menu } from "lucide-react";
+import { CalendarCheck, PhoneCall, Ambulance } from "lucide-react";
 import { motion } from "framer-motion";
 
 const phone = "8874744756";
@@ -57,17 +57,17 @@ export default function StickyBottomBar() {
           <span className="text-[12px] font-semibold tracking-tight leading-none whitespace-nowrap">Call Us</span>
         </a>
 
-        {/* Menu */}
-        <button
-          onClick={(e) => {
-             e.preventDefault();
-             window.dispatchEvent(new Event('open-mobile-menu'));
+        {/* Emergency Ambulance */}
+        <a
+          href={`tel:${phone}`}
+          className="flex flex-col items-center justify-center gap-1 flex-1 h-full text-white transition-colors animate-pulse-red"
+          style={{
+            background: "linear-gradient(135deg, #ef4444, #b91c1c)",
           }}
-          className="flex flex-col items-center justify-center gap-1 flex-1 h-full text-[#003366] active:bg-gray-50 transition-colors"
         >
-          <Menu size={30} strokeWidth={2.5} className="text-[#003366] mb-0.5" />
-          <span className="text-[12px] font-semibold tracking-tight leading-none">Menu</span>
-        </button>
+          <Ambulance size={28} strokeWidth={2.5} className="text-white mb-0.5" />
+          <span className="text-[10px] font-bold tracking-tighter leading-none uppercase">Ambulance</span>
+        </a>
       </div>
 
       {/* Safe area padding for iOS */}

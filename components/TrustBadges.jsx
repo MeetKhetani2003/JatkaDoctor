@@ -7,25 +7,25 @@ const badges = [
     name: "ISO 9001:2015",
     desc: "Certified Quality",
     // Official ISO Certification Seal
-    logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/ISO_9001-2015_logo.svg/512px-ISO_9001-2015_logo.svg.png",
+    logo: "/certificates/iso.png",
   },
   {
     name: "MSME Registered",
     desc: "Govt. of India",
     // Ministry of MSME Logo
-    logo: "https://upload.wikimedia.org/wikipedia/en/thumb/0/05/Logo_of_Ministry_of_Micro%2C_Small_and_Medium_Enterprises.svg/1200px-Logo_of_Ministry_of_Micro%2C_Small_and_Medium_Enterprises.svg.png",
+    logo: "/certificates/msme.png",
   },
   {
     name: "Startup India",
     desc: "DPIIT Recognized",
     // Startup India Official Logo
-    logo: "https://www.startupindia.gov.in/content/dam/invest-india/new_logo.png",
+    logo: "/certificates/startup.png",
   },
   {
     name: "NABL Certified",
     desc: "Lab Standards",
     // NABL India Logo
-    logo: "https://upload.wikimedia.org/wikipedia/en/2/23/NABL_India_logo.png",
+    logo: "/certificates/nabl.png",
   },
 ];
 

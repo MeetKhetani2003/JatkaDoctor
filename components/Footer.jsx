@@ -222,10 +222,11 @@ const Footer = () => {
             </div>
 
             <div className="flex gap-4 mt-2">
-              <Link href="#" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#0F9D58] transition-all"><Facebook size={14} /></Link>
-              <Link href="#" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#0F9D58] transition-all"><Instagram size={14} /></Link>
-              <Link href="#" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#0F9D58] transition-all"><Linkedin size={14} /></Link>
-              <Link href="#" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#0F9D58] transition-all"><Youtube size={14} /></Link>
+              <a href="https://www.facebook.com/share/1KeVetNNEe/" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#0F9D58] transition-all"><Facebook size={14} /></a>
+              <a href="https://www.instagram.com/drjhatkamedicare?igsh=MTl6ZTU5c2N4Ymw=" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#0F9D58] transition-all"><Instagram size={14} /></a>
+              <a href="https://www.linkedin.com/in/govind-kumar-verma-ab38063b0?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#0F9D58] transition-all"><Linkedin size={14} /></a>
+              <a href="https://www.youtube.com/@DrJhatkaMedicare" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#0F9D58] transition-all"><Youtube size={14} /></a>
+              <a href="https://share.google/9FD3nReVcI7s8BEf2" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#0F9D58] transition-all" title="Google Business"><span className="text-[12px] font-bold">G</span></a>
             </div>
           </div>
         </div>

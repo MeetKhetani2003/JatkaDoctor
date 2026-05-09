@@ -32,6 +32,8 @@ function BookingFormInner({
     phone: "",
     service: defaultService,
     doctor: defaultDoctor,
+    appointmentDate: "",
+    appointmentTime: "",
     message: ""
   });
 
@@ -135,12 +137,14 @@ function BookingFormInner({
           phone: formData.phone,
           category: formData.service || 'General Inquiry',
           doctor: formData.doctor || 'Any Available',
+          appointmentDate: formData.appointmentDate || new Date().toISOString().split('T')[0],
+          appointmentTime: formData.appointmentTime || '09:00',
           notes: formData.message
         })
       });
       if (res.ok) {
         setSuccess(true);
-        setFormData({ name: "", phone: "", service: defaultService, doctor: "", message: "" });
+        setFormData({ name: "", phone: "", service: defaultService, doctor: "", appointmentDate: "", appointmentTime: "", message: "" });
         setAgreed(false);
       } else {
         alert("Error submitting request. Please try again.");
@@ -271,11 +275,34 @@ function BookingFormInner({
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
         </div>
 
+        {/* Appointment Date */}
+        <div className="relative">
+          <label className="block text-xs font-bold text-gray-600 mb-1.5">📅 Preferred Date</label>
+          <input
+            type="date"
+            value={formData.appointmentDate}
+            onChange={e => setFormData({...formData, appointmentDate: e.target.value})}
+            min={new Date().toISOString().split('T')[0]}
+            className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-gray-700"
+          />
+        </div>
+
+        {/* Appointment Time */}
+        <div className="relative">
+          <label className="block text-xs font-bold text-gray-600 mb-1.5">⏰ Preferred Time</label>
+          <input
+            type="time"
+            value={formData.appointmentTime}
+            onChange={e => setFormData({...formData, appointmentTime: e.target.value})}
+            className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-gray-700"
+          />
+        </div>
+
         <textarea
           name="message"
           value={formData.message}
           onChange={e => setFormData({...formData, message: e.target.value})}
-          placeholder="Your Message"
+          placeholder="Your Message / Symptoms"
           rows={3}
           className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition resize-none"
         />
