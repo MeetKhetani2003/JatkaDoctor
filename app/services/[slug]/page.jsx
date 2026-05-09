@@ -5,7 +5,7 @@ import { medicalTeam } from "@/lib/medicalTeam";
 import { useState, useEffect, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import BookingForm from "@/components/BookingForm";
 import { FcGoogle } from "react-icons/fc";
@@ -1851,6 +1851,7 @@ function StickyBottomBar() {
 function MeetOurExperts({ slug }) {
   const [experts, setExperts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchExperts = async () => {
@@ -1923,7 +1924,8 @@ function MeetOurExperts({ slug }) {
           {experts.map((member) => (
             <div
               key={member._id || member.id}
-              className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden flex flex-col p-5 text-center group hover:shadow-md transition-all duration-300"
+              onClick={() => member.slug && router.push(`/doctor/${member.slug}`)}
+              className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden flex flex-col p-5 text-center group hover:shadow-md transition-all duration-300 cursor-pointer active:scale-[0.98]"
             >
               <div className="relative w-24 h-24 rounded-3xl overflow-hidden mx-auto mb-4 shadow-sm group-hover:scale-105 transition-transform">
                 <Image
@@ -1952,6 +1954,7 @@ function MeetOurExperts({ slug }) {
                 href={
                   member.slug ? `/doctor/${member.slug}` : "/our-medical-team"
                 }
+                onClick={(e) => e.stopPropagation()}
                 className="mt-auto py-3 bg-primary text-white rounded-2xl text-[11px] font-normal transition active:scale-95 shadow-lg shadow-primary/10 hover:bg-primary-dark"
               >
                 View Profile

@@ -16,12 +16,14 @@ import {
   ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import StickyBottomBar from "@/components/StickyBottomBar";
 import { medicalTeam as staticTeam } from "@/lib/medicalTeam";
 
 export default function MedicalTeamPage() {
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState("All");
   const [searchQuery, setSearchQuery] = useState("");
   const [team, setTeam] = useState([]);
@@ -146,7 +148,7 @@ export default function MedicalTeamPage() {
                 key={member._id || member.id}
                 onClick={() => {
                   if (member.slug)
-                    window.location.href = `/doctor/${member.slug}`;
+                    router.push(`/doctor/${member.slug}`);
                 }}
                 className="bg-white rounded-[32px] p-5 border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col group active:scale-[0.99] cursor-pointer"
               >
