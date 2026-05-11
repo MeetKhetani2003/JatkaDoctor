@@ -61,6 +61,7 @@ import Navbar from "@/components/Header";
 import FAQSection from "@/components/FAQSection";
 import AmbulanceNetwork from "@/components/AmbulanceNetwork";
 import PhysiotherapyCenters from "@/components/PhysiotherapyCenters";
+import { useBookingModal } from "@/context/BookingModalContext";
 
 
 const phone = "8874744756";
@@ -1462,6 +1463,7 @@ const SERVICES_CONFIG = {
 // }
 
 function Banner({ config }) {
+  const { openModal } = useBookingModal();
   return (
     <section className="mt-14 relative w-full bg-primary-soft">
       <div className="max-w-7xl mx-auto">
@@ -1511,13 +1513,13 @@ function Banner({ config }) {
                 <Phone className="w-4 h-4" />
                 Call Now
               </a>
-              <a
-                href={`https://wa.me/91${phone}`}
-                className="bg-primary-dark text-white border-2 border-white/30 px-5 py-3 rounded-xl text-sm font-normal flex items-center gap-2 active:scale-95 transition"
+              <button
+                onClick={() => openModal({ service: config.title })}
+                className="bg-primary text-white px-5 py-3 rounded-xl text-sm font-normal flex items-center gap-2 active:scale-95 transition shadow-lg border border-white/20"
               >
-                <MessageCircle className="w-4 h-4" />
-                WhatsApp
-              </a>
+                <Calendar className="w-4 h-4" />
+                Book Online
+              </button>
             </motion.div>
           </div>
         </div>
@@ -1527,6 +1529,7 @@ function Banner({ config }) {
 }
 
 function ServiceTypes({ types, slug }) {
+  const { openModal } = useBookingModal();
   return (
     <section className="px-4 pt-8 max-w-7xl mx-auto">
       <h2 className="text-lg sm:text-xl font-normal text-black tracking-tight mb-4">
@@ -1542,6 +1545,7 @@ function ServiceTypes({ types, slug }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05 }}
+              onClick={() => openModal({ service: slug, package: type.title })}
               className="bg-white rounded-2xl border border-gray-100 p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] flex flex-col items-center text-center hover:border-primary/20 transition-all active:scale-95 cursor-pointer"
             >
               <div className="w-14 h-14 rounded-xl bg-primary-light flex items-center justify-center mb-3">
@@ -1605,6 +1609,7 @@ function Benefits({ benefits }) {
 }
 
 function Packages({ packages }) {
+  const { openModal } = useBookingModal();
   const [selectedPackage, setSelectedPackage] = useState(null);
 
   return (
@@ -1849,6 +1854,7 @@ function StickyBottomBar() {
 
 // ==================== RELEVANT EXPERTS SECTION ====================
 function MeetOurExperts({ slug }) {
+  const { openModal } = useBookingModal();
   const [experts, setExperts] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -1950,15 +1956,27 @@ function MeetOurExperts({ slug }) {
               <div className="text-[10px] text-gray-400 font-normal mb-6 bg-gray-50 py-1.5 px-4 rounded-full inline-block mx-auto">
                 {member.experience} Experience
               </div>
-              <Link
-                href={
-                  member.slug ? `/doctor/${member.slug}` : "/our-medical-team"
-                }
-                onClick={(e) => e.stopPropagation()}
-                className="mt-auto py-3 bg-primary text-white rounded-2xl text-[11px] font-normal transition active:scale-95 shadow-lg shadow-primary/10 hover:bg-primary-dark"
-              >
-                View Profile
-              </Link>
+              <div className="flex gap-2 mt-auto">
+                <Link
+                  href={
+                    member.slug ? `/doctor/${member.slug}` : "/our-medical-team"
+                  }
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex-1 py-3 bg-gray-50 text-gray-700 rounded-2xl text-[11px] font-normal transition active:scale-95 border border-gray-100 hover:bg-gray-100"
+                >
+                  Profile
+                </Link>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const serviceName = member.category?.name || member.category || 'Doctor';
+                    openModal({ service: serviceName, doctor: member.name });
+                  }}
+                  className="flex-2 py-3 bg-primary text-white rounded-2xl text-[11px] font-normal transition active:scale-95 shadow-lg shadow-primary/10 hover:bg-primary-dark px-4"
+                >
+                  Book Now
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -1971,6 +1989,7 @@ function MeetOurExperts({ slug }) {
 
 // ==================== AMBULANCE PAGE ====================
 function AmbulancePage() {
+  const { openModal } = useBookingModal();
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -2120,15 +2139,15 @@ function AmbulancePage() {
                         </span>
                       </div>
                     </div>
-                    <Link
-                      href={`/book?service=ambulance&package=${pkg.title}`}
+                    <button
+                      onClick={() => openModal({ service: 'Ambulance Service', package: pkg.title })}
                       className={`h-10 px-5 rounded-xl flex justify-center items-center text-[13px] font-normal transition-all active:scale-95 ${isIcu
                         ? "bg-primary/10 text-primary hover:bg-primary hover:text-white"
                         : "bg-primary text-white hover:bg-primary-dark shadow-[0_2px_10px_0_rgba(15,157,88,0.2)] hover:shadow-[0_4px_144px_0_rgba(15,157,88,0.3)]"
                         }`}
                     >
                       Book Now
-                    </Link>
+                    </button>
                   </div>
                 </div>
               );
@@ -2323,6 +2342,7 @@ function AmbulancePage() {
 
 // ==================== PHYSIOTHERAPY PAGE ====================
 function PhysiotherapyPage() {
+  const { openModal } = useBookingModal();
   const phone = "919026365448";
 
   return (
@@ -2394,12 +2414,12 @@ function PhysiotherapyPage() {
                 ₹999
               </span>
             </div>
-            <Link
-              href={`/book?service=physiotherapy&package=trial`}
+            <button
+              onClick={() => openModal({ service: 'Physiotherapy', package: 'Trial Session' })}
               className="mt-5 w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-gray-100 transition active:scale-95"
             >
               Book Trial
-            </Link>
+            </button>
           </div>
 
           {/* Card 2 */}
@@ -2418,12 +2438,12 @@ function PhysiotherapyPage() {
                 ₹3999
               </span>
             </div>
-            <Link
-              href={`/book?service=physiotherapy&package=7days`}
+            <button
+              onClick={() => openModal({ service: 'Physiotherapy', package: '7 Days Package' })}
               className="mt-5 w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-gray-100 transition active:scale-95"
             >
               Book Package
-            </Link>
+            </button>
           </div>
 
           {/* Card 3 - MOST POPULAR (Soft Highlight) */}
@@ -2445,12 +2465,12 @@ function PhysiotherapyPage() {
             <p className="text-[11px] text-gray-500 mt-2">
               Recommended for optimal recovery
             </p>
-            <Link
-              href={`/book?service=physiotherapy&package=15days`}
+            <button
+              onClick={() => openModal({ service: 'Physiotherapy', package: '15 Days Package' })}
               className="mt-5 w-full bg-primary text-white py-3.5 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-primary-dark transition active:scale-95 shadow-sm"
             >
               Book 15 Days Now
-            </Link>
+            </button>
           </div>
 
           {/* Card 4 */}
@@ -2469,12 +2489,12 @@ function PhysiotherapyPage() {
                 ₹12999
               </span>
             </div>
-            <Link
-              href={`/book?service=physiotherapy&package=30days`}
+            <button
+              onClick={() => openModal({ service: 'Physiotherapy', package: '30 Days Package' })}
               className="mt-5 w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-gray-100 transition active:scale-95"
             >
               Book 30 Days
-            </Link>
+            </button>
           </div>
 
           {/* Card 5 */}
@@ -2709,6 +2729,7 @@ function PhysiotherapyPage() {
 
 // ==================== DOCTOR PAGE ====================
 function DoctorPage() {
+  const { openModal } = useBookingModal();
   const phone = "8874744756";
 
   return (
@@ -2810,12 +2831,12 @@ function DoctorPage() {
                 General consultation
               </li>
             </ul>
-            <Link
-              href="/book?service=doctor"
+            <button
+              onClick={() => openModal({ service: 'Doctor at Home', package: 'Standard Visit' })}
               className="mt-auto w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-gray-100 transition active:scale-95"
             >
               Book Doctor Now
-            </Link>
+            </button>
           </div>
 
           {/* Card 2 - Priority */}
@@ -2844,12 +2865,12 @@ function DoctorPage() {
                 Preferred time slot
               </li>
             </ul>
-            <Link
-              href="/book?service=doctor"
+            <button
+              onClick={() => openModal({ service: 'Doctor at Home', package: 'Priority Visit' })}
               className="mt-auto w-full bg-primary text-white py-3.5 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-primary-dark transition active:scale-95 shadow-sm"
             >
               Book Doctor Now
-            </Link>
+            </button>
           </div>
 
           {/* Card 3 - Emergency */}
@@ -3196,6 +3217,7 @@ function DoctorPage() {
 
 // ==================== ICU AT HOME PAGE ====================
 function IcuPage() {
+  const { openModal } = useBookingModal();
   const phone = "8874744756";
 
   return (
@@ -3227,18 +3249,18 @@ function IcuPage() {
                 24/7 Monitoring
               </p>
               <div className="flex flex-wrap gap-4">
-                <Link
-                  href="/book?service=icu"
+                <button
+                  onClick={() => openModal({ service: 'ICU at Home' })}
                   className="bg-primary text-white px-6 py-3.5 rounded-xl font-normal flex items-center gap-2 shadow-lg hover:bg-primary-dark transition active:scale-95 text-sm sm:text-base"
                 >
                   <Phone className="w-5 h-5" /> Book Now
-                </Link>
-                <a
-                  href={`https://wa.me/91${phone}`}
+                </button>
+                <button
+                  onClick={() => openModal({ service: 'ICU at Home' })}
                   className="bg-white text-black tracking-tight px-6 py-3.5 rounded-xl font-normal flex items-center gap-2 shadow-lg hover:bg-gray-100 transition active:scale-95 text-sm sm:text-base"
                 >
                   <Calendar className="w-5 h-5" /> Book ICU Setup
-                </a>
+                </button>
               </div>
             </div>
           </div>
@@ -3602,12 +3624,12 @@ function IcuPage() {
             >
               Call Now
             </a>
-            <Link
-              href="/book?service=icu"
+            <button
+              onClick={() => openModal({ service: 'ICU at Home' })}
               className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-10 py-4 rounded-2xl font-normal text-lg hover:bg-white/20 transition active:scale-95"
             >
               Book Online
-            </Link>
+            </button>
           </div>
         </div>
       </section>
@@ -3619,6 +3641,7 @@ function IcuPage() {
 
 // ==================== MAIN PAGE ====================
 export default function ServicePage({ params }) {
+  const { openModal } = useBookingModal();
   const { slug } = use(params);
   const [visibleTests, setVisibleTests] = useState(8); // Control visible tests
   const [searchQuery, setSearchQuery] = useState("");
@@ -3794,7 +3817,10 @@ export default function ServicePage({ params }) {
                     <span className="text-lg font-normal text-primary">
                       {test.price}
                     </span>
-                    <button className="bg-gray-100 text-gray-900 px-6 py-2 rounded-xl text-xs font-normal hover:bg-primary hover:text-white transition-all active:scale-95">
+                    <button 
+                      onClick={() => openModal({ service: 'Lab Test', test: test.name })}
+                      className="bg-gray-100 text-gray-900 px-6 py-2 rounded-xl text-xs font-normal hover:bg-primary hover:text-white transition-all active:scale-95"
+                    >
                       Book Now
                     </button>
                   </div>

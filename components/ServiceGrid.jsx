@@ -53,7 +53,7 @@ const services = [
   {
     title: "Lab Test\nat Home",
     icon: TestTube,
-    link: "/lab-test",
+    link: "/services/lab-test",
     desc: "NABL Certified",
   },
   {

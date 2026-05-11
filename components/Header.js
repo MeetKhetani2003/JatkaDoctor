@@ -19,6 +19,7 @@ import {
   Phone,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useBookingModal } from "@/context/BookingModalContext";
 
 const PRIMARY = "#0F9D58";
 const PRIMARY_LIGHT = "#E8F8F1";
@@ -456,6 +457,7 @@ function MobileDrawer({ open, onClose }) {
 
 /* ─── Main Navbar ──────────────────────────────────────── */
 export default function Navbar() {
+  const { openModal } = useBookingModal();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
   const [servicesHover, setServicesHover] = useState(false);
@@ -580,8 +582,11 @@ export default function Navbar() {
                 <Phone className="w-3.5 h-3.5" />
                 +91 8874744756
               </a>
-              <Link
-                href={pathname?.startsWith('/services/') ? `/book?service=${pathname.split('/services/')[1]}` : "/book"}
+              <button
+                onClick={() => {
+                  const s = pathname?.startsWith('/services/') ? pathname.split('/services/')[1] : "";
+                  openModal({ service: s });
+                }}
                 className="px-5 py-2 rounded-xl text-[13px] font-normal text-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97]"
                 style={{
                   background: `linear-gradient(135deg, ${PRIMARY}, ${PRIMARY_DARK})`,
@@ -589,7 +594,7 @@ export default function Navbar() {
                 }}
               >
                 Book Appointment
-              </Link>
+              </button>
             </div>
 
             {/* Mobile right controls */}

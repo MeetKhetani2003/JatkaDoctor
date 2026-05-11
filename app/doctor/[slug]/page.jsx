@@ -27,10 +27,12 @@ import {
   Home,
 } from "lucide-react";
 import BookingForm from "@/components/BookingForm";
+import { useBookingModal } from "@/context/BookingModalContext";
 
 const PRIMARY = "#0F9D58";
 
 export default function DoctorProfilePage() {
+  const { openModal } = useBookingModal();
   const params = useParams();
   const [doctor, setDoctor] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -403,17 +405,17 @@ export default function DoctorProfilePage() {
             </a>
 
             {/* Video Consultation Button */}
-            <Link
-              href={`/book?doctor=${doctor.slug}&service=Video&category=${doctor.category?.name || doctor.category || ""}`}
+            <button
+              onClick={() => openModal({ service: 'Video Consultation', doctor: doctor.name })}
               className="h-12 w-14 sm:h-14 sm:w-auto sm:flex-1 rounded-xl sm:rounded-2xl bg-purple-50 hover:bg-purple-100 border border-purple-200 flex items-center justify-center gap-2 text-purple-700 active:scale-95 transition-all font-bold text-xs sm:text-sm"
             >
               <Video className="w-5 h-5" />
               <span className="hidden sm:inline">Video</span>
-            </Link>
+            </button>
 
             {/* Book Now Button */}
-            <Link
-              href={`/book?doctor=${doctor.slug}&category=${doctor.category?.name || doctor.category || ""}`}
+            <button
+              onClick={() => openModal({ service: doctor.category?.name || doctor.category || 'Doctor Visit', doctor: doctor.name })}
               className="h-12 sm:h-14 flex-1 rounded-xl sm:rounded-2xl flex items-center justify-center gap-2 text-white text-xs sm:text-sm font-bold shadow-lg active:scale-95 transition-all"
               style={{
                 background: `linear-gradient(135deg, ${PRIMARY}, #0d8a4e)`,
@@ -422,7 +424,7 @@ export default function DoctorProfilePage() {
               <Calendar className="w-5 h-5" />
               <span>Book</span>
               <ArrowRight className="w-4 h-4 hidden sm:inline" />
-            </Link>
+            </button>
           </div>
         </div>
       </div>

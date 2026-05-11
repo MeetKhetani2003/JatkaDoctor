@@ -12,9 +12,11 @@ import {
   Loader2,
   MapPin,
 } from "lucide-react";
+import { useBookingModal } from "@/context/BookingModalContext";
 import { medicalTeam as staticTeam } from "@/lib/medicalTeam";
 
 export default function MedicalTeamSection() {
+  const { openModal } = useBookingModal();
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -159,16 +161,16 @@ export default function MedicalTeamSection() {
                     >
                       <User className="w-3 h-3" /> Profile
                     </Link>
-                    <Link
-                      href={
-                        member.slug
-                          ? `/book?doctor=${member.slug}&category=${member.category?.slug || "general"}`
-                          : "/book"
-                      }
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const serviceName = member.category?.name || member.category || 'Doctor';
+                        openModal({ service: serviceName, doctor: member.name });
+                      }}
                       className="flex items-center justify-center gap-2 py-3 rounded-2xl bg-primary text-white text-xs font-normal shadow-md shadow-primary/20 hover:bg-primary-dark transition active:scale-95"
                     >
                       Book Now
-                    </Link>
+                    </button>
                   </div>
                 </div>
               </div>

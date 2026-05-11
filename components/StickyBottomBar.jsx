@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useBookingModal } from "@/context/BookingModalContext";
 import { FaUserMd, FaWhatsapp } from "react-icons/fa";
 import { CalendarCheck, PhoneCall, Ambulance } from "lucide-react";
 import { motion } from "framer-motion";
@@ -10,6 +11,7 @@ const phone = "8874744756";
 const whatsapp = "8707790677";
 
 export default function StickyBottomBar() {
+  const { openModal } = useBookingModal();
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) return null;
 
@@ -31,13 +33,16 @@ export default function StickyBottomBar() {
         </Link>
 
         {/* Book Appt */}
-        <Link
-          href={pathname?.startsWith('/services/') ? `/book?service=${pathname.split('/services/')[1]}` : "/book"}
+        <button
+          onClick={() => {
+            const s = pathname?.startsWith('/services/') ? pathname.split('/services/')[1] : "";
+            openModal({ service: s });
+          }}
           className="flex flex-col items-center justify-center gap-1 flex-1 h-full text-[#003366] active:bg-gray-50 transition-colors"
         >
           <CalendarCheck size={26} strokeWidth={2} className="text-[#003366] mb-0.5" />
           <span className="text-[12px] font-semibold tracking-tight leading-none whitespace-nowrap">Book Appt</span>
-        </Link>
+        </button>
 
         {/* Chat */}
         <a

@@ -17,7 +17,9 @@ function BookingFormInner({
   title = "Get in Touch", 
   subtitle = "We respond within minutes",
   hideService = false,
-  defaultDoctor = ""
+  defaultDoctor = "",
+  prefilledMessage = "",
+  onSuccess = () => {}
 }) {
   const searchParams = useSearchParams();
   const [agreed, setAgreed] = useState(false);
@@ -28,6 +30,7 @@ function BookingFormInner({
   const [categories, setCategories] = useState([]);
   const [allDoctors, setAllDoctors] = useState([]);
   const [filteredDoctors, setFilteredDoctors] = useState([]);
+  const [ambulances, setAmbulances] = useState([]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -37,21 +40,24 @@ function BookingFormInner({
     doctor: defaultDoctor,
     appointmentDate: "",
     appointmentTime: "",
-    message: ""
+    message: prefilledMessage || ""
   });
 
   // Fetch categories and doctors on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [catsRes, docsRes] = await Promise.all([
+        const [catsRes, docsRes, ambRes] = await Promise.all([
           fetch('/api/categories'),
-          fetch('/api/doctors')
+          fetch('/api/doctors'),
+          fetch('/api/ambulances')
         ]);
         const cats = await catsRes.json();
         const docs = await docsRes.json();
+        const ambs = await ambRes.json();
         setCategories(Array.isArray(cats) ? cats : []);
         setAllDoctors(Array.isArray(docs) ? docs : []);
+        setAmbulances(Array.isArray(ambs) ? ambs : []);
         
         // Initial filter if defaultService is provided
         if (defaultService) {
@@ -72,10 +78,10 @@ function BookingFormInner({
           const slugMapping = {
             'ambulance': 'Ambulance Service',
             'physiotherapy': 'Physiotherapy',
-            'doctor': 'Doctor at Home',
-            'icu': 'ICU at Home',
-            'home-care': 'Home Care Services',
-            'nursing': 'Nursing Care',
+            'doctor': 'Doctors',
+            'icu': 'ICU Support',
+            'home-care': 'Caregivers',
+            'nursing': 'Nurses',
             'lab-test': 'Lab Test',
             'equipment': 'Equipment Rental'
           };
@@ -86,7 +92,7 @@ function BookingFormInner({
           const matchedCat = cats.find(c => 
             c.slug === serviceParam || 
             c.name.toLowerCase() === serviceParam.toLowerCase() ||
-            c.name === mappedName
+            c.name.toLowerCase() === mappedName.toLowerCase()
           );
 
           setFormData(prev => ({ ...prev, service: matchedCat ? matchedCat.name : mappedName }));
@@ -162,6 +168,7 @@ function BookingFormInner({
         setSuccess(true);
         setFormData({ name: "", phone: "", email: "", service: defaultService, doctor: "", appointmentDate: "", appointmentTime: "", message: "" });
         setAgreed(false);
+        onSuccess();
       } else {
         alert(data.error || "Error submitting request. Please try again.");
       }
@@ -277,18 +284,29 @@ function BookingFormInner({
               className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-gray-700 appearance-none"
             >
               <option value="">Select Service</option>
+              {/* Always show core services if not in DB categories */}
+              {(!categories.some(c => c.name === 'Ambulance Service')) && (
+                <option value="Ambulance Service">Ambulance Service</option>
+              )}
+              {(!categories.some(c => c.name === 'Physiotherapy')) && (
+                <option value="Physiotherapy">Physiotherapy</option>
+              )}
+              {(!categories.some(c => c.name === 'Lab Test')) && (
+                <option value="Lab Test">Lab Test</option>
+              )}
+              {(!categories.some(c => c.name === 'Equipment Rental')) && (
+                <option value="Equipment Rental">Equipment Rental</option>
+              )}
+              
               {categories.map(cat => (
                 <option key={cat._id} value={cat.name}>{cat.name}</option>
               ))}
               {!categories.length && (
                 <>
-                  <option>Ambulance Service</option>
-                  <option>Doctor at Home</option>
-                  <option>ICU at Home</option>
-                  <option>Physiotherapy</option>
-                  <option>Lab Test</option>
-                  <option>Nursing Care</option>
-                  <option>Equipment Rental</option>
+                  <option>Doctors</option>
+                  <option>ICU Support</option>
+                  <option>Nurses</option>
+                  <option>Caregivers</option>
                 </>
               )}
             </select>
@@ -297,20 +315,47 @@ function BookingFormInner({
         )}
 
         <div className="relative">
-          <select 
-            name="doctor" 
-            value={formData.doctor}
-            onChange={e => setFormData({...formData, doctor: e.target.value})}
-            className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-gray-700 appearance-none"
-          >
-            <option value="">Select Preferred Doctor (Optional)</option>
-            <option value="Any Available">Any Available Expert</option>
-            {filteredDoctors.map(doc => (
-              <option key={doc._id} value={doc.name}>
-                {doc.name} ({doc.role || (doc.category?.name || doc.category)})
-              </option>
-            ))}
-          </select>
+          {formData.service === 'Ambulance Service' ? (
+            <select 
+              name="doctor" 
+              value={formData.doctor}
+              onChange={e => setFormData({...formData, doctor: e.target.value})}
+              className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-gray-700 appearance-none"
+            >
+              <option value="">Select Preferred Ambulance (Optional)</option>
+              <option value="Any Available">Any Available Ambulance</option>
+              {/* Common Ambulance Types */}
+              <optgroup label="Ambulance Types">
+                <option value="Normal Ambulance">Normal Ambulance</option>
+                <option value="Oxygen Ambulance">Oxygen Ambulance</option>
+                <option value="ICU Ventilator Ambulance">ICU Ventilator Ambulance</option>
+                <option value="Cardiac Ambulance">Cardiac Ambulance</option>
+              </optgroup>
+              {/* Dynamic Ambulance Locations from DB */}
+              {ambulances.length > 0 && (
+                <optgroup label="Available Nearby">
+                  {ambulances.map(amb => (
+                    <option key={amb._id} value={amb.name}>{amb.name} ({amb.city})</option>
+                  ))}
+                </optgroup>
+              )}
+            </select>
+          ) : (
+            <select 
+              name="doctor" 
+              value={formData.doctor}
+              onChange={e => setFormData({...formData, doctor: e.target.value})}
+              className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-gray-700 appearance-none"
+            >
+              <option value="">Select Preferred Doctor (Optional)</option>
+              <option value="Any Available">Any Available Expert</option>
+              {filteredDoctors.map(doc => (
+                <option key={doc._id} value={doc.name}>
+                  {doc.name} ({doc.role || (doc.category?.name || doc.category)})
+                </option>
+              ))}
+            </select>
+          )}
           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
         </div>
 
