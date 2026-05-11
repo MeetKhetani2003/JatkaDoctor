@@ -32,6 +32,7 @@ function BookingFormInner({
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
+    email: "",
     service: defaultService,
     doctor: defaultDoctor,
     appointmentDate: "",
@@ -125,6 +126,8 @@ function BookingFormInner({
     }
   }, [formData.service, allDoctors]);
 
+  const [bookingId, setBookingId] = useState("");
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!agreed) return;
@@ -144,6 +147,7 @@ function BookingFormInner({
         body: JSON.stringify({
           patientName: formData.name,
           phone: formData.phone,
+          email: formData.email,
           category: formData.service || 'General Inquiry',
           doctor: formData.doctor || 'Any Available',
           appointmentDate: formData.appointmentDate || new Date().toISOString().split('T')[0],
@@ -152,12 +156,14 @@ function BookingFormInner({
           recaptchaToken: token
         })
       });
+      const data = await res.json();
       if (res.ok) {
+        setBookingId(data.bookingId);
         setSuccess(true);
-        setFormData({ name: "", phone: "", service: defaultService, doctor: "", appointmentDate: "", appointmentTime: "", message: "" });
+        setFormData({ name: "", phone: "", email: "", service: defaultService, doctor: "", appointmentDate: "", appointmentTime: "", message: "" });
         setAgreed(false);
       } else {
-        alert("Error submitting request. Please try again.");
+        alert(data.error || "Error submitting request. Please try again.");
       }
     } catch (err) {
       alert("Error submitting request.");
@@ -177,11 +183,22 @@ function BookingFormInner({
           <Send className="w-8 h-8 text-primary" />
         </div>
         <h2 className="text-xl font-bold text-gray-900 mb-2">Request Received!</h2>
+        
+        {bookingId && (
+          <div className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 mb-4">
+            <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Your Booking ID</span>
+            <div className="text-lg font-black text-primary tracking-tight">{bookingId}</div>
+          </div>
+        )}
+
         <p className="text-sm text-gray-500 mb-6 max-w-xs">
           Our care coordinator will contact you at <strong>{phone}</strong> within 15 minutes.
         </p>
         <button 
-          onClick={() => setSuccess(false)}
+          onClick={() => {
+            setSuccess(false);
+            setBookingId("");
+          }}
           className="text-primary font-medium hover:underline text-sm"
         >
           Send another request
@@ -234,6 +251,18 @@ function BookingFormInner({
             onChange={e => setFormData({...formData, phone: e.target.value})}
             type="tel"
             placeholder="Phone Number"
+            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+          />
+        </div>
+
+        <div className="relative">
+          <input
+            name="email"
+            required
+            value={formData.email}
+            onChange={e => setFormData({...formData, email: e.target.value})}
+            type="email"
+            placeholder="Email Address"
             className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
           />
         </div>

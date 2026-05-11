@@ -6,17 +6,16 @@ import {
   Clock,
   User,
   Phone,
-  MoreVertical,
   CheckCircle2,
   XCircle,
   Loader2,
-  Mail,
   MessageSquare,
   Filter,
-  Download,
   ChevronDown,
   Trash2,
   AlertCircle,
+  Hash,
+  RefreshCw
 } from "lucide-react";
 
 export default function AdminAppointments() {
@@ -27,9 +26,9 @@ export default function AdminAppointments() {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [doctors, setDoctors] = useState([]);
-  const [uniqueStatuses, setUniqueStatuses] = useState([]);
   const [deleteAppointmentId, setDeleteAppointmentId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [statusLoadingId, setStatusLoadingId] = useState(null);
 
   const fetchDoctors = async () => {
     try {
@@ -51,10 +50,6 @@ export default function AdminAppointments() {
       const res = await fetch(url);
       const data = await res.json();
       setAppointments(Array.isArray(data) ? data : []);
-      
-      // Extract unique statuses
-      const statuses = [...new Set(data.map(a => a.status))];
-      setUniqueStatuses(statuses);
     } catch (e) {
       console.error(e);
     } finally {
@@ -71,12 +66,13 @@ export default function AdminAppointments() {
     fetchData();
   }, [filterDoctor, filterStatus, filterDate]);
 
-  // Filter appointments by search term (name or phone)
+  // Filter appointments by search term (name, phone or bookingId)
   const filteredAppointments = appointments.filter(appt => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      appt.patientName.toLowerCase().includes(searchLower) ||
-      appt.phone.includes(searchTerm)
+      appt.patientName?.toLowerCase().includes(searchLower) ||
+      appt.phone?.includes(searchTerm) ||
+      appt.bookingId?.toLowerCase().includes(searchLower)
     );
   });
 
@@ -95,6 +91,27 @@ export default function AdminAppointments() {
     }
   };
 
+  const updateStatus = async (id, status) => {
+    try {
+      setStatusLoadingId(id);
+      const res = await fetch('/api/appointments', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status })
+      });
+      if (res.ok) {
+        setAppointments(appointments.map(a => a._id === id ? { ...a, status } : a));
+      } else {
+        alert("Failed to update status");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error updating status");
+    } finally {
+      setStatusLoadingId(null);
+    }
+  };
+
   const handleDeleteAppointment = async (appointmentId, patientName) => {
     try {
       setDeleteLoading(true);
@@ -103,7 +120,6 @@ export default function AdminAppointments() {
       });
 
       if (res.ok) {
-        // Remove from list
         setAppointments(appointments.filter(a => a._id !== appointmentId));
         setDeleteAppointmentId(null);
         alert(`✓ Appointment for ${patientName} deleted successfully`);
@@ -139,7 +155,7 @@ export default function AdminAppointments() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search name/phone..."
+              placeholder="Search ID, name, phone..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -212,16 +228,39 @@ export default function AdminAppointments() {
               className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-md transition-all duration-300"
             >
               <div className="p-6 pb-0 flex justify-between items-start">
-                <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                  <User className="w-6 h-6" />
+                <div className="flex flex-col gap-1">
+                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                    <User className="w-6 h-6" />
+                  </div>
+                  {appt.bookingId && (
+                    <span className="text-[10px] font-bold text-gray-400 mt-1 flex items-center gap-1">
+                      <Hash className="w-3 h-3" /> {appt.bookingId}
+                    </span>
+                  )}
                 </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(
-                    appt.status
-                  )}`}
-                >
-                  {appt.status}
-                </span>
+                
+                <div className="flex flex-col items-end gap-2">
+                  <span
+                    className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(
+                      appt.status
+                    )}`}
+                  >
+                    {appt.status}
+                  </span>
+                  
+                  {/* Status Update Dropdown */}
+                  <select 
+                    value={appt.status}
+                    onChange={(e) => updateStatus(appt._id, e.target.value)}
+                    disabled={statusLoadingId === appt._id}
+                    className="text-[10px] font-bold border-gray-200 rounded-lg py-1 px-2 bg-gray-50 outline-none focus:ring-1 focus:ring-primary/20 disabled:opacity-50"
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Confirmed">Confirmed</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
               </div>
 
               <div className="p-6 space-y-4 flex-1">
@@ -236,7 +275,7 @@ export default function AdminAppointments() {
                 </div>
 
                 <div className="space-y-2.5 pt-2 border-t border-gray-100">
-                  {/* Appointment Date & Time - NEW */}
+                  {/* Appointment Date & Time */}
                   <div className="flex items-center gap-3 text-xs text-gray-600 font-medium">
                     <Calendar className="w-4 h-4 text-primary" />
                     <span>
@@ -251,7 +290,7 @@ export default function AdminAppointments() {
                     </span>
                   </div>
 
-                  {/* Appointment Time - NEW */}
+                  {/* Appointment Time */}
                   {appt.appointmentTime && (
                     <div className="flex items-center gap-3 text-xs text-gray-600 font-medium">
                       <Clock className="w-4 h-4 text-primary" />
@@ -274,7 +313,7 @@ export default function AdminAppointments() {
 
                   {/* Created Date */}
                   <div className="text-[10px] text-gray-400 font-normal">
-                    Booked: {appt.createdAt?.slice(0, 10) || 'N/A'}
+                    Booked: {new Date(appt.createdAt).toLocaleString()}
                   </div>
                 </div>
               </div>

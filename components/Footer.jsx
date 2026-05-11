@@ -88,43 +88,54 @@ const Footer = () => {
     { icon: <Home size={14} />, text: "Home Healthcare" },
   ];
 
-  const FooterSection = ({ title, links, id }) => (
-    <div className="flex flex-col gap-4">
-      <h3 className="hidden md:block text-white font-semibold text-base mb-2">{title}</h3>
-      <button 
-        onClick={() => toggleSection(id)}
-        className="md:hidden flex items-center justify-between w-full py-3 border-b border-white/10 text-white font-medium text-sm"
-      >
-        <span>{title}</span>
-        <ChevronDown 
-          size={16} 
-          className={`transition-transform duration-300 ${openSection === id ? "rotate-180" : ""}`} 
-        />
-      </button>
-      
-      <AnimatePresence>
-        {(openSection === id || (typeof window !== 'undefined' && window.innerWidth >= 768)) && (
-          <motion.ul 
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="flex flex-col gap-2.5 overflow-hidden md:!h-auto md:!opacity-100"
-          >
-            {links.map((link, idx) => (
-              <li key={idx}>
-                <Link 
-                  href={link.href}
-                  className="text-gray-400 hover:text-[#0F9D58] transition-colors duration-200 text-sm"
-                >
-                  {link.name}
-                </Link>
-              </li>
-            ))}
-          </motion.ul>
-        )}
-      </AnimatePresence>
-    </div>
-  );
+  const FooterSection = ({ title, links, id }) => {
+    const [isMobile, setIsMobile] = useState(false);
+
+    React.useEffect(() => {
+      const checkMobile = () => setIsMobile(window.innerWidth < 768);
+      checkMobile();
+      window.addEventListener('resize', checkMobile);
+      return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    return (
+      <div className="flex flex-col gap-4">
+        <h3 className="hidden md:block text-white font-semibold text-base mb-2">{title}</h3>
+        <button 
+          onClick={() => toggleSection(id)}
+          className="md:hidden flex items-center justify-between w-full py-3 border-b border-white/10 text-white font-medium text-sm"
+        >
+          <span>{title}</span>
+          <ChevronDown 
+            size={16} 
+            className={`transition-transform duration-300 ${openSection === id ? "rotate-180" : ""}`} 
+          />
+        </button>
+        
+        <AnimatePresence>
+          {(openSection === id || !isMobile) && (
+            <motion.ul 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="flex flex-col gap-2.5 overflow-hidden md:!h-auto md:!opacity-100"
+            >
+              {links.map((link, idx) => (
+                <li key={idx}>
+                  <Link 
+                    href={link.href}
+                    className="text-gray-400 hover:text-[#0F9D58] transition-colors duration-200 text-sm"
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </motion.ul>
+          )}
+        </AnimatePresence>
+      </div>
+    );
+  };
 
   if (pathname?.startsWith("/admin")) return null;
 
