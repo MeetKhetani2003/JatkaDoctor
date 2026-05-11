@@ -128,6 +128,9 @@ async function generatePDFReceipt(appointment) {
   });
   currentY -= 20;
   currentY = drawField('Service Name:', appointment.category, 70, currentY);
+  if (appointment.package) {
+    currentY = drawField('Package:', appointment.package, 70, currentY);
+  }
   currentY = drawField('Consultant:', appointment.doctor, 70, currentY);
   currentY = drawField('Date:', appointment.appointmentDate, 70, currentY);
   currentY = drawField('Time:', appointment.appointmentTime, 70, currentY);

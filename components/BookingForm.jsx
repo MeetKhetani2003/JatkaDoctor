@@ -18,6 +18,7 @@ function BookingFormInner({
   subtitle = "We respond within minutes",
   hideService = false,
   defaultDoctor = "",
+  defaultPackage = "",
   prefilledMessage = "",
   onSuccess = () => {}
 }) {
@@ -31,6 +32,7 @@ function BookingFormInner({
   const [allDoctors, setAllDoctors] = useState([]);
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [ambulances, setAmbulances] = useState([]);
+  const [allPackages, setAllPackages] = useState([]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -38,6 +40,7 @@ function BookingFormInner({
     email: "",
     service: defaultService,
     doctor: defaultDoctor,
+    package: defaultPackage,
     appointmentDate: "",
     appointmentTime: "",
     message: prefilledMessage || ""
@@ -47,17 +50,20 @@ function BookingFormInner({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [catsRes, docsRes, ambRes] = await Promise.all([
+        const [catsRes, docsRes, ambRes, packRes] = await Promise.all([
           fetch('/api/categories'),
           fetch('/api/doctors'),
-          fetch('/api/ambulances')
+          fetch('/api/ambulances'),
+          fetch('/api/service-packages')
         ]);
         const cats = await catsRes.json();
         const docs = await docsRes.json();
         const ambs = await ambRes.json();
+        const packs = await packRes.json();
         setCategories(Array.isArray(cats) ? cats : []);
         setAllDoctors(Array.isArray(docs) ? docs : []);
         setAmbulances(Array.isArray(ambs) ? ambs : []);
+        setAllPackages(Array.isArray(packs) ? packs : []);
         
         // Initial filter if defaultService is provided
         if (defaultService) {
@@ -73,6 +79,11 @@ function BookingFormInner({
         // Auto-fill from URL params
         const serviceParam = searchParams.get('service') || searchParams.get('category') || defaultService;
         const doctorParam = searchParams.get('doctor');
+        const packageParam = searchParams.get('package') || defaultPackage;
+
+        if (packageParam) {
+          setFormData(prev => ({ ...prev, package: packageParam }));
+        }
 
         if (serviceParam) {
           const slugMapping = {
@@ -155,7 +166,9 @@ function BookingFormInner({
           phone: formData.phone,
           email: formData.email,
           category: formData.service || 'General Inquiry',
+          service: formData.service,
           doctor: formData.doctor || 'Any Available',
+          package: formData.package || '',
           appointmentDate: formData.appointmentDate || new Date().toISOString().split('T')[0],
           appointmentTime: formData.appointmentTime || '09:00',
           notes: formData.message,
@@ -324,20 +337,36 @@ function BookingFormInner({
             >
               <option value="">Select Preferred Ambulance (Optional)</option>
               <option value="Any Available">Any Available Ambulance</option>
-              {/* Common Ambulance Types */}
               <optgroup label="Ambulance Types">
                 <option value="Normal Ambulance">Normal Ambulance</option>
                 <option value="Oxygen Ambulance">Oxygen Ambulance</option>
                 <option value="ICU Ventilator Ambulance">ICU Ventilator Ambulance</option>
                 <option value="Cardiac Ambulance">Cardiac Ambulance</option>
               </optgroup>
-              {/* Dynamic Ambulance Locations from DB */}
               {ambulances.length > 0 && (
                 <optgroup label="Available Nearby">
                   {ambulances.map(amb => (
                     <option key={amb._id} value={amb.name}>{amb.name} ({amb.city})</option>
                   ))}
                 </optgroup>
+              )}
+            </select>
+          ) : (allPackages.some(p => p.service === formData.service || p.category === formData.service) || formData.package) ? (
+            <select 
+              name="package" 
+              value={formData.package}
+              onChange={e => setFormData({...formData, package: e.target.value})}
+              className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-gray-700 appearance-none"
+            >
+              <option value="">Select Preferred Package</option>
+              {formData.package && !allPackages.some(p => p.name === formData.package) && (
+                <option value={formData.package}>{formData.package} (Selected)</option>
+              )}
+              {allPackages.filter(p => p.service === formData.service || p.category === formData.service).map(p => (
+                <option key={p._id} value={p.name}>{p.name} - {p.price}</option>
+              ))}
+              {!allPackages.filter(p => p.service === formData.service || p.category === formData.service).length && formData.package && (
+                 <option value={formData.package}>{formData.package}</option>
               )}
             </select>
           ) : (

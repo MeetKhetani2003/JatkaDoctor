@@ -1610,7 +1610,13 @@ function Benefits({ benefits }) {
 
 function Packages({ packages }) {
   const { openModal } = useBookingModal();
+  const params = useParams();
   const [selectedPackage, setSelectedPackage] = useState(null);
+
+  const handleSelectPackage = (pkg) => {
+    const serviceName = params.slug ? params.slug.charAt(0).toUpperCase() + params.slug.slice(1) : "Service";
+    openModal({ service: serviceName, package: pkg.name });
+  };
 
   return (
     <section className="px-4 pt-8 max-w-7xl mx-auto">
@@ -1657,6 +1663,10 @@ function Packages({ packages }) {
               ))}
             </ul>
             <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleSelectPackage(pkg);
+              }}
               className={`w-full mt-5 py-3 rounded-xl text-sm font-normal transition active:scale-95 ${selectedPackage === i
                 ? "bg-primary text-white"
                 : "bg-primary-light text-primary hover:bg-primary hover:text-white"
