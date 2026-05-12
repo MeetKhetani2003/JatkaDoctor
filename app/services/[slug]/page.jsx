@@ -5,7 +5,7 @@ import { medicalTeam } from "@/lib/medicalTeam";
 import { useState, useEffect, use } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound, useRouter } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import BookingForm from "@/components/BookingForm";
 import { FcGoogle } from "react-icons/fc";
@@ -3827,7 +3827,7 @@ export default function ServicePage({ params }) {
                     <span className="text-lg font-normal text-primary">
                       {test.price}
                     </span>
-                    <button 
+                    <button
                       onClick={() => openModal({ service: 'Lab Test', test: test.name })}
                       className="bg-gray-100 text-gray-900 px-6 py-2 rounded-xl text-xs font-normal hover:bg-primary hover:text-white transition-all active:scale-95"
                     >
