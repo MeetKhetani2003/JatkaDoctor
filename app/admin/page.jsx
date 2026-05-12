@@ -92,23 +92,6 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* System Health / Recent Activity */}
-        <div className="bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
-          <h3 className="text-lg font-normal text-black tracking-tight mb-6 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-gray-400" /> Recent System Logs
-          </h3>
-          <div className="space-y-4">
-            {[1, 2, 3].map((_, i) => (
-              <div key={i} className="flex gap-4 pb-4 border-b border-gray-50 last:border-0 last:pb-0">
-                <div className="w-1.5 h-1.5 bg-green-500 rounded-full mt-1.5 shrink-0"></div>
-                <div>
-                  <p className="text-xs font-normal text-gray-800">Database connection re-established successfully.</p>
-                  <p className="text-[10px] text-gray-400 mt-1">2 hours ago</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
       </div>
     </div>
   );
