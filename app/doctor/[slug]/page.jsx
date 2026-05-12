@@ -99,7 +99,7 @@ export default function DoctorProfilePage() {
         <div className="max-w-2xl mx-auto">
           {/* 1. Proper Doctor Image (Full Width on Mobile) */}
           <div className="relative w-full aspect-square sm:aspect-video bg-gray-200 overflow-hidden sm:rounded-[40px] sm:mt-6 shadow-sm">
-            <img
+            <Image
               src={
                 doctor.imageFileId
                   ? `/api/images/${doctor.imageFileId}`

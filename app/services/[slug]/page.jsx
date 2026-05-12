@@ -1954,10 +1954,12 @@ function MeetOurExperts({ slug }) {
               <div className="relative w-24 h-24 rounded-3xl overflow-hidden mx-auto mb-4 shadow-sm group-hover:scale-105 transition-transform">
                 <Image
                   src={
-                    typeof member.image === "string" &&
-                      member.image.startsWith("http")
-                      ? member.image
-                      : "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d"
+                    member.imageFileId
+                      ? `/api/images/${member.imageFileId}`
+                      : typeof member.image === "string" &&
+                        member.image.startsWith("http")
+                        ? member.image
+                        : "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d"
                   }
                   alt={member.name}
                   fill
