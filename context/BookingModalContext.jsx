@@ -5,6 +5,7 @@ const BookingModalContext = createContext();
 
 export function BookingModalProvider({ children }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAmbulanceOpen, setIsAmbulanceOpen] = useState(false);
   const [bookingData, setBookingData] = useState({
     service: "",
     package: "",
@@ -24,8 +25,14 @@ export function BookingModalProvider({ children }) {
 
   const closeModal = () => setIsOpen(false);
 
+  const openAmbulanceModal = () => setIsAmbulanceOpen(true);
+  const closeAmbulanceModal = () => setIsAmbulanceOpen(false);
+
   return (
-    <BookingModalContext.Provider value={{ isOpen, openModal, closeModal, bookingData }}>
+    <BookingModalContext.Provider value={{ 
+      isOpen, openModal, closeModal, bookingData,
+      isAmbulanceOpen, openAmbulanceModal, closeAmbulanceModal 
+    }}>
       {children}
     </BookingModalContext.Provider>
   );

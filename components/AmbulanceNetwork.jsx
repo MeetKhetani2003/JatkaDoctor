@@ -12,8 +12,10 @@ import {
   Hotel,
   Building,
   School,
-  Loader2
+  Loader2,
+  Ambulance
 } from "lucide-react";
+import { useBookingModal } from "@/context/BookingModalContext";
 
 const ICON_MAP = {
   Building2,
@@ -77,7 +79,7 @@ const staticLocations = [
 ];
 
 export default function AmbulanceNetwork() {
-  const phone = "8874744756";
+  const { openAmbulanceModal } = useBookingModal();
   const [locations, setLocations] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -105,12 +107,12 @@ export default function AmbulanceNetwork() {
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-8">
-          <h2 className="text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-bold text-[#1A1A1A] tracking-tight uppercase">
             Our Ambulance Network in Lucknow
           </h2>
-          <div className="w-12 h-1 bg-emerald-500 mx-auto mt-2 rounded-full" />
-          <p className="text-gray-500 text-sm sm:text-base mt-3 max-w-2xl mx-auto">
-            We are expanding our network to be closer to you. Select your nearest location to book an ambulance.
+          <div className="w-12 h-1 bg-red-500 mx-auto mt-2 rounded-full" />
+          <p className="text-gray-500 text-sm sm:text-base mt-3 max-w-2xl mx-auto font-medium">
+            24/7 Emergency Support • Average Response Time: 5–10 Minutes
           </p>
         </div>
 
@@ -118,7 +120,7 @@ export default function AmbulanceNetwork() {
         <div className="relative group min-h-[400px]">
           {loading ? (
             <div className="flex justify-center items-center h-64">
-              <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+              <Loader2 className="w-8 h-8 animate-spin text-red-500" />
             </div>
           ) : (
             <div className="flex overflow-x-auto pb-8 gap-4 snap-x hide-scrollbar scroll-smooth">
@@ -135,46 +137,52 @@ export default function AmbulanceNetwork() {
                       
                       {/* Status Badge */}
                       <div className={`absolute top-4 right-4 text-[10px] font-bold px-2.5 py-1 rounded-md tracking-wider ${
-                        isAvailable ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'
+                        isAvailable ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-500'
                       }`}>
                         {loc.badge}
                       </div>
 
                       {/* Icon */}
                       <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 mt-2 ${
-                        isAvailable ? 'bg-emerald-50 text-emerald-500' : 'bg-gray-50 text-gray-400'
+                        isAvailable ? 'bg-red-50 text-red-500' : 'bg-gray-50 text-gray-400'
                       }`}>
                         <Icon className="w-10 h-10" />
                       </div>
 
                       {/* Content */}
-                      <h3 className="text-xl font-bold text-[#1A1A1A] mb-0.5">{loc.name}</h3>
+                      <h3 className="text-xl font-bold text-[#1A1A1A] mb-0.5 uppercase tracking-tight">{loc.name}</h3>
                       <p className="text-gray-500 text-sm mb-3">{loc.city}</p>
                       
-                      <div className="flex items-center gap-1.5 mb-4 text-[13px] font-medium text-gray-600">
+                      <div className="flex items-center gap-1.5 mb-4 text-[13px] font-bold text-red-600">
                         <Clock className="w-3.5 h-3.5" />
-                        {loc.eta}
+                        {isAvailable ? 'ETA: 5-10 MINS' : loc.eta}
                       </div>
 
                       {/* Trust Factor */}
-                      <div className={`flex items-center gap-2 py-2 px-4 rounded-full text-[11px] font-medium mb-6 ${
-                        isAvailable ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'
+                      <div className={`flex items-center gap-2 py-2 px-4 rounded-full text-[11px] font-bold mb-6 ${
+                        isAvailable ? 'bg-blue-50 text-blue-700' : 'bg-gray-100 text-gray-500'
                       }`}>
-                        <CheckCircle2 className={`w-3.5 h-3.5 ${isAvailable ? 'text-emerald-500' : 'text-gray-400'}`} />
-                        {isAvailable ? 'Verified Ambulance Partner' : 'New Partner Onboarding'}
+                        <CheckCircle2 className={`w-3.5 h-3.5 ${isAvailable ? 'text-blue-500' : 'text-gray-400'}`} />
+                        {isAvailable ? 'Verified Partner' : 'Onboarding...'}
                       </div>
 
                       {/* CTA Button */}
-                      <a
-                        href={isAvailable ? `tel:${phone}` : "#"}
-                        className={`w-full py-3.5 rounded-xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-2 ${
+                      <button
+                        onClick={isAvailable ? openAmbulanceModal : undefined}
+                        disabled={!isAvailable}
+                        className={`w-full py-4 rounded-xl text-sm font-black transition-all active:scale-95 flex items-center justify-center gap-2 uppercase tracking-wide ${
                           isAvailable 
-                          ? 'bg-red-600 text-white hover:bg-red-700 shadow-md shadow-red-500/20 animate-pulse-red' 
+                          ? 'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-500/20 animate-pulse-red' 
                           : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                         }`}
                       >
-                        {isAvailable ? 'Book Now' : 'Coming Soon'}
-                      </a>
+                        {isAvailable ? (
+                          <>
+                            <Ambulance className="w-4 h-4" />
+                            Book Now
+                          </>
+                        ) : 'Coming Soon'}
+                      </button>
                     </div>
                   </div>
                 );
@@ -185,7 +193,7 @@ export default function AmbulanceNetwork() {
 
         {/* View All Button */}
         <div className="mt-8 text-center">
-          <button className="inline-flex items-center gap-2 px-8 py-3 rounded-xl border-2 border-[#0F9D58] text-[#0F9D58] font-bold text-sm hover:bg-[#0F9D58] hover:text-white transition-all active:scale-95">
+          <button className="inline-flex items-center gap-2 px-8 py-3 rounded-xl border-2 border-red-600 text-red-600 font-bold text-sm hover:bg-red-600 hover:text-white transition-all active:scale-95">
             View All Locations
             <ArrowRight className="w-4 h-4" />
           </button>
@@ -194,4 +202,3 @@ export default function AmbulanceNetwork() {
     </section>
   );
 }
-

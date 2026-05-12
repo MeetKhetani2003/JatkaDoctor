@@ -3,6 +3,9 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import StickyBottomBar from "@/components/StickyBottomBar";
+import { BookingModalProvider } from "@/context/BookingModalContext";
+import BookingModal from "@/components/BookingModal";
+import AmbulanceBookingModal from "@/components/AmbulanceBookingModal";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,9 +23,6 @@ export const metadata = {
     "24x7 Ambulance Service, Lab Tests, and Medical Equipment at Home in Lucknow.",
 };
 
-import { BookingModalProvider } from "@/context/BookingModalContext";
-import BookingModal from "@/components/BookingModal";
-
 export default function RootLayout({ children }) {
   return (
     <html
@@ -37,6 +37,7 @@ export default function RootLayout({ children }) {
           <Footer />
           <StickyBottomBar />
           <BookingModal />
+          <AmbulanceBookingModal />
         </BookingModalProvider>
       </body>
     </html>

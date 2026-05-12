@@ -11,7 +11,7 @@ const phone = "8874744756";
 const whatsapp = "8707790677";
 
 export default function StickyBottomBar() {
-  const { openModal } = useBookingModal();
+  const { openModal, openAmbulanceModal } = useBookingModal();
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) return null;
 
@@ -63,8 +63,8 @@ export default function StickyBottomBar() {
         </a>
 
         {/* Emergency Ambulance */}
-        <a
-          href={`tel:${phone}`}
+        <button
+          onClick={openAmbulanceModal}
           className="flex flex-col items-center justify-center gap-1 flex-1 h-full text-white transition-colors animate-pulse-red"
           style={{
             background: "linear-gradient(135deg, #ef4444, #b91c1c)",
@@ -72,7 +72,7 @@ export default function StickyBottomBar() {
         >
           <Ambulance size={28} strokeWidth={2.5} className="text-white mb-0.5" />
           <span className="text-[10px] font-bold tracking-tighter leading-none uppercase">Ambulance</span>
-        </a>
+        </button>
       </div>
 
       {/* Safe area padding for iOS */}

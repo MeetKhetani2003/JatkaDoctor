@@ -1,11 +1,15 @@
 "use client";
 
-import { Phone, MessageCircle, Clock, MapPin } from "lucide-react";
+import { Phone, MessageCircle, Clock, MapPin, Ambulance } from "lucide-react";
 import { motion } from "framer-motion";
+import { useBookingModal } from "@/context/BookingModalContext";
 
 const phone = "8874744756";
+const WHATSAPP_NUMBER = "8707790677";
 
 export default function EmergencyCTA() {
+  const { openAmbulanceModal } = useBookingModal();
+
   return (
     <section className="px-4 pt-10 max-w-7xl mx-auto">
       <motion.div
@@ -40,27 +44,27 @@ export default function EmergencyCTA() {
 
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 mt-3">
               <span className="flex items-center gap-1.5 text-white/90 text-sm">
-                <Clock className="w-4 h-4" /> 10–15 Min Response
+                <Clock className="w-4 h-4" /> 5–10 Min Response
               </span>
               <span className="flex items-center gap-1.5 text-white/90 text-sm">
-                <MapPin className="w-4 h-4" /> Lucknow
+                <MapPin className="w-4 h-4" /> Lucknow & Nearby
               </span>
             </div>
           </div>
 
           {/* BUTTONS */}
-          <div className="flex gap-3 mt-5 sm:mt-0">
-            <a
-              href={`tel:${phone}`}
-              className="flex-1 sm:flex-none bg-white text-red-600 px-6 py-3.5 rounded-xl font-bold shadow-lg active:scale-95 transition flex items-center justify-center gap-2 hover:bg-red-50 animate-pulse-red"
+          <div className="flex flex-col sm:flex-row gap-3 mt-5 sm:mt-0">
+            <button
+              onClick={openAmbulanceModal}
+              className="flex-1 sm:flex-none bg-white text-red-600 px-8 py-4 rounded-xl font-black shadow-lg active:scale-95 transition flex items-center justify-center gap-3 hover:bg-red-50 animate-pulse-red uppercase tracking-tight"
             >
-              <Phone className="w-5 h-5" />
-              Call Now
-            </a>
+              <Ambulance className="w-6 h-6" />
+              Book Ambulance
+            </button>
 
             <a
-              href={`https://wa.me/91${phone}`}
-              className="flex-1 sm:flex-none bg-primary-dark text-white border-2 border-white/30 px-6 py-3.5 rounded-xl font-bold active:scale-95 transition flex items-center justify-center gap-2 hover:bg-primary-light hover:text-primary"
+              href={`https://wa.me/91${WHATSAPP_NUMBER}`}
+              className="flex-1 sm:flex-none bg-primary-dark text-white border-2 border-white/30 px-6 py-4 rounded-xl font-bold active:scale-95 transition flex items-center justify-center gap-2 hover:bg-primary-light hover:text-primary"
             >
               <MessageCircle className="w-5 h-5" />
               WhatsApp

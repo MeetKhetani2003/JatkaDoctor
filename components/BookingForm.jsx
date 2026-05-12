@@ -39,6 +39,7 @@ function BookingFormInner({
     phone: "",
     email: "",
     service: defaultService,
+    otherService: "",
     doctor: defaultDoctor,
     package: defaultPackage,
     appointmentDate: "",
@@ -165,8 +166,8 @@ function BookingFormInner({
           patientName: formData.name,
           phone: formData.phone,
           email: formData.email,
-          category: formData.service || 'General Inquiry',
-          service: formData.service,
+          category: formData.service === 'Other' ? formData.otherService : (formData.service || 'General Inquiry'),
+          service: formData.service === 'Other' ? formData.otherService : formData.service,
           doctor: formData.doctor || 'Any Available',
           package: formData.package || '',
           appointmentDate: formData.appointmentDate || new Date().toISOString().split('T')[0],
@@ -179,7 +180,7 @@ function BookingFormInner({
       if (res.ok) {
         setBookingId(data.bookingId);
         setSuccess(true);
-        setFormData({ name: "", phone: "", email: "", service: defaultService, doctor: "", appointmentDate: "", appointmentTime: "", message: "" });
+        setFormData({ name: "", phone: "", email: "", service: defaultService, otherService: "", doctor: "", appointmentDate: "", appointmentTime: "", message: "" });
         setAgreed(false);
         onSuccess();
       } else {
@@ -322,8 +323,23 @@ function BookingFormInner({
                   <option>Caregivers</option>
                 </>
               )}
+              <option value="Other">Other Service</option>
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
+        )}
+
+        {formData.service === 'Other' && (
+          <div className="relative">
+            <input
+              name="otherService"
+              required
+              value={formData.otherService}
+              onChange={e => setFormData({...formData, otherService: e.target.value})}
+              type="text"
+              placeholder="Specify Service Name"
+              className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+            />
           </div>
         )}
 

@@ -1463,7 +1463,9 @@ const SERVICES_CONFIG = {
 // }
 
 function Banner({ config }) {
-  const { openModal } = useBookingModal();
+  const { openModal, openAmbulanceModal } = useBookingModal();
+  const params = useParams();
+  const isAmbulance = params.slug === 'ambulance';
   return (
     <section className="mt-14 relative w-full bg-primary-soft">
       <div className="max-w-7xl mx-auto">
@@ -1514,11 +1516,11 @@ function Banner({ config }) {
                 Call Now
               </a>
               <button
-                onClick={() => openModal({ service: config.title })}
+                onClick={() => isAmbulance ? openAmbulanceModal() : openModal({ service: config.title })}
                 className="bg-primary text-white px-5 py-3 rounded-xl text-sm font-normal flex items-center gap-2 active:scale-95 transition shadow-lg border border-white/20"
               >
                 <Calendar className="w-4 h-4" />
-                Book Online
+                {isAmbulance ? "Book Ambulance Now" : "Book Online"}
               </button>
             </motion.div>
           </div>
@@ -1529,7 +1531,8 @@ function Banner({ config }) {
 }
 
 function ServiceTypes({ types, slug }) {
-  const { openModal } = useBookingModal();
+  const { openModal, openAmbulanceModal } = useBookingModal();
+  const isAmbulance = slug === 'ambulance';
   return (
     <section className="px-4 pt-8 max-w-7xl mx-auto">
       <h2 className="text-lg sm:text-xl font-normal text-black tracking-tight mb-4">
@@ -1545,7 +1548,7 @@ function ServiceTypes({ types, slug }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.05 }}
-              onClick={() => openModal({ service: slug, package: type.title })}
+              onClick={() => isAmbulance ? openAmbulanceModal() : openModal({ service: slug, package: type.title })}
               className="bg-white rounded-2xl border border-gray-100 p-4 shadow-[0_2px_12px_rgba(0,0,0,0.04)] flex flex-col items-center text-center hover:border-primary/20 transition-all active:scale-95 cursor-pointer"
             >
               <div className="w-14 h-14 rounded-xl bg-primary-light flex items-center justify-center mb-3">
@@ -1609,11 +1612,16 @@ function Benefits({ benefits }) {
 }
 
 function Packages({ packages }) {
-  const { openModal } = useBookingModal();
+  const { openModal, openAmbulanceModal } = useBookingModal();
   const params = useParams();
+  const isAmbulance = params.slug === 'ambulance';
   const [selectedPackage, setSelectedPackage] = useState(null);
 
   const handleSelectPackage = (pkg) => {
+    if (isAmbulance) {
+      openAmbulanceModal();
+      return;
+    }
     const serviceName = params.slug ? params.slug.charAt(0).toUpperCase() + params.slug.slice(1) : "Service";
     openModal({ service: serviceName, package: pkg.name });
   };
