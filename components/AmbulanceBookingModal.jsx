@@ -90,21 +90,24 @@ export default function AmbulanceBookingModal() {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 overflow-y-auto bg-black/70 backdrop-blur-sm">
+      <div className="fixed inset-0 z-[10000] flex items-start sm:items-center justify-center p-4 overflow-y-auto bg-black/70 backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden"
+          className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden my-8 sm:my-0"
         >
+          {/* CLOSE BUTTON - Moved outside header for better visibility and fixed positioning if needed, but here relative to modal */}
+          <button
+            onClick={closeAmbulanceModal}
+            className="absolute top-3 right-3 p-2 rounded-full bg-black/10 hover:bg-black/20 text-white sm:text-white transition-colors z-[60]"
+            aria-label="Close"
+          >
+            <X className="w-5 h-5" />
+          </button>
+
           {/* HEADER */}
           <div className="bg-red-600 p-5 text-white relative">
-            <button
-              onClick={closeAmbulanceModal}
-              className="absolute top-4 right-4 p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
             <div className="flex items-center gap-3 mb-2">
               <div className="bg-white p-2 rounded-xl">
                 <Ambulance className="w-6 h-6 text-red-600" />
