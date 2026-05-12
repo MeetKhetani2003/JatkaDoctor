@@ -132,7 +132,7 @@ export async function PUT(req) {
       updateData.slug = updateData.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');
     }
 
-    const doctor = await Doctor.findByIdAndUpdate(id, updateData, { new: true });
+    const doctor = await Doctor.findByIdAndUpdate(id, updateData, { returnDocument: 'after' });
     return NextResponse.json(doctor);
   } catch (error) {
     console.error('PUT Error:', error);

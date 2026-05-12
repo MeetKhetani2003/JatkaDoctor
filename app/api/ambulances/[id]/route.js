@@ -7,7 +7,7 @@ export async function PUT(request, { params }) {
   try {
     const { id } = params;
     const body = await request.json();
-    const updatedAmbulance = await Ambulance.findByIdAndUpdate(id, body, { new: true });
+    const updatedAmbulance = await Ambulance.findByIdAndUpdate(id, body, { returnDocument: 'after' });
     return NextResponse.json(updatedAmbulance);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 400 });

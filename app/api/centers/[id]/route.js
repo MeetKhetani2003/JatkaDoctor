@@ -35,7 +35,7 @@ export async function PUT(request, { params }) {
       updateData.imageFileId = imageFileId;
     }
 
-    const center = await PhysioCenter.findByIdAndUpdate(id, updateData, { new: true });
+    const center = await PhysioCenter.findByIdAndUpdate(id, updateData, { returnDocument: 'after' });
 
     return NextResponse.json(center);
   } catch (error) {

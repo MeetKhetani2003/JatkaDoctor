@@ -43,7 +43,7 @@ export async function PUT(req, { params }) {
       updateData.imageFileId = imageFileId;
     }
 
-    const updatedPackage = await AmbulancePackage.findByIdAndUpdate(id, updateData, { new: true });
+    const updatedPackage = await AmbulancePackage.findByIdAndUpdate(id, updateData, { returnDocument: 'after' });
     return NextResponse.json(updatedPackage);
   } catch (error) {
     console.error('PUT Error:', error);

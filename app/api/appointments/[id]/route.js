@@ -44,7 +44,7 @@ export async function PATCH(req, { params }) {
     const appointment = await Appointment.findByIdAndUpdate(
       id,
       body,
-      { new: true }
+      { returnDocument: 'after' }
     );
     
     if (!appointment) {

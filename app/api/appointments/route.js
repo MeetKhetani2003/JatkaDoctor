@@ -4,6 +4,7 @@ import Appointment from '@/lib/models/Appointment';
 import Doctor from '@/lib/models/Doctor';
 import Counter from '@/lib/models/Counter';
 import nodemailer from 'nodemailer';
+import { sendEmail } from '@/lib/mail';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import fs from 'fs';
 import path from 'path';
@@ -275,7 +276,7 @@ export async function POST(req) {
       const counter = await Counter.findOneAndUpdate(
         { id: 'appointmentId' },
         { $inc: { seq: 1 } },
-        { new: true, upsert: true, setDefaultsOnInsert: true }
+        { returnDocument: 'after', upsert: true, setDefaultsOnInsert: true }
       );
       
       if (counter && typeof counter.seq === 'number') {
@@ -307,16 +308,7 @@ export async function POST(req) {
     if (appointment.email) {
       try {
         const pdfBytes = await generatePDFReceipt(appointment);
-        const transporter = nodemailer.createTransport({
-          service: 'gmail',
-          auth: {
-            user: process.env.GMAIL,
-            pass: process.env.GMAIL_APP_PASSWORD,
-          },
-        });
-
-        await transporter.sendMail({
-          from: `"Dr Jhatka Medicare" <${process.env.GMAIL}>`,
+        await sendEmail({
           to: appointment.email,
           subject: `Booking Confirmed: ${appointment.bookingId}`,
           text: `Dear ${appointment.patientName},\n\nYour appointment has been booked successfully.\n\nBooking ID: ${appointment.bookingId}\nScheduled Date: ${appointment.appointmentDate}\nScheduled Time: ${appointment.appointmentTime}\n\nPlease find your official receipt attached.\n\nBest Regards,\nDr Jhatka Medicare Team`,
@@ -343,7 +335,7 @@ export async function PATCH(req) {
     await connectDB();
     const { id, status } = await req.json();
     if (!id || !status) return NextResponse.json({ error: 'Missing ID or status' }, { status: 400 });
-    const appointment = await Appointment.findByIdAndUpdate(id, { status }, { new: true });
+    const appointment = await Appointment.findByIdAndUpdate(id, { status }, { returnDocument: 'after' });
     return NextResponse.json(appointment);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

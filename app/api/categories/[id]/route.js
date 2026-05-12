@@ -7,7 +7,7 @@ export async function PUT(req, { params }) {
     await connectDB();
     const { id } = await params;
     const body = await req.json();
-    const category = await Category.findByIdAndUpdate(id, body, { new: true });
+    const category = await Category.findByIdAndUpdate(id, body, { returnDocument: 'after' });
     return NextResponse.json(category);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
