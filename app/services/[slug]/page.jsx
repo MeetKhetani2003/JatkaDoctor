@@ -1248,8 +1248,7 @@ const SERVICES_CONFIG = {
         icon: Activity,
         title: "Thyroid Profile",
         desc: "Complete T3, T4, TSH monitoring",
-        image:
-          "https://images.unsplash.com/photo-1579152276507-24aa2373aa3a?w=300&h=200&fit=crop",
+        image: "/services/lab-test/thyroid.png",
       },
       {
         icon: Activity,

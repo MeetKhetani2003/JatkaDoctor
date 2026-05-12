@@ -16,7 +16,9 @@ import {
   Menu,
   X,
   BookOpen,
+  LogOut,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const sidebarLinks = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -34,7 +36,19 @@ const sidebarLinks = [
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/admin/login", { method: "DELETE" });
+      router.push("/admin/login");
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
+  if (pathname === "/admin/login") return children;
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -71,6 +85,13 @@ export default function AdminLayout({ children }) {
         </nav>
 
         <div className="p-4 border-t border-gray-100">
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-normal text-red-500 hover:bg-red-50 rounded-xl transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </button>
           <Link
             href="/"
             className="flex items-center gap-3 px-4 py-3 text-sm font-normal text-gray-500 hover:text-black transition-colors"
@@ -182,6 +203,13 @@ export default function AdminLayout({ children }) {
               })}
             </nav>
             <div className="p-4 border-t border-gray-100 shrink-0">
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-normal text-red-500 hover:bg-red-50 rounded-xl transition-colors mb-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </button>
               <Link
                 href="/"
                 onClick={() => setMobileMenuOpen(false)}
