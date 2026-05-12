@@ -7,7 +7,7 @@ export async function DELETE(req, { params }) {
   try {
     await connectDB();
     
-    const { id } = params;
+    const { id } = await params;
     
     // Validate MongoDB ObjectId
     if (!Types.ObjectId.isValid(id)) {
@@ -33,7 +33,7 @@ export async function PATCH(req, { params }) {
   try {
     await connectDB();
     
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
     
     // Validate MongoDB ObjectId

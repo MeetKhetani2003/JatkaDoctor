@@ -5,7 +5,7 @@ import Ambulance from '@/lib/models/Ambulance';
 export async function PUT(request, { params }) {
   await dbConnect();
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const updatedAmbulance = await Ambulance.findByIdAndUpdate(id, body, { returnDocument: 'after' });
     return NextResponse.json(updatedAmbulance);
@@ -17,7 +17,7 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   await dbConnect();
   try {
-    const { id } = params;
+    const { id } = await params;
     await Ambulance.findByIdAndDelete(id);
     return NextResponse.json({ message: 'Ambulance deleted successfully' });
   } catch (error) {
