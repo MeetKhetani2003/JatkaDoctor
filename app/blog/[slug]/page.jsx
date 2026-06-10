@@ -77,7 +77,25 @@ export default function BlogPostPage(props) {
 
   // Fallback to static if not found or no content
   const displayBlog = blogData || blogContent;
-  const content = blogData && blogData.content ? [{ heading: "Insight Detail", text: blogData.content }] : blogContent.content;
+  
+  let content = blogContent.content;
+  if (blogData) {
+    if (blogData.content) {
+      try {
+        const trimmed = blogData.content.trim();
+        if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+          content = JSON.parse(trimmed);
+        } else {
+          content = [{ heading: "", text: blogData.content }];
+        }
+      } catch (e) {
+        console.error("Failed to parse blog content:", e);
+        content = [{ heading: "", text: blogData.content }];
+      }
+    } else {
+      content = [];
+    }
+  }
 
   return (
     <main className="min-h-screen bg-white pb-24">
@@ -118,7 +136,7 @@ export default function BlogPostPage(props) {
       </section>
 
       {/* Content */}
-      <article className="px-4 pt-6 max-w-2xl mx-auto">
+      <article className="px-4 pt-6 max-w-5xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-900 leading-tight">
           {displayBlog.title}
         </h1>
@@ -129,46 +147,76 @@ export default function BlogPostPage(props) {
           <span>{displayBlog.date}</span>
         </div>
 
-        <div className="mt-6 space-y-6">
-          {content.map((section, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
-            >
-              <h2 className="text-lg font-bold text-gray-900 mb-2">
-                {section.heading}
-              </h2>
-              <p className="text-sm text-gray-600 leading-relaxed">
-                {section.text}
-              </p>
-            </motion.div>
-          ))}
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+          {/* Main Content Columns */}
+          <div className="lg:col-span-2 space-y-6">
+            {content.map((section, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+              >
+                {section.heading && (
+                  <h2 className="text-lg font-bold text-gray-900 mb-2">
+                    {section.heading}
+                  </h2>
+                )}
+                {section.text && (
+                  <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                    {section.text}
+                  </p>
+                )}
+              </motion.div>
+            ))}
+          </div>
 
-        {/* CTA Box */}
-        <div className="mt-8 bg-primary-soft rounded-2xl p-5">
-          <h3 className="text-base font-bold text-primary-dark">
-            Need Emergency Help?
-          </h3>
-          <p className="text-sm text-gray-600 mt-1">
-            Our ambulance is available 24/7 in Lucknow
-          </p>
-          <div className="flex gap-3 mt-4">
-            <a
-              href={`tel:${phone}`}
-              className="flex-1 bg-red-600 text-white py-3 rounded-xl text-sm font-bold text-center active:scale-95 transition animate-pulse-red shadow-lg"
-            >
-              Call Now
-            </a>
-            <a
-              href={`https://wa.me/91${phone}`}
-              className="flex-1 bg-white text-primary border-2 border-primary py-3 rounded-xl text-sm font-bold text-center active:scale-95 transition"
-            >
-              WhatsApp
-            </a>
+          {/* Sticky Sidebar Column */}
+          <div className="lg:col-span-1">
+            <div className="lg:sticky lg:top-20 space-y-6">
+              {/* Emergency CTA Box */}
+              <div className="bg-primary-soft rounded-2xl p-5 border border-primary/10 shadow-sm">
+                <h3 className="text-base font-bold text-primary-dark">
+                  Need Emergency Help?
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Our ambulance is available 24/7 in Lucknow
+                </p>
+                <div className="flex flex-col gap-2.5 mt-4">
+                  <a
+                    href={`tel:${phone}`}
+                    className="w-full bg-red-600 text-white py-3 rounded-xl text-sm font-bold text-center active:scale-95 transition animate-pulse-red shadow-lg block"
+                  >
+                    Call Now
+                  </a>
+                  <a
+                    href={`https://wa.me/91${phone}`}
+                    className="w-full bg-white text-primary border-2 border-primary py-3 rounded-xl text-sm font-bold text-center active:scale-95 transition block"
+                  >
+                    WhatsApp
+                  </a>
+                </div>
+              </div>
+
+              {/* Service Directory Info Card */}
+              <div className="bg-gray-50/50 rounded-2xl p-5 border border-gray-150">
+                <h3 className="text-sm font-bold text-gray-900 mb-3 border-b border-gray-100 pb-2">Our Key Services</h3>
+                <ul className="space-y-2 text-xs font-medium text-gray-600">
+                  <li className="flex items-center gap-1.5">• Physiotherapy at Home</li>
+                  <li className="flex items-center gap-1.5">• ICU Setup at Home</li>
+                  <li className="flex items-center gap-1.5">• Doctor Visit at Home</li>
+                  <li className="flex items-center gap-1.5">• Home Nursing Care</li>
+                  <li className="flex items-center gap-1.5">• Lab Test & Sample Collection</li>
+                  <li className="flex items-center gap-1.5">• 24/7 Ambulance Service</li>
+                </ul>
+                <div className="mt-4 pt-3 border-t border-gray-100">
+                  <Link href="/services" className="inline-block text-xs font-bold text-primary hover:text-primary-dark hover:underline">
+                    Explore All Services &rarr;
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </article>

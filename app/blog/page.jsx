@@ -77,9 +77,56 @@ const blogs = [
   },
 ];
 
+import { useState, useEffect } from "react";
+
 export default function BlogPage() {
-  const featured = blogs[0];
-  const rest = blogs.slice(1);
+  const [dbBlogs, setDbBlogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchBlogs() {
+      try {
+        const res = await fetch("/api/blogs");
+        if (res.ok) {
+          const data = await res.json();
+          setDbBlogs(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch blogs:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchBlogs();
+  }, []);
+
+  const displayBlogs = dbBlogs.length > 0 ? dbBlogs : blogs;
+  const featured = displayBlogs[0];
+  const rest = displayBlogs.slice(1);
+
+  const getBlogLink = (blog) => {
+    return blog._id ? `/blog/${blog._id}` : `/blog/${blog.slug}`;
+  };
+
+  const getExcerpt = (blog) => {
+    if (blog.excerpt) return blog.excerpt;
+    if (!blog.content) return "";
+    
+    try {
+      const trimmed = blog.content.trim();
+      if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+        const sections = JSON.parse(trimmed);
+        const firstSection = sections.find(s => s.text);
+        if (firstSection) {
+          return firstSection.text.slice(0, 120) + (firstSection.text.length > 120 ? "..." : "");
+        }
+      }
+    } catch (e) {
+      // Fallback to plain text slice
+    }
+    
+    return blog.content.slice(0, 120) + (blog.content.length > 120 ? "..." : "");
+  };
 
   return (
     <main className="min-h-screen bg-white pb-24">
@@ -99,87 +146,93 @@ export default function BlogPage() {
       </header>
 
       {/* Featured Blog */}
-      <section className="mt-14 px-4 pt-4 max-w-7xl mx-auto">
-        <Link href={`/blog/${featured.slug}`}>
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative rounded-2xl overflow-hidden aspect-[16/10]"
-          >
-            <Image
-              src={featured.image}
-              alt={featured.title}
-              fill
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-5">
-              <span className="text-[10px] bg-primary text-white px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
-                {featured.category}
-              </span>
-              <h1 className="text-white text-lg font-bold mt-2 leading-tight">
-                {featured.title}
-              </h1>
-              <div className="flex items-center gap-3 mt-2 text-white/70 text-xs">
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> {featured.readTime}
+      {featured && (
+        <section className="mt-14 px-4 pt-4 max-w-7xl mx-auto">
+          <Link href={getBlogLink(featured)}>
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="relative rounded-2xl overflow-hidden aspect-[16/10]"
+            >
+              <Image
+                src={featured.image}
+                alt={featured.title}
+                fill
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-5">
+                <span className="text-[10px] bg-primary text-white px-2.5 py-1 rounded-full font-bold uppercase tracking-wider">
+                  {featured.category}
                 </span>
-                <span>{featured.date}</span>
+                <h1 className="text-white text-lg font-bold mt-2 leading-tight">
+                  {featured.title}
+                </h1>
+                <div className="flex items-center gap-3 mt-2 text-white/70 text-xs">
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> {featured.readTime}
+                  </span>
+                  <span>{featured.date}</span>
+                </div>
               </div>
-            </div>
-          </motion.div>
-        </Link>
-      </section>
+            </motion.div>
+          </Link>
+        </section>
+      )}
 
       {/* Blog Grid */}
       <section className="px-4 pt-6 max-w-7xl mx-auto">
         <h2 className="text-lg font-bold text-gray-900 mb-4">
           Latest Articles
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {rest.map((blog, i) => (
-            <motion.div
-              key={blog.slug}
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
-            >
-              <Link
-                href={`/blog/${blog.slug}`}
-                className="group block bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all"
+        {rest.length === 0 ? (
+          <p className="text-sm text-gray-500 italic">No additional articles available.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {rest.map((blog, i) => (
+              <motion.div
+                key={blog._id || blog.slug}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
               >
-                <div className="relative aspect-[16/10] overflow-hidden">
-                  <Image
-                    src={blog.image}
-                    alt={blog.title}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] text-primary font-bold bg-primary-light px-2 py-0.5 rounded-full">
-                      {blog.category}
-                    </span>
-                    <span className="text-[10px] text-gray-400 flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> {blog.readTime}
-                    </span>
+                <Link
+                  href={getBlogLink(blog)}
+                  className="group block bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-md transition-all"
+                >
+                  <div className="relative aspect-[16/10] overflow-hidden">
+                    <Image
+                      src={blog.image}
+                      alt={blog.title}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
                   </div>
-                  <h3 className="text-sm font-bold text-gray-900 leading-tight group-hover:text-primary transition-colors">
-                    {blog.title}
-                  </h3>
-                  <p className="text-xs text-gray-500 mt-1.5 line-clamp-2">
-                    {blog.excerpt}
-                  </p>
-                  <div className="flex items-center gap-1 mt-3 text-primary text-xs font-bold">
-                    Read More <ArrowRight className="w-3 h-3" />
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-[10px] text-primary font-bold bg-primary-light px-2 py-0.5 rounded-full">
+                        {blog.category}
+                      </span>
+                      <span className="text-[10px] text-gray-400 flex items-center gap-1">
+                        <Clock className="w-3 h-3" /> {blog.readTime}
+                      </span>
+                    </div>
+                    <h3 className="text-sm font-bold text-gray-900 leading-tight group-hover:text-primary transition-colors">
+                      {blog.title}
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-1.5 line-clamp-2">
+                      {getExcerpt(blog)}
+                    </p>
+                    <div className="flex items-center gap-1 mt-3 text-primary text-xs font-bold">
+                      Read More <ArrowRight className="w-3 h-3" />
+                    </div>
                   </div>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </section>
 
       <StickyBottomBar phone={phone} />
