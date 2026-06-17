@@ -15,7 +15,12 @@ import {
   Trash2,
   AlertCircle,
   Hash,
-  RefreshCw
+  UserCheck,
+  CreditCard,
+  Notebook,
+  Share2,
+  CalendarDays,
+  FileSpreadsheet
 } from "lucide-react";
 
 export default function AdminAppointments() {
@@ -26,15 +31,43 @@ export default function AdminAppointments() {
   const [filterStatus, setFilterStatus] = useState("");
   const [filterDate, setFilterDate] = useState("");
   const [doctors, setDoctors] = useState([]);
+  const [staff, setStaff] = useState([]);
   const [deleteAppointmentId, setDeleteAppointmentId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [statusLoadingId, setStatusLoadingId] = useState(null);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  // Editor Modal/Accordion state
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({
+    bookingStatus: "",
+    paymentStatus: "",
+    doctorAssigned: "",
+    physiotherapistAssigned: "",
+    nurseAssigned: "",
+    ambulanceAssigned: "",
+    internalNotes: "",
+    followupRemarks: ""
+  });
 
   const fetchDoctors = async () => {
     try {
       const res = await fetch("/api/doctors");
       const data = await res.json();
       setDoctors(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const fetchStaff = async () => {
+    try {
+      const res = await fetch("/api/admin/staff");
+      const data = await res.json();
+      setStaff(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error(e);
     }
@@ -59,6 +92,7 @@ export default function AdminAppointments() {
 
   useEffect(() => {
     fetchDoctors();
+    fetchStaff();
   }, []);
 
   useEffect(() => {
@@ -76,12 +110,23 @@ export default function AdminAppointments() {
     );
   });
 
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredAppointments.length / itemsPerPage);
+  const paginatedAppointments = filteredAppointments.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   const getStatusColor = (status) => {
     switch (status) {
+      case "New":
       case "Pending":
         return "bg-amber-50 text-amber-700 border-amber-200";
+      case "Assigned":
       case "Confirmed":
         return "bg-blue-50 text-blue-700 border-blue-200";
+      case "In Progress":
+        return "bg-purple-50 text-purple-700 border-purple-200";
       case "Completed":
         return "bg-green-50 text-green-700 border-green-200";
       case "Cancelled":
@@ -91,22 +136,68 @@ export default function AdminAppointments() {
     }
   };
 
-  const updateStatus = async (id, status) => {
+  const getPaymentStatusColor = (pStatus) => {
+    switch (pStatus) {
+      case "Paid":
+        return "bg-green-100 text-green-800";
+      case "Failed":
+        return "bg-red-100 text-red-800";
+      case "Refund Pending":
+        return "bg-amber-100 text-amber-800";
+      case "Refunded":
+        return "bg-gray-100 text-gray-800";
+      default:
+        return "bg-yellow-100 text-yellow-800";
+    }
+  };
+
+  const startEditing = (appt) => {
+    setEditingId(appt._id);
+    setEditForm({
+      bookingStatus: appt.bookingStatus || appt.status || "New",
+      paymentStatus: appt.paymentStatus || "Pending",
+      doctorAssigned: appt.doctorAssigned || "",
+      physiotherapistAssigned: appt.physiotherapistAssigned || "",
+      nurseAssigned: appt.nurseAssigned || "",
+      ambulanceAssigned: appt.ambulanceAssigned || "",
+      internalNotes: appt.internalNotes || "",
+      followupRemarks: appt.followupRemarks || ""
+    });
+  };
+
+  const handleSaveEdit = async (id) => {
     try {
       setStatusLoadingId(id);
-      const res = await fetch('/api/appointments', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, status })
+      
+      const payload = {
+        id,
+        bookingStatus: editForm.bookingStatus,
+        paymentStatus: editForm.paymentStatus,
+        doctorAssigned: editForm.doctorAssigned,
+        physiotherapistAssigned: editForm.physiotherapistAssigned,
+        nurseAssigned: editForm.nurseAssigned,
+        ambulanceAssigned: editForm.ambulanceAssigned,
+        internalNotes: editForm.internalNotes,
+        followupRemarks: editForm.followupRemarks,
+        updatedBy: "Admin"
+      };
+
+      const res = await fetch(`/api/appointments/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
       });
+
       if (res.ok) {
-        setAppointments(appointments.map(a => a._id === id ? { ...a, status } : a));
+        const updated = await res.json();
+        setAppointments(appointments.map(a => a._id === id ? updated : a));
+        setEditingId(null);
       } else {
-        alert("Failed to update status");
+        alert("Failed to save assignment changes");
       }
     } catch (e) {
       console.error(e);
-      alert("Error updating status");
+      alert("Error saving assignments");
     } finally {
       setStatusLoadingId(null);
     }
@@ -134,6 +225,34 @@ export default function AdminAppointments() {
     }
   };
 
+  const handleAddCancellationRequest = async (bookingId, patientName) => {
+    const reason = prompt(`Enter cancellation reason for ${patientName}'s booking (${bookingId}):`);
+    if (reason === null) return;
+    if (!reason.trim()) {
+      alert("Reason is required");
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/admin/cancellations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bookingId, reason })
+      });
+
+      if (res.ok) {
+        alert(`✓ Cancellation request submitted for booking ${bookingId}`);
+        fetchData();
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to submit cancellation request");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error submitting request");
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with Filters */}
@@ -141,10 +260,10 @@ export default function AdminAppointments() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
           <div className="flex items-center gap-2">
             <Filter className="w-5 h-5 text-primary" />
-            <h2 className="text-lg font-bold text-gray-900">Appointments</h2>
+            <h2 className="text-lg font-bold text-gray-900">Manage Bookings</h2>
           </div>
           <div className="text-sm text-gray-500">
-            Total: <span className="font-bold text-gray-900">{filteredAppointments.length}</span>
+            Showing <span className="font-bold text-gray-900">{paginatedAppointments.length}</span> of <span className="font-bold text-gray-900">{filteredAppointments.length}</span>
           </div>
         </div>
 
@@ -157,7 +276,10 @@ export default function AdminAppointments() {
               type="text"
               placeholder="Search ID, name, phone..."
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={e => {
+                setSearchTerm(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
@@ -166,10 +288,13 @@ export default function AdminAppointments() {
           <div className="relative">
             <select
               value={filterDoctor}
-              onChange={e => setFilterDoctor(e.target.value)}
-              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700 appearance-none"
+              onChange={e => {
+                setFilterDoctor(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700 appearance-none animate-none"
             >
-              <option value="">All Doctors</option>
+              <option value="">All Doctors (Service Preferred)</option>
               {doctors.map(doc => (
                 <option key={doc._id} value={doc.name}>{doc.name}</option>
               ))}
@@ -181,12 +306,16 @@ export default function AdminAppointments() {
           <div className="relative">
             <select
               value={filterStatus}
-              onChange={e => setFilterStatus(e.target.value)}
+              onChange={e => {
+                setFilterStatus(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700 appearance-none"
             >
               <option value="">All Statuses</option>
-              <option value="Pending">Pending</option>
-              <option value="Confirmed">Confirmed</option>
+              <option value="New">New / Pending</option>
+              <option value="Assigned">Assigned</option>
+              <option value="In Progress">In Progress</option>
               <option value="Completed">Completed</option>
               <option value="Cancelled">Cancelled</option>
             </select>
@@ -198,7 +327,10 @@ export default function AdminAppointments() {
             <input
               type="date"
               value={filterDate}
-              onChange={e => setFilterDate(e.target.value)}
+              onChange={e => {
+                setFilterDate(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700"
             />
           </div>
@@ -210,139 +342,303 @@ export default function AdminAppointments() {
         <div className="flex justify-center py-20">
           <Loader2 className="w-10 h-10 animate-spin text-primary" />
         </div>
-      ) : filteredAppointments.length === 0 ? (
+      ) : paginatedAppointments.length === 0 ? (
         <div className="bg-white rounded-3xl p-20 text-center border border-gray-100">
           <Calendar className="w-16 h-16 text-gray-200 mx-auto mb-4" />
           <h3 className="text-lg font-bold text-gray-900 mb-1">
-            No appointments found
+            No bookings found
           </h3>
           <p className="text-gray-500 text-sm">
-            New bookings will appear here automatically.
+            Try adjusting your search filters.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredAppointments.map((appt) => (
-            <div
-              key={appt._id}
-              className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-md transition-all duration-300"
-            >
-              <div className="p-6 pb-0 flex justify-between items-start">
-                <div className="flex flex-col gap-1">
-                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                    <User className="w-6 h-6" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {paginatedAppointments.map((appt) => {
+            const isEditing = editingId === appt._id;
+            return (
+              <div
+                key={appt._id}
+                className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-md transition-all duration-300"
+              >
+                {/* Upper Details */}
+                <div className="p-6 pb-4 flex justify-between items-start border-b border-gray-50">
+                  <div className="flex flex-col gap-1">
+                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                      <User className="w-6 h-6" />
+                    </div>
+                    {appt.bookingId && (
+                      <span className="text-[10px] font-bold text-gray-400 mt-1 flex items-center gap-1">
+                        <Hash className="w-3 h-3" /> {appt.bookingId}
+                      </span>
+                    )}
                   </div>
-                  {appt.bookingId && (
-                    <span className="text-[10px] font-bold text-gray-400 mt-1 flex items-center gap-1">
-                      <Hash className="w-3 h-3" /> {appt.bookingId}
-                    </span>
-                  )}
-                </div>
-                
-                <div className="flex flex-col items-end gap-2">
-                  <span
-                    className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(
-                      appt.status
-                    )}`}
-                  >
-                    {appt.status}
-                  </span>
                   
-                  {/* Status Update Dropdown */}
-                  <select 
-                    value={appt.status}
-                    onChange={(e) => updateStatus(appt._id, e.target.value)}
-                    disabled={statusLoadingId === appt._id}
-                    className="text-[10px] font-bold border-gray-200 rounded-lg py-1 px-2 bg-gray-50 outline-none focus:ring-1 focus:ring-primary/20 disabled:opacity-50"
-                  >
-                    <option value="Pending">Pending</option>
-                    <option value="Confirmed">Confirmed</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Cancelled">Cancelled</option>
-                  </select>
-                </div>
-              </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <span
+                      className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(
+                        appt.bookingStatus || appt.status
+                      )}`}
+                    >
+                      {appt.bookingStatus || appt.status}
+                    </span>
 
-              <div className="p-6 space-y-4 flex-1">
-                {/* Patient Name */}
-                <div>
-                  <h4 className="text-lg font-bold text-gray-900 tracking-tight">
-                    {appt.patientName}
-                  </h4>
-                  <p className="text-primary text-xs font-bold mt-0.5">
-                    {appt.category} • {appt.doctor}
-                  </p>
-                </div>
-
-                <div className="space-y-2.5 pt-2 border-t border-gray-100">
-                  {/* Appointment Date & Time */}
-                  <div className="flex items-center gap-3 text-xs text-gray-600 font-medium">
-                    <Calendar className="w-4 h-4 text-primary" />
-                    <span>
-                      {appt.appointmentDate
-                        ? new Date(appt.appointmentDate + 'T00:00').toLocaleDateString('en-IN', {
-                            weekday: 'short',
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })
-                        : 'Not specified'}
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getPaymentStatusColor(appt.paymentStatus)}`}>
+                      💳 {appt.paymentStatus || 'Pending'}
                     </span>
                   </div>
+                </div>
 
-                  {/* Appointment Time */}
-                  {appt.appointmentTime && (
-                    <div className="flex items-center gap-3 text-xs text-gray-600 font-medium">
-                      <Clock className="w-4 h-4 text-primary" />
-                      <span>{appt.appointmentTime}</span>
-                    </div>
-                  )}
-
-                  {/* Phone */}
-                  <div className="flex items-center gap-3 text-xs text-gray-600 font-medium">
-                    <Phone className="w-4 h-4 text-primary" />
-                    <span>{appt.phone}</span>
+                {/* Patient Info */}
+                <div className="p-6 pb-4 space-y-3 flex-1">
+                  <div>
+                    <h4 className="text-base font-bold text-gray-900 tracking-tight">
+                      {appt.patientName}
+                    </h4>
+                    <p className="text-primary text-xs font-bold mt-0.5">
+                      {appt.category} • {appt.doctor}
+                    </p>
                   </div>
 
-                  {/* Notes */}
+                  <div className="space-y-2 text-xs text-gray-600 font-medium">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="w-4 h-4 text-primary shrink-0" />
+                      <span>Date: {appt.appointmentDate || 'Not specified'}</span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <Clock className="w-4 h-4 text-primary shrink-0" />
+                      <span>Time: {appt.appointmentTime || 'Not specified'}</span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <Phone className="w-4 h-4 text-primary shrink-0" />
+                      <span>Phone: {appt.phone}</span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <Share2 className="w-4 h-4 text-primary shrink-0" />
+                      <span>Lead Source: <strong className="text-gray-800">{appt.leadSource || 'Website'}</strong></span>
+                    </div>
+
+                    {/* Show Assigned Staff */}
+                    <div className="bg-gray-50/80 p-3 rounded-2xl space-y-1.5 border border-gray-100">
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Assigned Staff</p>
+                      <div className="grid grid-cols-2 gap-y-1 gap-x-2 text-[11px]">
+                        <div>👨‍⚕️ Doc: <span className="text-gray-800 font-bold">{appt.doctorAssigned || "None"}</span></div>
+                        <div>🏃‍♂️ Physio: <span className="text-gray-800 font-bold">{appt.physiotherapistAssigned || "None"}</span></div>
+                        <div>👩‍⚕️ Nurse: <span className="text-gray-800 font-bold">{appt.nurseAssigned || "None"}</span></div>
+                        <div>🚑 Ambul: <span className="text-gray-800 font-bold">{appt.ambulanceAssigned || "None"}</span></div>
+                      </div>
+                    </div>
+                  </div>
+
                   {appt.notes && (
-                    <div className="bg-gray-50 p-3 rounded-2xl text-[11px] text-gray-600 italic border border-gray-100">
-                      "{appt.notes}"
+                    <div className="bg-gray-50/50 p-3 rounded-2xl text-[11px] text-gray-500 italic border border-gray-100">
+                      "Notes: {appt.notes}"
                     </div>
                   )}
 
-                  {/* Created Date */}
-                  <div className="text-[10px] text-gray-400 font-normal">
-                    Booked: {new Date(appt.createdAt).toLocaleString()}
+                  {appt.internalNotes && (
+                    <div className="bg-blue-50/50 border border-blue-100 p-3 rounded-2xl text-[11px] text-blue-700">
+                      🧠 <strong>Internal Notes:</strong> {appt.internalNotes}
+                    </div>
+                  )}
+
+                  {appt.followupRemarks && (
+                    <div className="bg-purple-50/50 border border-purple-100 p-3 rounded-2xl text-[11px] text-purple-700">
+                      📞 <strong>Followup Remarks:</strong> {appt.followupRemarks}
+                    </div>
+                  )}
+                </div>
+
+                {/* Edit Form Drawer Inline */}
+                {isEditing && (
+                  <div className="px-6 py-4 bg-gray-50 border-t border-b border-gray-200 space-y-3 text-xs">
+                    <h5 className="font-bold text-gray-800">Assign Staff & Update Booking</h5>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 mb-1">Booking Status</label>
+                        <select
+                          value={editForm.bookingStatus}
+                          onChange={e => setEditForm({ ...editForm, bookingStatus: e.target.value })}
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none"
+                        >
+                          <option value="New">New</option>
+                          <option value="Assigned">Assigned</option>
+                          <option value="In Progress">In Progress</option>
+                          <option value="Completed">Completed</option>
+                          <option value="Cancelled">Cancelled</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 mb-1">Payment Status</label>
+                        <select
+                          value={editForm.paymentStatus}
+                          onChange={e => setEditForm({ ...editForm, paymentStatus: e.target.value })}
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Paid">Paid</option>
+                          <option value="Failed">Failed</option>
+                          <option value="Refund Pending">Refund Pending</option>
+                          <option value="Refunded">Refunded</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 mb-1">Doctor Assigned</label>
+                        <select
+                          value={editForm.doctorAssigned}
+                          onChange={e => setEditForm({ ...editForm, doctorAssigned: e.target.value })}
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none"
+                        >
+                          <option value="">None</option>
+                          {staff.filter(s => s.role === 'Doctor').map(s => (
+                            <option key={s._id} value={s.name}>{s.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 mb-1">Physiotherapist</label>
+                        <select
+                          value={editForm.physiotherapistAssigned}
+                          onChange={e => setEditForm({ ...editForm, physiotherapistAssigned: e.target.value })}
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none"
+                        >
+                          <option value="">None</option>
+                          {staff.filter(s => s.role === 'Physiotherapist').map(s => (
+                            <option key={s._id} value={s.name}>{s.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 mb-1">Nurse Assigned</label>
+                        <select
+                          value={editForm.nurseAssigned}
+                          onChange={e => setEditForm({ ...editForm, nurseAssigned: e.target.value })}
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none"
+                        >
+                          <option value="">None</option>
+                          {staff.filter(s => s.role === 'Nurse').map(s => (
+                            <option key={s._id} value={s.name}>{s.name}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 mb-1">Ambulance Staff</label>
+                        <select
+                          value={editForm.ambulanceAssigned}
+                          onChange={e => setEditForm({ ...editForm, ambulanceAssigned: e.target.value })}
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none"
+                        >
+                          <option value="">None</option>
+                          {staff.filter(s => s.role === 'Ambulance Staff').map(s => (
+                            <option key={s._id} value={s.name}>{s.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-500 mb-1">Internal Notes</label>
+                      <textarea
+                        value={editForm.internalNotes}
+                        onChange={e => setEditForm({ ...editForm, internalNotes: e.target.value })}
+                        placeholder="Add internal patient notes here..."
+                        className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none resize-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-500 mb-1">Followup Remarks</label>
+                      <textarea
+                        value={editForm.followupRemarks}
+                        onChange={e => setEditForm({ ...editForm, followupRemarks: e.target.value })}
+                        placeholder="Add followup call notes here..."
+                        className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none resize-none"
+                      />
+                    </div>
+
+                    <div className="flex gap-2 justify-end pt-1">
+                      <button
+                        onClick={() => setEditingId(null)}
+                        className="px-3 py-1.5 bg-gray-200 rounded-lg text-gray-800 font-bold active:scale-95"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => handleSaveEdit(appt._id)}
+                        disabled={statusLoadingId === appt._id}
+                        className="px-3 py-1.5 bg-primary text-white rounded-lg font-bold active:scale-95 flex items-center gap-1 disabled:opacity-50"
+                      >
+                        {statusLoadingId === appt._id ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                        Save Changes
+                      </button>
+                    </div>
                   </div>
+                )}
+
+                {/* Actions bottom bar */}
+                <div className="p-6 pt-0 flex gap-2 border-t border-gray-50 pt-4">
+                  {!isEditing ? (
+                    <button
+                      onClick={() => startEditing(appt)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-primary/10 text-primary hover:bg-primary/20 rounded-2xl text-[11px] font-bold active:scale-95 transition"
+                    >
+                      <UserCheck className="w-3.5 h-3.5" /> Assign & Edit
+                    </button>
+                  ) : null}
+
+                  <button
+                    onClick={() => handleAddCancellationRequest(appt.bookingId, appt.patientName)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-2xl text-[11px] font-bold active:scale-95 transition"
+                  >
+                    <XCircle className="w-3.5 h-3.5" /> Cancel / Refund
+                  </button>
+
+                  <button
+                    onClick={() => setDeleteAppointmentId(appt._id)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 rounded-2xl text-[11px] font-bold active:scale-95 transition"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" /> Delete
+                  </button>
                 </div>
               </div>
+            );
+          })}
+        </div>
+      )}
 
-              {/* Action Buttons */}
-              <div className="p-6 pt-0 flex gap-2">
-                <a
-                  href={`tel:${appt.phone}`}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary text-white rounded-2xl text-[11px] font-bold active:scale-95 transition hover:bg-primary-dark"
-                >
-                  <Phone className="w-3.5 h-3.5" /> Call
-                </a>
-                <a
-                  href={`https://wa.me/91${appt.phone}`}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-green-100 text-green-700 rounded-2xl text-[11px] font-bold active:scale-95 transition hover:bg-green-200"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <MessageSquare className="w-3.5 h-3.5" /> WhatsApp
-                </a>
-                <button
-                  onClick={() => setDeleteAppointmentId(appt._id)}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-50 text-red-600 rounded-2xl text-[11px] font-bold active:scale-95 transition hover:bg-red-100 border border-red-200"
-                >
-                  <Trash2 className="w-3.5 h-3.5" /> Delete
-                </button>
-              </div>
-            </div>
-          ))}
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 pt-4">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-white rounded-xl border border-gray-200 text-xs font-bold text-gray-700 disabled:opacity-50 active:scale-95 transition"
+          >
+            Prev
+          </button>
+          <span className="text-xs text-gray-500 font-bold">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 bg-white rounded-xl border border-gray-200 text-xs font-bold text-gray-700 disabled:opacity-50 active:scale-95 transition"
+          >
+            Next
+          </button>
         </div>
       )}
 

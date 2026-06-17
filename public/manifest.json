@@ -1,0 +1,22 @@
+{
+  "name": "Dr Jhatka Medicare",
+  "short_name": "Dr Jhatka",
+  "description": "24x7 Ambulance Service, Lab Tests, and Medical Equipment at Home in Lucknow.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0F9D58",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

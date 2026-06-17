@@ -17,18 +17,26 @@ import {
   X,
   BookOpen,
   LogOut,
+  CreditCard,
+  History,
+  UserPlus,
+  PhoneCall,
+  XOctagon
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const sidebarLinks = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { label: "Medical Staff", href: "/admin/doctors", icon: Users },
-  // { label: 'Ambulance Hub', href: '/admin/ambulances', icon: Truck },
-  { label: "Ambulance service", href: "/admin/service-cards", icon: Activity },
-
+  { label: "Bookings", href: "/admin/appointments", icon: CalendarCheck },
+  { label: "Payments", href: "/admin/payments", icon: CreditCard },
+  { label: "Staff Directory", href: "/admin/staff", icon: UserPlus },
+  { label: "Patient History", href: "/admin/patients", icon: History },
+  { label: "Followup Tracker", href: "/admin/followups", icon: PhoneCall },
+  { label: "Cancellations", href: "/admin/cancellations", icon: XOctagon },
+  { label: "Medical Bios", href: "/admin/doctors", icon: Users },
+  { label: "Ambulance Services", href: "/admin/service-cards", icon: Activity },
   { label: "Physio Centers", href: "/admin/physio-centers", icon: MapPin },
   { label: "Categories", href: "/admin/categories", icon: Tags },
-  { label: "Appointments", href: "/admin/appointments", icon: CalendarCheck },
   { label: "Join Requests", href: "/admin/partners", icon: UserCog },
   { label: "Gallery", href: "/admin/gallery", icon: Tags },
   { label: "Blogs", href: "/admin/blogs", icon: BookOpen },

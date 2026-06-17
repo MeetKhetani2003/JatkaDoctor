@@ -8,6 +8,10 @@ import { sendEmail } from '@/lib/mail';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import fs from 'fs';
 import path from 'path';
+import { sendBookingConfirmation, sendAdminBookingAlert } from '@/lib/whatsapp';
+import { sanitize, validateBookingInput, isRateLimited } from '@/lib/security';
+
+
 
 async function generatePDFReceipt(appointment) {
   const pdfDoc = await PDFDocument.create();
@@ -200,7 +204,9 @@ export async function GET(req) {
     const doctorId = searchParams.get('doctorId');
     const status = searchParams.get('status');
     const appointmentDate = searchParams.get('appointmentDate');
-    const search = searchParams.get('search');
+    const rawSearch = searchParams.get('search');
+    // Sanitize to prevent Mongo query injection (Phase 14)
+    const search = rawSearch ? rawSearch.replace(/[\$\{\}\[\]]/g, '') : null;
     
     let filter = {};
     
@@ -240,8 +246,24 @@ export async function GET(req) {
 
 export async function POST(req) {
   try {
+    const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '127.0.0.1';
+    
+    // 1. Rate Limiting Check (Phase 14)
+    if (isRateLimited(ip, 10, 60000)) {
+      return NextResponse.json({ error: 'Too many booking attempts. Please try again in a minute.' }, { status: 429 });
+    }
+
     await connectDB();
     const { recaptchaToken, ...body } = await req.json();
+
+    // 2. Mongo sanitization (Phase 14)
+    sanitize(body);
+
+    // 3. Strict input validation (Phase 14)
+    const validation = validateBookingInput(body);
+    if (!validation.isValid) {
+      return NextResponse.json({ error: validation.error }, { status: 400 });
+    }
 
     if (!recaptchaToken) {
       return NextResponse.json({ error: 'reCAPTCHA token is missing' }, { status: 400 });
@@ -300,10 +322,34 @@ export async function POST(req) {
       bookingId,
       doctorId: doctorId,
       appointmentDate: body.appointmentDate || new Date().toISOString().split('T')[0],
-      appointmentTime: body.appointmentTime || '09:00'
+      appointmentTime: body.appointmentTime || '09:00',
+      bookingStatus: body.bookingStatus || 'New',
+      paymentStatus: body.paymentStatus || 'Pending',
+      status: body.status || 'Pending'
     });
     
     await appointment.save();
+
+    // Trigger WhatsApp notifications (Phase 5)
+    try {
+      await sendBookingConfirmation({
+        phone: appointment.phone,
+        patientName: appointment.patientName,
+        bookingId: appointment.bookingId,
+        date: appointment.appointmentDate,
+        time: appointment.appointmentTime,
+        category: appointment.category || appointment.service
+      });
+
+      await sendAdminBookingAlert({
+        patientName: appointment.patientName,
+        bookingId: appointment.bookingId,
+        phone: appointment.phone,
+        category: appointment.category || appointment.service
+      });
+    } catch (waError) {
+      console.error("WhatsApp booking alerts failed:", waError);
+    }
 
     if (appointment.email) {
       try {
@@ -333,11 +379,61 @@ export async function POST(req) {
 export async function PATCH(req) {
   try {
     await connectDB();
-    const { id, status } = await req.json();
-    if (!id || !status) return NextResponse.json({ error: 'Missing ID or status' }, { status: 400 });
-    const appointment = await Appointment.findByIdAndUpdate(id, { status }, { returnDocument: 'after' });
+    const body = await req.json();
+    const { id } = body;
+    if (!id) return NextResponse.json({ error: 'Missing appointment ID' }, { status: 400 });
+    
+    // Sync status fields
+    if (body.status && !body.bookingStatus) {
+      const statusMap = {
+        'Pending': 'New',
+        'Confirmed': 'Assigned',
+        'Completed': 'Completed',
+        'Cancelled': 'Cancelled'
+      };
+      body.bookingStatus = statusMap[body.status] || 'New';
+    } else if (body.bookingStatus && !body.status) {
+      const statusMap = {
+        'New': 'Pending',
+        'Assigned': 'Confirmed',
+        'In Progress': 'Confirmed',
+        'Completed': 'Completed',
+        'Cancelled': 'Cancelled'
+      };
+      body.status = statusMap[body.bookingStatus] || 'Pending';
+    }
+
+    const appointment = await Appointment.findByIdAndUpdate(id, body, { returnDocument: 'after' });
+    
+    // Trigger follow-up task if status is updated to completed
+    if (appointment && appointment.bookingStatus === 'Completed') {
+      try {
+        const FollowupTask = (await import('@/lib/models/FollowupTask')).default;
+        // Check if followup task already exists
+        const existingTask = await FollowupTask.findOne({ bookingId: appointment.bookingId });
+        if (!existingTask) {
+          const scheduledDate = new Date();
+          scheduledDate.setDate(scheduledDate.getDate() + 5);
+          await FollowupTask.create({
+            bookingId: appointment.bookingId,
+            appointmentId: appointment._id,
+            patientName: appointment.patientName,
+            phone: appointment.phone,
+            scheduledDate,
+            type: 'Feedback Request',
+            status: 'Pending',
+            remarks: 'Auto-generated feedback request after completion'
+          });
+          console.log(`Auto-generated followup task for booking ${appointment.bookingId}`);
+        }
+      } catch (e) {
+        console.error("Failed to generate follow-up task:", e);
+      }
+    }
+
     return NextResponse.json(appointment);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

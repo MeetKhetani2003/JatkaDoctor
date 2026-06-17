@@ -5,7 +5,7 @@ import { Phone, MessageCircle, Send, User, Calendar, Loader2, ChevronDown } from
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useRef } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 
@@ -23,6 +23,7 @@ function BookingFormInner({
   onSuccess = () => {}
 }) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [agreed, setAgreed] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -51,20 +52,28 @@ function BookingFormInner({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [catsRes, docsRes, ambRes, packRes] = await Promise.all([
-          fetch('/api/categories'),
-          fetch('/api/doctors'),
-          fetch('/api/ambulances'),
-          fetch('/api/service-packages')
-        ]);
-        const cats = await catsRes.json();
-        const docs = await docsRes.json();
-        const ambs = await ambRes.json();
-        const packs = await packRes.json();
-        setCategories(Array.isArray(cats) ? cats : []);
-        setAllDoctors(Array.isArray(docs) ? docs : []);
-        setAmbulances(Array.isArray(ambs) ? ambs : []);
-        setAllPackages(Array.isArray(packs) ? packs : []);
+        const safeFetchJson = async (url) => {
+          try {
+            const res = await fetch(url);
+            if (res.ok) {
+              const data = await res.json();
+              if (Array.isArray(data)) return data;
+            }
+          } catch (e) {
+            console.error(`Error fetching from ${url}:`, e);
+          }
+          return [];
+        };
+
+        const cats = await safeFetchJson('/api/categories');
+        const docs = await safeFetchJson('/api/doctors');
+        const ambs = await safeFetchJson('/api/ambulances');
+        const packs = await safeFetchJson('/api/service-packages');
+
+        setCategories(cats);
+        setAllDoctors(docs);
+        setAmbulances(ambs);
+        setAllPackages(packs);
         
         // Initial filter if defaultService is provided
         if (defaultService) {
@@ -159,6 +168,14 @@ function BookingFormInner({
         return;
       }
 
+      // Capture lead source (Phase 9)
+      const rawSource = searchParams.get('source') || searchParams.get('utm_source') || '';
+      let leadSource = 'Website';
+      if (rawSource.toLowerCase().includes('whatsapp')) leadSource = 'WhatsApp';
+      else if (rawSource.toLowerCase().includes('google') || rawSource.toLowerCase().includes('gbp')) leadSource = 'Google Business Profile';
+      else if (rawSource.toLowerCase().includes('direct')) leadSource = 'Direct';
+      else if (rawSource.toLowerCase().includes('other')) leadSource = 'Other';
+
       const res = await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -173,16 +190,19 @@ function BookingFormInner({
           appointmentDate: formData.appointmentDate || new Date().toISOString().split('T')[0],
           appointmentTime: formData.appointmentTime || '09:00',
           notes: formData.message,
-          recaptchaToken: token
+          recaptchaToken: token,
+          leadSource: leadSource
         })
       });
       const data = await res.json();
       if (res.ok) {
         setBookingId(data.bookingId);
-        setSuccess(true);
         setFormData({ name: "", phone: "", email: "", service: defaultService, otherService: "", doctor: "", appointmentDate: "", appointmentTime: "", message: "" });
         setAgreed(false);
         onSuccess();
+        
+        // Redirect to payment gateway simulator (Phase 4)
+        router.push(`/payment?bookingId=${data.bookingId}`);
       } else {
         alert(data.error || "Error submitting request. Please try again.");
       }
