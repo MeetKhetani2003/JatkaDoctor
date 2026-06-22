@@ -49,8 +49,8 @@ self.addEventListener('fetch', (event) => {
                 });
               }
             })
-            .catch(() => {/* Ignore network errors for background sync */});
-          
+            .catch(() => {/* Ignore network errors for background sync */ });
+
           return cachedResponse;
         }
 
@@ -91,8 +91,8 @@ self.addEventListener('push', (event) => {
 
   const options = {
     body: data.body,
-    icon: '/icon-192.png',
-    badge: '/icon-192.png',
+    icon: '/Dr.Jhatka.png',
+    badge: '/Dr.Jhatka.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),

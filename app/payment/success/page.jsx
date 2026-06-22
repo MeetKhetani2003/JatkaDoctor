@@ -68,14 +68,20 @@ function SuccessContent() {
 
         <div className="pt-4 space-y-3">
           <Link 
-            href="/"
+            href={`/track?bookingId=${bookingId}`}
             className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-primary-dark transition active:scale-95 flex items-center justify-center gap-2"
           >
-            Go to Homepage <ArrowRight className="w-4 h-4" />
+            Track / Manage Booking <ArrowRight className="w-4 h-4" />
+          </Link>
+          <Link 
+            href="/"
+            className="w-full py-3 bg-gray-50 text-gray-700 font-bold rounded-2xl hover:bg-gray-100 transition flex items-center justify-center gap-2 text-sm border border-gray-200"
+          >
+            Return to Homepage
           </Link>
           <a
             href="tel:8874744756"
-            className="w-full py-3 bg-gray-50 text-gray-700 font-bold rounded-2xl hover:bg-gray-100 transition flex items-center justify-center gap-2 text-sm"
+            className="w-full py-3 bg-white text-gray-700 font-bold rounded-2xl hover:bg-gray-50 transition flex items-center justify-center gap-2 text-sm mt-2 border border-gray-100"
           >
             <Phone className="w-4 h-4 text-primary" /> Contact Care Coordinator
           </a>

@@ -16,6 +16,9 @@ import {
   Database
 } from 'lucide-react';
 import Link from 'next/link';
+import { 
+  LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer 
+} from 'recharts';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState(null);
@@ -81,9 +84,7 @@ export default function AdminDashboard() {
     { label: 'Total Revenue', value: `₹${(stats?.totalRevenue || 0).toLocaleString("en-IN")}`, icon: IndianRupee, color: 'bg-primary', shadow: 'shadow-primary/20' },
   ];
 
-  // Max value calculators for SVG Graph scaling
-  const maxRevenue = Math.max(...(stats?.monthlyRevenueGraph || []).map(d => d.revenue), 1000);
-  const maxBookings = Math.max(...(stats?.bookingTrendGraph || []).map(d => d.count), 5);
+
 
   return (
     <div className="space-y-8">
@@ -134,24 +135,37 @@ export default function AdminDashboard() {
             <p className="text-xs text-gray-400">Total generated payment volumes from successful gateway receipts</p>
           </div>
           
-          <div className="h-64 flex items-end justify-around pt-6 border-b border-gray-100 pb-2">
-            {(stats?.monthlyRevenueGraph || []).map((data, index) => {
-              const heightPct = (data.revenue / maxRevenue) * 90;
-              return (
-                <div key={index} className="flex flex-col items-center w-12 group relative">
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full mb-2 bg-gray-900 text-white text-[10px] font-bold px-2 py-1 rounded shadow opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap">
-                    ₹{data.revenue.toLocaleString("en-IN")}
-                  </div>
-                  {/* Bar */}
-                  <div 
-                    className="w-8 bg-gradient-to-t from-primary to-primary-light rounded-t-lg group-hover:from-primary-dark group-hover:to-primary transition-all duration-500" 
-                    style={{ height: `${Math.max(heightPct, 4)}%` }}
-                  />
-                  <span className="text-[10px] text-gray-500 mt-2 font-bold whitespace-nowrap">{data.month}</span>
-                </div>
-              );
-            })}
+          <div className="h-72 w-full pt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={stats?.monthlyRevenueGraph || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#0ea5e9" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#0ea5e9" stopOpacity={0.2}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                <XAxis 
+                  dataKey="month" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fill: '#9ca3af', fontWeight: 'bold' }} 
+                  dy={10}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fill: '#9ca3af', fontWeight: 'bold' }}
+                  tickFormatter={(val) => `₹${val.toLocaleString("en-IN")}`}
+                />
+                <RechartsTooltip 
+                  cursor={{ fill: '#f9fafb' }}
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}
+                  formatter={(value) => [`₹${value.toLocaleString("en-IN")}`, 'Revenue']}
+                />
+                <Bar dataKey="revenue" fill="url(#colorRevenue)" radius={[6, 6, 0, 0]} barSize={32} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
@@ -162,26 +176,38 @@ export default function AdminDashboard() {
             <p className="text-xs text-gray-400">Total patient request velocity across all care segments</p>
           </div>
           
-          <div className="h-64 flex items-end justify-around pt-6 border-b border-gray-100 pb-2">
-            {(stats?.bookingTrendGraph || []).map((data, index) => {
-              const heightPct = (data.count / maxBookings) * 90;
-              return (
-                <div key={index} className="flex flex-col items-center w-6 group relative">
-                  {/* Tooltip */}
-                  <div className="absolute bottom-full mb-2 bg-gray-900 text-white text-[10px] font-bold px-2 py-1 rounded shadow opacity-0 group-hover:opacity-100 transition-opacity z-10 whitespace-nowrap">
-                    {data.count} bookings
-                  </div>
-                  {/* Bar */}
-                  <div 
-                    className="w-3 bg-gradient-to-t from-blue-500 to-blue-200 rounded-t-md group-hover:from-blue-600 group-hover:to-blue-400 transition-all duration-500" 
-                    style={{ height: `${Math.max(heightPct, 4)}%` }}
-                  />
-                  {index % 2 === 0 && (
-                    <span className="text-[8px] text-gray-400 mt-2 font-bold whitespace-nowrap">{data.date}</span>
-                  )}
-                </div>
-              );
-            })}
+          <div className="h-72 w-full pt-4">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={stats?.bookingTrendGraph || []} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
+                <XAxis 
+                  dataKey="date" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fill: '#9ca3af', fontWeight: 'bold' }} 
+                  dy={10}
+                  interval="preserveStartEnd"
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fill: '#9ca3af', fontWeight: 'bold' }}
+                  allowDecimals={false}
+                />
+                <RechartsTooltip 
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}
+                  formatter={(value) => [value, 'Bookings']}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="count" 
+                  stroke="#3b82f6" 
+                  strokeWidth={4}
+                  dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: '#3b82f6' }} 
+                  activeDot={{ r: 6, strokeWidth: 0, fill: '#2563eb' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </div>
         </div>
 

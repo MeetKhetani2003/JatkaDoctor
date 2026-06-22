@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Calendar,
@@ -24,6 +25,7 @@ import {
 } from "lucide-react";
 
 export default function AdminAppointments() {
+  const router = useRouter();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -241,8 +243,8 @@ export default function AdminAppointments() {
       });
 
       if (res.ok) {
-        alert(`✓ Cancellation request submitted for booking ${bookingId}`);
-        fetchData();
+        // Redirect to cancellations tab
+        router.push('/admin/cancellations');
       } else {
         const data = await res.json();
         alert(data.error || "Failed to submit cancellation request");
@@ -251,6 +253,51 @@ export default function AdminAppointments() {
       console.error(e);
       alert("Error submitting request");
     }
+  };
+
+  const handleExportCSV = () => {
+    if (appointments.length === 0) {
+      alert("No data available to export.");
+      return;
+    }
+
+    const headers = [
+      "Booking ID", "Patient Name", "Phone", "Email", "Category", 
+      "Service", "Doctor Preferred", "Package", "Appointment Date", 
+      "Appointment Time", "Booking Status", "Payment Status", 
+      "Lead Source", "Created At"
+    ];
+
+    const csvRows = [
+      headers.join(","),
+      ...appointments.map(appt => {
+        return [
+          `"${appt.bookingId || ''}"`,
+          `"${appt.patientName || ''}"`,
+          `"${appt.phone || ''}"`,
+          `"${appt.email || ''}"`,
+          `"${appt.category || ''}"`,
+          `"${appt.service || ''}"`,
+          `"${appt.doctor || ''}"`,
+          `"${appt.package || ''}"`,
+          `"${appt.appointmentDate || ''}"`,
+          `"${appt.appointmentTime || ''}"`,
+          `"${appt.bookingStatus || appt.status || ''}"`,
+          `"${appt.paymentStatus || ''}"`,
+          `"${appt.leadSource || 'Website'}"`,
+          `"${new Date(appt.createdAt).toLocaleString() || ''}"`
+        ].join(",");
+      })
+    ];
+
+    const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `bookings_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -262,8 +309,17 @@ export default function AdminAppointments() {
             <Filter className="w-5 h-5 text-primary" />
             <h2 className="text-lg font-bold text-gray-900">Manage Bookings</h2>
           </div>
-          <div className="text-sm text-gray-500">
-            Showing <span className="font-bold text-gray-900">{paginatedAppointments.length}</span> of <span className="font-bold text-gray-900">{filteredAppointments.length}</span>
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-gray-500">
+              Showing <span className="font-bold text-gray-900">{paginatedAppointments.length}</span> of <span className="font-bold text-gray-900">{filteredAppointments.length}</span>
+            </div>
+            <button
+              onClick={handleExportCSV}
+              className="px-4 py-2 bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 rounded-xl text-sm font-bold active:scale-95 transition flex items-center gap-2"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              Export CSV
+            </button>
           </div>
         </div>
 

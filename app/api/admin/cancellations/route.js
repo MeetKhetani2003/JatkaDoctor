@@ -3,6 +3,7 @@ import connectDB from '@/lib/db';
 import CancellationRequest from '@/lib/models/CancellationRequest';
 import Appointment from '@/lib/models/Appointment';
 import { verifyAdmin } from '@/lib/adminAuth';
+import { uploadToGridFS, deleteFromGridFS } from '@/lib/gridfs';
 
 export async function GET(req) {
   try {
@@ -18,6 +19,7 @@ export async function GET(req) {
   }
 }
 
+// Admin manually creates a cancel request via appointments table
 export async function POST(req) {
   try {
     await connectDB();
@@ -28,26 +30,23 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Missing booking ID or reason' }, { status: 400 });
     }
 
-    // Find the appointment
     const appointment = await Appointment.findOne({ bookingId });
     if (!appointment) {
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
     }
 
-    // Create the request
     const request = new CancellationRequest({
       bookingId,
       reason,
-      refundStatus: 'Pending'
+      refundStatus: 'Pending',
+      refundMethod: 'Bank Transfer' // Default
     });
 
     await request.save();
 
-    // Cancel the appointment status
     appointment.bookingStatus = 'Cancelled';
     appointment.status = 'Cancelled';
     
-    // If the payment was Paid, the refund status becomes Refund Pending
     if (appointment.paymentStatus === 'Paid') {
       appointment.paymentStatus = 'Refund Pending';
     }
@@ -67,38 +66,70 @@ export async function PATCH(req) {
     }
 
     await connectDB();
-    const body = await req.json();
-    const { id, refundStatus } = body;
+    const formData = await req.formData();
+    const id = formData.get('id');
+    const action = formData.get('action'); // 'approve' or 'reject'
 
-    if (!id || !refundStatus) {
-      return NextResponse.json({ error: 'Missing request ID or refund status' }, { status: 400 });
+    if (!id || !action) {
+      return NextResponse.json({ error: 'Missing request ID or action' }, { status: 400 });
     }
 
-    const request = await CancellationRequest.findByIdAndUpdate(
-      id,
-      { refundStatus },
-      { returnDocument: 'after' }
-    );
-
+    const request = await CancellationRequest.findById(id);
     if (!request) {
       return NextResponse.json({ error: 'Cancellation request not found' }, { status: 404 });
     }
 
-    // Update appointment paymentStatus accordingly
-    if (refundStatus === 'Refunded') {
+    // Common cleanup: delete user screenshot to save GridFS space
+    if (request.userScreenshotId) {
+      try {
+        await deleteFromGridFS(request.userScreenshotId);
+        request.userScreenshotId = null; // Remove reference
+      } catch (err) {
+        console.error("Failed to delete user screenshot from GridFS", err);
+      }
+    }
+
+    if (action === 'approve') {
+      const proof = formData.get('adminProof');
+      if (!proof) {
+        return NextResponse.json({ error: 'Refund proof screenshot is required' }, { status: 400 });
+      }
+
+      // Upload Admin Proof
+      const buffer = Buffer.from(await proof.arrayBuffer());
+      const adminRefundProofId = await uploadToGridFS(buffer, proof.name, proof.type);
+
+      request.refundStatus = 'Refunded';
+      request.adminRefundProofId = adminRefundProofId;
+      await request.save();
+
+      // Update appointment
       await Appointment.findOneAndUpdate(
         { bookingId: request.bookingId },
         { paymentStatus: 'Refunded' }
       );
-    } else if (refundStatus === 'Approved') {
-      await Appointment.findOneAndUpdate(
-        { bookingId: request.bookingId },
-        { paymentStatus: 'Refund Pending' }
-      );
+
+    } else if (action === 'reject') {
+      const rejectionReason = formData.get('rejectionReason');
+      if (!rejectionReason) {
+        return NextResponse.json({ error: 'Rejection reason is required' }, { status: 400 });
+      }
+
+      request.refundStatus = 'Rejected';
+      request.rejectionReason = rejectionReason;
+      await request.save();
+
+      // Revert payment status since refund is rejected
+      const appointment = await Appointment.findOne({ bookingId: request.bookingId });
+      if (appointment && appointment.paymentStatus === 'Refund Pending') {
+        appointment.paymentStatus = 'Paid';
+        await appointment.save();
+      }
     }
 
-    return NextResponse.json(request);
+    return NextResponse.json({ success: true, request });
   } catch (error) {
+    console.error("Admin Cancellation PATCH error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
