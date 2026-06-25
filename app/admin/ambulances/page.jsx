@@ -28,6 +28,11 @@ export default function AdminAmbulances() {
     icon: "Building2",
     badge: "AVAILABLE",
     verified: true,
+    ambulanceNumber: "",
+    ambulanceType: "Normal",
+    driverName: "",
+    driverMobile: "",
+    availabilityStatus: "Available"
   });
 
   const fetchAmbulances = async () => {
@@ -73,6 +78,11 @@ export default function AdminAmbulances() {
           icon: "Building2",
           badge: "AVAILABLE",
           verified: true,
+          ambulanceNumber: "",
+          ambulanceType: "Normal",
+          driverName: "",
+          driverMobile: "",
+          availabilityStatus: "Available"
         });
       }
     } catch (err) {
@@ -92,6 +102,11 @@ export default function AdminAmbulances() {
       icon: loc.icon,
       badge: loc.badge,
       verified: loc.verified,
+      ambulanceNumber: loc.ambulanceNumber || "",
+      ambulanceType: loc.ambulanceType || "Normal",
+      driverName: loc.driverName || "",
+      driverMobile: loc.driverMobile || "",
+      availabilityStatus: loc.availabilityStatus || "Available"
     });
     setIsAdding(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -140,6 +155,11 @@ export default function AdminAmbulances() {
                   icon: "Building2",
                   badge: "AVAILABLE",
                   verified: true,
+                  ambulanceNumber: "",
+                  ambulanceType: "Normal",
+                  driverName: "",
+                  driverMobile: "",
+                  availabilityStatus: "Available"
                 });
               } else {
                 setIsAdding(true);
@@ -157,28 +177,67 @@ export default function AdminAmbulances() {
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Location Name</label>
+                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Location Name (Base)</label>
                   <input 
                     type="text" 
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
                     placeholder="e.g. Dubagga, Gomti Nagar"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase mb-2">City</label>
-                  <input 
-                    type="text" 
-                    value={formData.city}
-                    onChange={(e) => setFormData({...formData, city: e.target.value})}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none"
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Status</label>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Ambulance Number</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={formData.ambulanceNumber}
+                      onChange={(e) => setFormData({...formData, ambulanceNumber: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+                      placeholder="e.g. UP-32-AB-1234"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">City</label>
+                    <input 
+                      type="text" 
+                      value={formData.city}
+                      onChange={(e) => setFormData({...formData, city: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Driver Name</label>
+                    <input 
+                      type="text" 
+                      required
+                      value={formData.driverName}
+                      onChange={(e) => setFormData({...formData, driverName: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+                      placeholder="e.g. Ram Kumar"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Driver Mobile</label>
+                    <input 
+                      type="tel" 
+                      required
+                      value={formData.driverMobile}
+                      onChange={(e) => setFormData({...formData, driverMobile: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+                      placeholder="e.g. 9876543210"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Status (App)</label>
                     <select 
                       value={formData.status}
                       onChange={(e) => {
@@ -190,7 +249,7 @@ export default function AdminAmbulances() {
                           eta: status === 'available' ? '10 - 15 Min' : 'Launching Soon'
                         });
                       }}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none"
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
                     >
                       <option value="available">Available</option>
                       <option value="coming_soon">Coming Soon</option>
@@ -202,13 +261,39 @@ export default function AdminAmbulances() {
                       type="text" 
                       value={formData.eta}
                       onChange={(e) => setFormData({...formData, eta: e.target.value})}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none"
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
                     />
                   </div>
                 </div>
               </div>
 
               <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Ambulance Type</label>
+                    <select 
+                      value={formData.ambulanceType}
+                      onChange={(e) => setFormData({...formData, ambulanceType: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+                    >
+                      <option value="Normal">Normal</option>
+                      <option value="Oxygen">Oxygen</option>
+                      <option value="ICU">ICU</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Availability Status</label>
+                    <select 
+                      value={formData.availabilityStatus}
+                      onChange={(e) => setFormData({...formData, availabilityStatus: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+                    >
+                      <option value="Available">Available</option>
+                      <option value="Busy">Busy</option>
+                      <option value="Offline">Offline</option>
+                    </select>
+                  </div>
+                </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Select Icon Type</label>
                   <div className="grid grid-cols-5 gap-3">
@@ -269,10 +354,22 @@ export default function AdminAmbulances() {
               
               return (
                 <div key={loc._id} className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm flex flex-col relative overflow-hidden group">
-                  <div className={`absolute top-4 right-4 text-[10px] font-bold px-2 py-1 rounded tracking-wider ${
-                    isAvailable ? 'bg-emerald-50 text-emerald-600' : 'bg-gray-100 text-gray-500'
-                  }`}>
-                    {loc.badge}
+                  <div className={`absolute top-4 right-4 flex flex-col items-end gap-1.5`}>
+                    <span className={`text-[10px] font-bold px-2 py-1 rounded tracking-wider ${
+                      isAvailable ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-gray-100 text-gray-500 border border-gray-200'
+                    }`}>
+                      {loc.badge}
+                    </span>
+                    
+                    <span className={`text-[9px] font-black px-1.5 py-0.5 rounded ${
+                      loc.availabilityStatus === 'Available' 
+                        ? 'bg-green-100 text-green-800' 
+                        : loc.availabilityStatus === 'Busy'
+                          ? 'bg-amber-100 text-amber-800'
+                          : 'bg-gray-100 text-gray-600'
+                    }`}>
+                      ● {loc.availabilityStatus || 'Available'}
+                    </span>
                   </div>
 
                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-4 ${
@@ -281,8 +378,31 @@ export default function AdminAmbulances() {
                     <IconComp className="w-7 h-7" />
                   </div>
 
-                  <h3 className="font-bold text-gray-900 text-lg mb-1">{loc.name}</h3>
-                  <div className="flex items-center gap-1.5 text-gray-500 text-sm mb-4">
+                  <h3 className="font-bold text-gray-900 text-lg mb-1 leading-tight">{loc.name}</h3>
+                  
+                  {/* Ambulance Number & Type */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="px-2 py-0.5 rounded bg-gray-100 border border-gray-200 text-[10px] font-mono font-bold text-gray-800">
+                      {loc.ambulanceNumber || "No Number"}
+                    </span>
+                    <span className="px-2 py-0.5 rounded bg-primary-light text-primary text-[10px] font-black uppercase">
+                      {loc.ambulanceType || "Normal"} ICU
+                    </span>
+                  </div>
+
+                  {/* Driver Details */}
+                  <div className="p-3 bg-gray-50 rounded-2xl border border-gray-100 text-xs space-y-1 my-3">
+                    <div className="flex justify-between text-gray-400">
+                      <span>Driver:</span>
+                      <strong className="text-gray-800">{loc.driverName || "N/A"}</strong>
+                    </div>
+                    <div className="flex justify-between text-gray-400">
+                      <span>Mobile:</span>
+                      <strong className="text-gray-800">{loc.driverMobile || "N/A"}</strong>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 text-gray-500 text-xs mb-4">
                     <MapPin className="w-3.5 h-3.5" /> {loc.city}
                   </div>
 

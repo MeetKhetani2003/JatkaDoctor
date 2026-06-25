@@ -66,6 +66,8 @@ export async function POST(req) {
     // 4. Update Appointment
     appointment.paymentStatus = 'Paid';
     appointment.bookingStatus = appointment.doctorAssigned ? 'Assigned' : 'New';
+    appointment.advancePaid = (appointment.advancePaid || 0) + Number(amount);
+    appointment.balanceDue = Math.max(0, (appointment.totalAmount || 0) - appointment.advancePaid);
     await appointment.save();
 
     // 5. Send WhatsApp notifications

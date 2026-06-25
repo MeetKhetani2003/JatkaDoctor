@@ -21,7 +21,8 @@ import {
   History,
   UserPlus,
   PhoneCall,
-  XOctagon
+  XOctagon,
+  Package
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -35,6 +36,8 @@ const sidebarLinks = [
   { label: "Cancellations", href: "/admin/cancellations", icon: XOctagon },
   { label: "Medical Bios", href: "/admin/doctors", icon: Users },
   { label: "Ambulance Services", href: "/admin/service-cards", icon: Activity },
+  { label: "Ambulance Partners", href: "/admin/ambulances", icon: Truck },
+  { label: "Ambulance Packages", href: "/admin/ambulance-packages", icon: Package },
   { label: "Physio Centers", href: "/admin/physio-centers", icon: MapPin },
   { label: "Categories", href: "/admin/categories", icon: Tags },
   { label: "Join Requests", href: "/admin/partners", icon: UserCog },

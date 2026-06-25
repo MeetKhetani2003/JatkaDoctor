@@ -32,11 +32,19 @@ export default function AdminAppointments() {
   const [filterDoctor, setFilterDoctor] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterDate, setFilterDate] = useState("");
+  const [filterZone, setFilterZone] = useState("");
   const [doctors, setDoctors] = useState([]);
   const [staff, setStaff] = useState([]);
+  const [payments, setPayments] = useState([]);
   const [deleteAppointmentId, setDeleteAppointmentId] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [statusLoadingId, setStatusLoadingId] = useState(null);
+
+  const LUCKNOW_AREAS = [
+    "Gomti Nagar", "Hazratganj", "Aliganj", "Indira Nagar", 
+    "Dubagga", "Charbagh", "Chowk", "Aashiana", 
+    "Jankipuram", "Mahanagar", "Rajajipuram", "Kalyanpur"
+  ];
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -52,7 +60,13 @@ export default function AdminAppointments() {
     nurseAssigned: "",
     ambulanceAssigned: "",
     internalNotes: "",
-    followupRemarks: ""
+    followupRemarks: "",
+    emergencyPriority: "Medium",
+    patientAddress: "",
+    googleMapLocation: "",
+    patientCondition: "",
+    totalAmount: 0,
+    advancePaid: 0
   });
 
   const fetchDoctors = async () => {
@@ -70,6 +84,16 @@ export default function AdminAppointments() {
       const res = await fetch("/api/admin/staff");
       const data = await res.json();
       setStaff(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const fetchPayments = async () => {
+    try {
+      const res = await fetch("/api/payments");
+      const data = await res.json();
+      setPayments(Array.isArray(data) ? data : []);
     } catch (e) {
       console.error(e);
     }
@@ -95,21 +119,27 @@ export default function AdminAppointments() {
   useEffect(() => {
     fetchDoctors();
     fetchStaff();
+    fetchPayments();
   }, []);
 
   useEffect(() => {
     setLoading(true);
     fetchData();
+    fetchPayments();
   }, [filterDoctor, filterStatus, filterDate]);
 
-  // Filter appointments by search term (name, phone or bookingId)
+  // Filter appointments by search term (name, phone, bookingId, or Lucknow zone)
   const filteredAppointments = appointments.filter(appt => {
     const searchLower = searchTerm.toLowerCase();
-    return (
+    const matchesSearch = (
       appt.patientName?.toLowerCase().includes(searchLower) ||
       appt.phone?.includes(searchTerm) ||
       appt.bookingId?.toLowerCase().includes(searchLower)
     );
+    const matchesZone = filterZone 
+      ? (appt.patientAddress?.toLowerCase().includes(filterZone.toLowerCase()) || appt.googleMapLocation?.toLowerCase().includes(filterZone.toLowerCase()))
+      : true;
+    return matchesSearch && matchesZone;
   });
 
   // Pagination calculations
@@ -163,7 +193,13 @@ export default function AdminAppointments() {
       nurseAssigned: appt.nurseAssigned || "",
       ambulanceAssigned: appt.ambulanceAssigned || "",
       internalNotes: appt.internalNotes || "",
-      followupRemarks: appt.followupRemarks || ""
+      followupRemarks: appt.followupRemarks || "",
+      emergencyPriority: appt.emergencyPriority || "Medium",
+      patientAddress: appt.patientAddress || "",
+      googleMapLocation: appt.googleMapLocation || "",
+      patientCondition: appt.patientCondition || "",
+      totalAmount: appt.totalAmount || 0,
+      advancePaid: appt.advancePaid || 0
     });
   };
 
@@ -171,6 +207,10 @@ export default function AdminAppointments() {
     try {
       setStatusLoadingId(id);
       
+      const totalVal = Number(editForm.totalAmount) || 0;
+      const advanceVal = Number(editForm.advancePaid) || 0;
+      const balanceVal = Math.max(0, totalVal - advanceVal);
+
       const payload = {
         id,
         bookingStatus: editForm.bookingStatus,
@@ -181,6 +221,13 @@ export default function AdminAppointments() {
         ambulanceAssigned: editForm.ambulanceAssigned,
         internalNotes: editForm.internalNotes,
         followupRemarks: editForm.followupRemarks,
+        emergencyPriority: editForm.emergencyPriority,
+        patientAddress: editForm.patientAddress,
+        googleMapLocation: editForm.googleMapLocation,
+        patientCondition: editForm.patientCondition,
+        totalAmount: totalVal,
+        advancePaid: advanceVal,
+        balanceDue: balanceVal,
         updatedBy: "Admin"
       };
 
@@ -324,7 +371,7 @@ export default function AdminAppointments() {
         </div>
 
         {/* Filters Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
           {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -353,6 +400,24 @@ export default function AdminAppointments() {
               <option value="">All Doctors (Service Preferred)</option>
               {doctors.map(doc => (
                 <option key={doc._id} value={doc.name}>{doc.name}</option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
+
+          {/* Zone/Area Filter (Lucknow) */}
+          <div className="relative">
+            <select
+              value={filterZone}
+              onChange={e => {
+                setFilterZone(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700 appearance-none"
+            >
+              <option value="">All Lucknow Zones</option>
+              {LUCKNOW_AREAS.map(area => (
+                <option key={area} value={area}>{area}</option>
               ))}
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
@@ -412,10 +477,24 @@ export default function AdminAppointments() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {paginatedAppointments.map((appt) => {
             const isEditing = editingId === appt._id;
+            
+            // Priority Styling Border
+            const getPriorityBorder = (prio) => {
+              switch (prio) {
+                case "Critical": return "border-l-[6px] border-l-red-600 border-t border-r border-b border-gray-100";
+                case "High": return "border-l-[6px] border-l-amber-500 border-t border-r border-b border-gray-100";
+                case "Medium": return "border-l-[6px] border-l-blue-500 border-t border-r border-b border-gray-100";
+                case "Low": return "border-l-[6px] border-l-gray-300 border-t border-r border-b border-gray-100";
+                default: return "border border-gray-100";
+              }
+            };
+
             return (
               <div
                 key={appt._id}
-                className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col group hover:shadow-md transition-all duration-300"
+                className={`bg-white rounded-3xl overflow-hidden flex flex-col group hover:shadow-md transition-all duration-300 ${
+                  appt.emergencyPriority === 'Critical' ? 'shadow-red-50/50 shadow-md ring-1 ring-red-200' : 'shadow-sm'
+                } ${getPriorityBorder(appt.emergencyPriority)}`}
               >
                 {/* Upper Details */}
                 <div className="p-6 pb-4 flex justify-between items-start border-b border-gray-50">
@@ -430,7 +509,7 @@ export default function AdminAppointments() {
                     )}
                   </div>
                   
-                  <div className="flex flex-col items-end gap-2">
+                  <div className="flex flex-col items-end gap-1.5">
                     <span
                       className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(
                         appt.bookingStatus || appt.status
@@ -442,11 +521,25 @@ export default function AdminAppointments() {
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getPaymentStatusColor(appt.paymentStatus)}`}>
                       💳 {appt.paymentStatus || 'Pending'}
                     </span>
+                    
+                    {appt.emergencyPriority && (
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
+                        appt.emergencyPriority === 'Critical' 
+                          ? 'bg-red-100 text-red-800 border border-red-200 animate-pulse' 
+                          : appt.emergencyPriority === 'High'
+                            ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                            : appt.emergencyPriority === 'Medium'
+                              ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                              : 'bg-gray-100 text-gray-800 border border-gray-200'
+                      }`}>
+                        🚨 {appt.emergencyPriority} Priority
+                      </span>
+                    )}
                   </div>
                 </div>
 
                 {/* Patient Info */}
-                <div className="p-6 pb-4 space-y-3 flex-1">
+                <div className="p-6 pb-4 space-y-4 flex-1 text-xs">
                   <div>
                     <h4 className="text-base font-bold text-gray-900 tracking-tight">
                       {appt.patientName}
@@ -456,7 +549,7 @@ export default function AdminAppointments() {
                     </p>
                   </div>
 
-                  <div className="space-y-2 text-xs text-gray-600 font-medium">
+                  <div className="space-y-2 text-gray-600 font-medium">
                     <div className="flex items-center gap-3">
                       <Calendar className="w-4 h-4 text-primary shrink-0" />
                       <span>Date: {appt.appointmentDate || 'Not specified'}</span>
@@ -477,17 +570,82 @@ export default function AdminAppointments() {
                       <span>Lead Source: <strong className="text-gray-800">{appt.leadSource || 'Website'}</strong></span>
                     </div>
 
+                    {/* Address & Google Maps Location */}
+                    {appt.patientAddress && (
+                      <div className="flex items-start gap-3 border-t border-dashed border-gray-100 pt-2">
+                        <span className="text-gray-400 shrink-0">📍 Address:</span>
+                        <span className="text-gray-800 font-bold">{appt.patientAddress}</span>
+                      </div>
+                    )}
+                    {appt.googleMapLocation && (
+                      <div className="flex items-center gap-3">
+                        <span className="text-gray-400 shrink-0">🗺️ Location:</span>
+                        <a 
+                          href={appt.googleMapLocation.startsWith('http') ? appt.googleMapLocation : `https://${appt.googleMapLocation}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary font-black hover:underline flex items-center gap-0.5"
+                        >
+                          View Google Map Link ↗
+                        </a>
+                      </div>
+                    )}
+
                     {/* Show Assigned Staff */}
-                    <div className="bg-gray-50/80 p-3 rounded-2xl space-y-1.5 border border-gray-100">
+                    <div className="bg-gray-50/80 p-3 rounded-2xl space-y-1.5 border border-gray-100 mt-2">
                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Assigned Staff</p>
-                      <div className="grid grid-cols-2 gap-y-1 gap-x-2 text-[11px]">
+                      <div className="grid grid-cols-2 gap-y-1.5 gap-x-2 text-[11px]">
                         <div>👨‍⚕️ Doc: <span className="text-gray-800 font-bold">{appt.doctorAssigned || "None"}</span></div>
                         <div>🏃‍♂️ Physio: <span className="text-gray-800 font-bold">{appt.physiotherapistAssigned || "None"}</span></div>
                         <div>👩‍⚕️ Nurse: <span className="text-gray-800 font-bold">{appt.nurseAssigned || "None"}</span></div>
                         <div>🚑 Ambul: <span className="text-gray-800 font-bold">{appt.ambulanceAssigned || "None"}</span></div>
                       </div>
                     </div>
+
+                    {/* Financial Ledger & Transactions (Phase 4) */}
+                    <div className="bg-emerald-50/30 p-3.5 rounded-2xl border border-emerald-100/50 space-y-2 mt-2">
+                      <p className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Financial Ledger</p>
+                      <div className="grid grid-cols-3 gap-2 text-center">
+                        <div className="bg-white p-2 rounded-xl border border-emerald-100/30 shadow-sm">
+                          <p className="text-[8px] text-gray-400 font-semibold uppercase">Total</p>
+                          <strong className="text-gray-800 text-xs">₹{appt.totalAmount || 0}</strong>
+                        </div>
+                        <div className="bg-white p-2 rounded-xl border border-emerald-100/30 shadow-sm">
+                          <p className="text-[8px] text-gray-400 font-semibold uppercase">Paid</p>
+                          <strong className="text-emerald-600 text-xs">₹{appt.advancePaid || 0}</strong>
+                        </div>
+                        <div className="bg-white p-2 rounded-xl border border-emerald-100/30 shadow-sm">
+                          <p className="text-[8px] text-gray-400 font-semibold uppercase">Due</p>
+                          <strong className={`text-xs ${appt.balanceDue > 0 ? "text-red-600 font-black" : "text-green-600 font-black"}`}>
+                            ₹{appt.balanceDue || 0}
+                          </strong>
+                        </div>
+                      </div>
+
+                      {/* Sub-ledger Payment Transactions */}
+                      {payments.filter(p => p.bookingId === appt.bookingId).length > 0 && (
+                        <div className="pt-2 border-t border-emerald-100/40 space-y-1.5">
+                          <p className="text-[9px] font-bold text-emerald-800/60 uppercase tracking-wider">Payment History</p>
+                          <div className="space-y-1">
+                            {payments.filter(p => p.bookingId === appt.bookingId).map(p => (
+                              <div key={p._id} className="flex justify-between items-center text-[10px] bg-white/70 px-2 py-1 rounded border border-gray-100">
+                                <span className="font-mono text-gray-500 font-medium">{p.paymentId} ({p.method})</span>
+                                <span className={`font-bold ${p.status === 'Paid' ? 'text-green-600' : 'text-red-600'}`}>
+                                  ₹{p.amount} {p.status === 'Paid' ? '✓' : '✗'}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
+
+                  {appt.patientCondition && (
+                    <div className="bg-red-50/40 p-3 rounded-2xl text-[11px] text-red-800 border border-red-100/40">
+                      🩺 <strong>Patient Complaint:</strong> "{appt.patientCondition}"
+                    </div>
+                  )}
 
                   {appt.notes && (
                     <div className="bg-gray-50/50 p-3 rounded-2xl text-[11px] text-gray-500 italic border border-gray-100">
@@ -511,7 +669,7 @@ export default function AdminAppointments() {
                 {/* Edit Form Drawer Inline */}
                 {isEditing && (
                   <div className="px-6 py-4 bg-gray-50 border-t border-b border-gray-200 space-y-3 text-xs">
-                    <h5 className="font-bold text-gray-800">Assign Staff & Update Booking</h5>
+                    <h5 className="font-bold text-gray-800">Assign Staff & Triage Booking</h5>
                     
                     <div className="grid grid-cols-2 gap-3">
                       <div>
@@ -519,7 +677,7 @@ export default function AdminAppointments() {
                         <select
                           value={editForm.bookingStatus}
                           onChange={e => setEditForm({ ...editForm, bookingStatus: e.target.value })}
-                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none"
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
                         >
                           <option value="New">New</option>
                           <option value="Assigned">Assigned</option>
@@ -534,7 +692,7 @@ export default function AdminAppointments() {
                         <select
                           value={editForm.paymentStatus}
                           onChange={e => setEditForm({ ...editForm, paymentStatus: e.target.value })}
-                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none"
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
                         >
                           <option value="Pending">Pending</option>
                           <option value="Paid">Paid</option>
@@ -547,11 +705,60 @@ export default function AdminAppointments() {
 
                     <div className="grid grid-cols-2 gap-3">
                       <div>
+                        <label className="block text-[10px] font-bold text-gray-500 mb-1">Emergency Priority</label>
+                        <select
+                          value={editForm.emergencyPriority}
+                          onChange={e => setEditForm({ ...editForm, emergencyPriority: e.target.value })}
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
+                        >
+                          <option value="Low">Low</option>
+                          <option value="Medium">Medium</option>
+                          <option value="High">High</option>
+                          <option value="Critical">Critical</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 mb-1">Google Map Location</label>
+                        <input
+                          type="text"
+                          value={editForm.googleMapLocation}
+                          onChange={e => setEditForm({ ...editForm, googleMapLocation: e.target.value })}
+                          placeholder="e.g. google.com/maps/..."
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 mb-1">Total Amount (₹)</label>
+                        <input
+                          type="number"
+                          value={editForm.totalAmount}
+                          onChange={e => setEditForm({ ...editForm, totalAmount: e.target.value })}
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-gray-500 mb-1">Advance Paid (₹)</label>
+                        <input
+                          type="number"
+                          value={editForm.advancePaid}
+                          onChange={e => setEditForm({ ...editForm, advancePaid: e.target.value })}
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
                         <label className="block text-[10px] font-bold text-gray-500 mb-1">Doctor Assigned</label>
                         <select
                           value={editForm.doctorAssigned}
                           onChange={e => setEditForm({ ...editForm, doctorAssigned: e.target.value })}
-                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none"
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
                         >
                           <option value="">None</option>
                           {staff.filter(s => s.role === 'Doctor').map(s => (
@@ -565,7 +772,7 @@ export default function AdminAppointments() {
                         <select
                           value={editForm.physiotherapistAssigned}
                           onChange={e => setEditForm({ ...editForm, physiotherapistAssigned: e.target.value })}
-                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none"
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
                         >
                           <option value="">None</option>
                           {staff.filter(s => s.role === 'Physiotherapist').map(s => (
@@ -581,7 +788,7 @@ export default function AdminAppointments() {
                         <select
                           value={editForm.nurseAssigned}
                           onChange={e => setEditForm({ ...editForm, nurseAssigned: e.target.value })}
-                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none"
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
                         >
                           <option value="">None</option>
                           {staff.filter(s => s.role === 'Nurse').map(s => (
@@ -595,7 +802,7 @@ export default function AdminAppointments() {
                         <select
                           value={editForm.ambulanceAssigned}
                           onChange={e => setEditForm({ ...editForm, ambulanceAssigned: e.target.value })}
-                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none"
+                          className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
                         >
                           <option value="">None</option>
                           {staff.filter(s => s.role === 'Ambulance Staff').map(s => (
@@ -603,6 +810,28 @@ export default function AdminAppointments() {
                           ))}
                         </select>
                       </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-500 mb-1">Patient Residence Address</label>
+                      <input
+                        type="text"
+                        value={editForm.patientAddress}
+                        onChange={e => setEditForm({ ...editForm, patientAddress: e.target.value })}
+                        placeholder="Complete address details..."
+                        className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-500 mb-1">Patient Condition / Complaint</label>
+                      <input
+                        type="text"
+                        value={editForm.patientCondition}
+                        onChange={e => setEditForm({ ...editForm, patientCondition: e.target.value })}
+                        placeholder="Symptom description or complaint details..."
+                        className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
+                      />
                     </div>
 
                     <div>

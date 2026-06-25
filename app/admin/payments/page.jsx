@@ -11,7 +11,17 @@ import {
   CalendarDays,
   Smartphone,
   Building2,
-  AlertCircle
+  AlertCircle,
+  X,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Clock,
+  Activity,
+  FileText,
+  ExternalLink,
+  ShieldAlert
 } from "lucide-react";
 
 export default function AdminPayments() {
@@ -22,6 +32,7 @@ export default function AdminPayments() {
   const [filterMethod, setFilterMethod] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [selectedPayment, setSelectedPayment] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -208,11 +219,16 @@ export default function AdminPayments() {
                   <th className="px-6 py-4">Method</th>
                   <th className="px-6 py-4">Processed Date</th>
                   <th className="px-6 py-4 text-center">Status</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {payments.map((pay) => (
-                  <tr key={pay._id} className="hover:bg-gray-50/20">
+                  <tr 
+                    key={pay._id} 
+                    className="hover:bg-gray-50/40 cursor-pointer transition-colors"
+                    onClick={() => setSelectedPayment(pay)}
+                  >
                     <td className="px-6 py-4 font-bold text-gray-900">{pay.paymentId}</td>
                     <td className="px-6 py-4 text-gray-400 font-medium font-mono">{pay.transactionId || 'N/A'}</td>
                     <td className="px-6 py-4 font-bold text-primary">{pay.bookingId}</td>
@@ -231,6 +247,14 @@ export default function AdminPayments() {
                         {pay.status}
                       </span>
                     </td>
+                    <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={() => setSelectedPayment(pay)}
+                        className="px-3 py-1.5 bg-gray-50 text-gray-600 hover:bg-primary hover:text-white rounded-lg font-bold text-[10px] transition active:scale-95"
+                      >
+                        View Details
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -238,6 +262,220 @@ export default function AdminPayments() {
           </div>
         )}
       </div>
+
+      {/* Detail Modal */}
+      {selectedPayment && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="relative bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border border-gray-100 flex flex-col max-h-[90vh] animate-scale-up">
+            
+            {/* Modal Header */}
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-gray-900 text-sm">Payment Receipt</h3>
+                  <p className="text-[10px] text-gray-400 font-mono">{selectedPayment.paymentId}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getStatusBadgeColor(selectedPayment.status)}`}>
+                  {selectedPayment.status}
+                </span>
+                <button 
+                  onClick={() => setSelectedPayment(null)}
+                  className="p-1.5 hover:bg-gray-200 rounded-full text-gray-400 hover:text-gray-900 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6 text-xs text-gray-600">
+              
+              {/* Transaction Summary */}
+              <div className="bg-primary/[0.02] border border-primary/5 rounded-2xl p-4 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div>
+                  <span className="text-[10px] text-gray-400 block mb-0.5 uppercase tracking-wider">Amount Paid</span>
+                  <span className="text-base font-black text-gray-900">₹{selectedPayment.amount?.toLocaleString("en-IN")}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-gray-400 block mb-0.5 uppercase tracking-wider">Payment Method</span>
+                  <span className="font-bold text-gray-800 flex items-center gap-1">
+                    {getMethodIcon(selectedPayment.method)}
+                    {selectedPayment.method}
+                  </span>
+                </div>
+                <div className="col-span-2 sm:col-span-2">
+                  <span className="text-[10px] text-gray-400 block mb-0.5 uppercase tracking-wider">Transaction / Order ID</span>
+                  <span className="font-mono text-gray-900 font-medium break-all block">{selectedPayment.transactionId || 'N/A'}</span>
+                </div>
+              </div>
+
+              {selectedPayment.appointment ? (
+                <>
+                  {/* Customer / Patient Details */}
+                  <div className="space-y-3">
+                    <h4 className="font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-2">
+                      <User className="w-4 h-4 text-primary" />
+                      Patient & Customer Details
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div>
+                        <span className="text-[10px] text-gray-400 block mb-0.5 uppercase tracking-wider">Patient Name</span>
+                        <span className="font-bold text-gray-900">{selectedPayment.appointment.patientName}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-gray-400 block mb-0.5 uppercase tracking-wider">Phone Number</span>
+                        <a 
+                          href={`tel:${selectedPayment.appointment.phone}`}
+                          className="font-bold text-primary hover:underline flex items-center gap-1"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          {selectedPayment.appointment.phone}
+                        </a>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-gray-400 block mb-0.5 uppercase tracking-wider">Email Address</span>
+                        {selectedPayment.appointment.email ? (
+                          <a 
+                            href={`mailto:${selectedPayment.appointment.email}`}
+                            className="font-bold text-gray-900 hover:underline flex items-center gap-1"
+                          >
+                            <Mail className="w-3.5 h-3.5 text-gray-400" />
+                            {selectedPayment.appointment.email}
+                          </a>
+                        ) : (
+                          <span className="text-gray-400">N/A</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {selectedPayment.appointment.patientAddress && (
+                      <div className="pt-2">
+                        <span className="text-[10px] text-gray-400 block mb-0.5 uppercase tracking-wider">Patient Address</span>
+                        <div className="flex items-start gap-1.5">
+                          <MapPin className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-medium text-gray-800">{selectedPayment.appointment.patientAddress}</span>
+                            {selectedPayment.appointment.googleMapLocation && (
+                              <a 
+                                href={selectedPayment.appointment.googleMapLocation}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 ml-2 text-primary hover:underline font-bold text-[10px]"
+                              >
+                                View on Maps <ExternalLink className="w-2.5 h-2.5" />
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Booking & Service Info */}
+                  <div className="space-y-3">
+                    <h4 className="font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-2">
+                      <Activity className="w-4 h-4 text-primary" />
+                      Service & Booking Information
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                      <div>
+                        <span className="text-[10px] text-gray-400 block mb-0.5 uppercase tracking-wider">Booking ID</span>
+                        <span className="px-2 py-0.5 bg-primary/10 text-primary font-bold rounded font-mono text-[10px]">
+                          {selectedPayment.appointment.bookingId}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-gray-400 block mb-0.5 uppercase tracking-wider">Service Type</span>
+                        <span className="font-bold text-gray-900 capitalize">{selectedPayment.appointment.service || selectedPayment.appointment.category || 'N/A'}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-gray-400 block mb-0.5 uppercase tracking-wider">Priority Level</span>
+                        <span className={`px-2 py-0.5 rounded font-bold uppercase text-[9px] border ${
+                          selectedPayment.appointment.emergencyPriority === 'Critical' ? 'bg-red-50 text-red-700 border-red-200' :
+                          selectedPayment.appointment.emergencyPriority === 'High' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                          selectedPayment.appointment.emergencyPriority === 'Medium' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                          'bg-gray-50 text-gray-700 border-gray-200'
+                        }`}>
+                          {selectedPayment.appointment.emergencyPriority || 'Medium'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-gray-400 block mb-0.5 uppercase tracking-wider">Appointment Schedule</span>
+                        <span className="font-medium text-gray-900">
+                          {selectedPayment.appointment.appointmentDate || selectedPayment.appointment.date || 'N/A'} at {selectedPayment.appointment.appointmentTime || selectedPayment.appointment.time || 'N/A'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {selectedPayment.appointment.patientCondition && (
+                      <div className="pt-2">
+                        <span className="text-[10px] text-gray-400 block mb-0.5 uppercase tracking-wider">Patient Condition / Complaint</span>
+                        <div className="bg-gray-50 border border-gray-100 rounded-xl p-3 text-gray-700 font-medium">
+                          {selectedPayment.appointment.patientCondition}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Financial Ledger */}
+                  <div className="space-y-3">
+                    <h4 className="font-bold text-gray-900 flex items-center gap-2 border-b border-gray-100 pb-2">
+                      <FileText className="w-4 h-4 text-primary" />
+                      Financial Ledger for {selectedPayment.appointment.bookingId}
+                    </h4>
+                    <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4 grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <span className="text-[10px] text-gray-400 block mb-0.5 uppercase tracking-wider">Total Charge</span>
+                        <span className="text-sm font-black text-gray-900">₹{selectedPayment.appointment.totalAmount?.toLocaleString("en-IN") || 0}</span>
+                      </div>
+                      <div className="border-x border-gray-200">
+                        <span className="text-[10px] text-gray-400 block mb-0.5 uppercase tracking-wider">Advance Paid</span>
+                        <span className="text-sm font-black text-green-600">₹{selectedPayment.appointment.advancePaid?.toLocaleString("en-IN") || 0}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-gray-400 block mb-0.5 uppercase tracking-wider">Balance Due</span>
+                        <span className={`text-sm font-black ${selectedPayment.appointment.balanceDue > 0 ? 'text-rose-600' : 'text-green-600'}`}>
+                          ₹{selectedPayment.appointment.balanceDue?.toLocaleString("en-IN") || 0}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-4 flex items-start gap-2.5">
+                  <ShieldAlert className="w-5 h-5 shrink-0 text-amber-600 mt-0.5" />
+                  <div>
+                    <h5 className="font-bold">Booking Details Unlinked</h5>
+                    <p className="text-[11px] text-amber-700 mt-0.5">
+                      This payment record is not currently linked to an active booking profile (Booking ID: {selectedPayment.bookingId}). The booking might have been removed or archived.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Timestamp info */}
+              <div className="text-[10px] text-gray-400 text-right pt-2">
+                Processed on: {new Date(selectedPayment.createdAt).toLocaleString("en-IN")}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-gray-100 flex justify-end bg-gray-50/50">
+              <button
+                onClick={() => setSelectedPayment(null)}
+                className="px-5 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold rounded-xl transition"
+              >
+                Close Receipt
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

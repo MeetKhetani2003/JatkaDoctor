@@ -25,6 +25,67 @@ export default function AdminPartners() {
   const [selectedPartner, setSelectedPartner] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
 
+  // Convert to Staff State (Phase 7)
+  const [showConvertModal, setShowConvertModal] = useState(false);
+  const [convertLoading, setConvertLoading] = useState(false);
+  const [convertForm, setConvertForm] = useState({
+    name: "",
+    role: "Nurse",
+    description: "",
+    mobile: "",
+    whatsapp: "",
+    zone: "Gomti Nagar",
+    experience: "",
+    qualification: "",
+    status: "Active"
+  });
+
+  const openConvertModal = (partner) => {
+    let mappedRole = "Nurse";
+    const typeLower = (partner.type || "").toLowerCase();
+    if (typeLower.includes("doctor")) mappedRole = "Doctor";
+    else if (typeLower.includes("physio")) mappedRole = "Physiotherapist";
+    else if (typeLower.includes("ambulance")) mappedRole = "Ambulance Staff";
+    else if (typeLower.includes("nurse")) mappedRole = "Nurse";
+
+    setConvertForm({
+      name: partner.name || "",
+      role: mappedRole,
+      description: partner.bio || "",
+      mobile: partner.phone || "",
+      whatsapp: partner.phone || "",
+      zone: partner.location || "Gomti Nagar",
+      experience: partner.experience || "",
+      qualification: `${partner.type} Join Request`,
+      status: "Active"
+    });
+    setShowConvertModal(true);
+  };
+
+  const handleConvertSubmit = async (e) => {
+    e.preventDefault();
+    setConvertLoading(true);
+    try {
+      const res = await fetch("/api/admin/staff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(convertForm)
+      });
+      if (res.ok) {
+        alert(`✓ ${convertForm.name} successfully registered in the Staff Directory!`);
+        setShowConvertModal(false);
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to convert to staff.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Network error registering staff.");
+    } finally {
+      setConvertLoading(false);
+    }
+  };
+
   const fetchData = async () => {
     try {
       const res = await fetch("/api/partners");
@@ -162,39 +223,51 @@ export default function AdminPartners() {
                 </div>
               </div>
 
-              <div className="p-6 pt-0 border-t border-gray-50 bg-gray-50/20 flex gap-2">
-                <button 
-                  onClick={() => setSelectedPartner(partner)}
-                  className="flex-1 py-3 bg-white border border-gray-100 text-gray-600 rounded-2xl text-[11px] font-bold hover:bg-gray-50 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-sm"
-                >
-                  <Eye className="w-3.5 h-3.5" /> Review
-                </button>
+              <div className="p-6 pt-0 border-t border-gray-50 bg-gray-50/20 flex flex-col gap-2">
                 <div className="flex gap-2">
-                    <button 
-                      disabled={actionLoading}
-                      onClick={() => handleUpdateStatus(partner._id, "Approved")}
-                      className="w-11 h-11 bg-primary text-white rounded-2xl flex items-center justify-center hover:bg-primary-dark transition-all active:scale-95 shadow-lg shadow-primary/20"
-                      title="Approve"
-                    >
-                      {actionLoading === partner._id + "Approved" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-5 h-5" />}
-                    </button>
-                    <button 
-                      disabled={actionLoading}
-                      onClick={() => handleUpdateStatus(partner._id, "Rejected")}
-                      className="w-11 h-11 bg-red-50 text-red-600 rounded-2xl border border-red-100 flex items-center justify-center hover:bg-red-100 transition-all active:scale-95"
-                      title="Reject"
-                    >
-                      {actionLoading === partner._id + "Rejected" ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-5 h-5" />}
-                    </button>
-                    <button 
-                      disabled={actionLoading}
-                      onClick={() => handleDelete(partner._id)}
-                      className="w-11 h-11 bg-white border border-gray-100 text-gray-400 rounded-2xl flex items-center justify-center hover:text-red-600 hover:bg-red-50 transition-all active:scale-95"
-                      title="Delete"
-                    >
-                      {actionLoading === partner._id + "delete" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-                    </button>
+                  <button 
+                    onClick={() => setSelectedPartner(partner)}
+                    className="flex-1 py-3 bg-white border border-gray-100 text-gray-600 rounded-2xl text-[11px] font-bold hover:bg-gray-50 transition-all active:scale-95 flex items-center justify-center gap-2 shadow-sm"
+                  >
+                    <Eye className="w-3.5 h-3.5" /> Review
+                  </button>
+                  <div className="flex gap-2">
+                      <button 
+                        disabled={actionLoading}
+                        onClick={() => handleUpdateStatus(partner._id, "Approved")}
+                        className="w-11 h-11 bg-primary text-white rounded-2xl flex items-center justify-center hover:bg-primary-dark transition-all active:scale-95 shadow-lg shadow-primary/20"
+                        title="Approve"
+                      >
+                        {actionLoading === partner._id + "Approved" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-5 h-5" />}
+                      </button>
+                      <button 
+                        disabled={actionLoading}
+                        onClick={() => handleUpdateStatus(partner._id, "Rejected")}
+                        className="w-11 h-11 bg-red-50 text-red-600 rounded-2xl border border-red-100 flex items-center justify-center hover:bg-red-100 transition-all active:scale-95"
+                        title="Reject"
+                      >
+                        {actionLoading === partner._id + "Rejected" ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-5 h-5" />}
+                      </button>
+                      <button 
+                        disabled={actionLoading}
+                        onClick={() => handleDelete(partner._id)}
+                        className="w-11 h-11 bg-white border border-gray-100 text-gray-400 rounded-2xl flex items-center justify-center hover:text-red-600 hover:bg-red-50 transition-all active:scale-95"
+                        title="Delete"
+                      >
+                        {actionLoading === partner._id + "delete" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                      </button>
+                  </div>
                 </div>
+
+                {/* Convert to Staff Button (Phase 7) */}
+                {partner.status === 'Approved' && (
+                  <button
+                    onClick={() => openConvertModal(partner)}
+                    className="w-full py-2.5 bg-emerald-600 text-white rounded-2xl text-[11px] font-bold hover:bg-emerald-700 transition-all active:scale-95 flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-200/50"
+                  >
+                    ⚡ Convert to Staff Directory
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -294,6 +367,170 @@ export default function AdminPartners() {
                   {actionLoading?.includes("delete") ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-6 h-6" />}
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Convert to Staff Confirmation Modal (Phase 7) */}
+      <AnimatePresence>
+        {showConvertModal && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowConvertModal(false)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-lg bg-white rounded-[32px] shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-gray-50 flex justify-between items-center bg-emerald-50/20">
+                <h3 className="text-lg font-bold text-emerald-800 flex items-center gap-2">
+                  ⚡ Convert Application to Staff
+                </h3>
+                <button 
+                  onClick={() => setShowConvertModal(false)}
+                  className="p-2 bg-white rounded-full text-gray-400 hover:text-black shadow-sm"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleConvertSubmit} className="p-6 space-y-4 text-xs">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-gray-500 font-bold">Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      value={convertForm.name}
+                      onChange={e => setConvertForm({ ...convertForm, name: e.target.value })}
+                      className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-gray-500 font-bold">Mapped Role</label>
+                    <select
+                      value={convertForm.role}
+                      onChange={e => setConvertForm({ ...convertForm, role: e.target.value })}
+                      className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none"
+                    >
+                      <option value="Doctor">Doctor</option>
+                      <option value="Physiotherapist">Physiotherapist</option>
+                      <option value="Nurse">Nurse</option>
+                      <option value="Ambulance Staff">Ambulance Staff</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-gray-500 font-bold">Mobile Number</label>
+                    <input
+                      type="tel"
+                      required
+                      value={convertForm.mobile}
+                      onChange={e => setConvertForm({ ...convertForm, mobile: e.target.value })}
+                      className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-gray-500 font-bold">WhatsApp Number</label>
+                    <input
+                      type="tel"
+                      required
+                      value={convertForm.whatsapp}
+                      onChange={e => setConvertForm({ ...convertForm, whatsapp: e.target.value })}
+                      className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-gray-500 font-bold">Experience</label>
+                    <input
+                      type="text"
+                      required
+                      value={convertForm.experience}
+                      onChange={e => setConvertForm({ ...convertForm, experience: e.target.value })}
+                      className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-gray-500 font-bold">Qualification</label>
+                    <input
+                      type="text"
+                      required
+                      value={convertForm.qualification}
+                      onChange={e => setConvertForm({ ...convertForm, qualification: e.target.value })}
+                      className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-gray-500 font-bold">Area / Zone (Lucknow)</label>
+                    <input
+                      type="text"
+                      required
+                      value={convertForm.zone}
+                      onChange={e => setConvertForm({ ...convertForm, zone: e.target.value })}
+                      className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="block text-gray-500 font-bold">System Status</label>
+                    <select
+                      value={convertForm.status}
+                      onChange={e => setConvertForm({ ...convertForm, status: e.target.value })}
+                      className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none"
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Busy">Busy</option>
+                      <option value="Offline">Offline</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="block text-gray-500 font-bold">Professional Bio / Profile Description</label>
+                  <textarea
+                    rows={3}
+                    value={convertForm.description}
+                    onChange={e => setConvertForm({ ...convertForm, description: e.target.value })}
+                    className="w-full p-2.5 bg-gray-50 border border-gray-200 rounded-xl outline-none resize-none"
+                  />
+                </div>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowConvertModal(false)}
+                    className="flex-1 py-3.5 bg-gray-100 text-gray-700 font-bold rounded-2xl active:scale-95 hover:bg-gray-200 transition"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={convertLoading}
+                    className="flex-1 py-3.5 bg-emerald-600 text-white font-bold rounded-2xl active:scale-95 hover:bg-emerald-700 transition flex items-center justify-center gap-1 shadow-lg shadow-emerald-200"
+                  >
+                    {convertLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                    Confirm Registry
+                  </button>
+                </div>
+              </form>
             </motion.div>
           </div>
         )}

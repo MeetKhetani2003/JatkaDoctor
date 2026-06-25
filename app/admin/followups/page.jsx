@@ -27,6 +27,9 @@ export default function AdminFollowups() {
   const [type, setType] = useState("Manual Followup");
   const [scheduledDate, setScheduledDate] = useState("");
   const [remarks, setRemarks] = useState("");
+  const [nextFollowupDate, setNextFollowupDate] = useState("");
+  const [followupStatus, setFollowupStatus] = useState("Pending");
+  const [sessionNotes, setSessionNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const fetchTasks = async () => {
@@ -55,7 +58,17 @@ export default function AdminFollowups() {
       const res = await fetch("/api/admin/followups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingId, patientName, phone, type, scheduledDate, remarks })
+        body: JSON.stringify({ 
+          bookingId, 
+          patientName, 
+          phone, 
+          type, 
+          scheduledDate, 
+          remarks,
+          nextFollowupDate,
+          followupStatus,
+          sessionNotes
+        })
       });
 
       if (res.ok) {
@@ -66,6 +79,9 @@ export default function AdminFollowups() {
         setPhone("");
         setRemarks("");
         setScheduledDate("");
+        setNextFollowupDate("");
+        setFollowupStatus("Pending");
+        setSessionNotes("");
         setShowAddForm(false);
         setMessage({ text: `✓ Followup task for ${patientName} scheduled successfully!`, type: "success" });
       } else {
@@ -107,16 +123,16 @@ export default function AdminFollowups() {
     }
   };
 
-  const handleUpdateRemarks = async (id, updatedRemarks) => {
+  const handleUpdateFollowupField = async (id, field, value) => {
     try {
       await fetch("/api/admin/followups", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, remarks: updatedRemarks })
+        body: JSON.stringify({ id, [field]: value })
       });
-      setTasks(tasks.map(t => t._id === id ? { ...t, remarks: updatedRemarks } : t));
+      setTasks(tasks.map(t => t._id === id ? { ...t, [field]: value } : t));
     } catch (err) {
-      console.error("Failed to update remarks:", err);
+      console.error(`Failed to update ${field}:`, err);
     }
   };
 
@@ -218,11 +234,48 @@ export default function AdminFollowups() {
               />
             </div>
 
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-600 block">Next Follow-up Date (Optional)</label>
+              <input
+                type="date"
+                min={new Date().toISOString().split("T")[0]}
+                value={nextFollowupDate}
+                onChange={e => setNextFollowupDate(e.target.value)}
+                className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-700 outline-none"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-600 block">Follow-up Status</label>
+              <select
+                value={followupStatus}
+                onChange={e => setFollowupStatus(e.target.value)}
+                className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20"
+              >
+                <option value="Pending">Pending</option>
+                <option value="Contacted">Contacted</option>
+                <option value="No Answer">No Answer</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="Closed">Closed</option>
+              </select>
+            </div>
+
             <div className="space-y-1 md:col-span-2">
-              <label className="text-xs font-bold text-gray-600 block">Internal Notes / Instructions</label>
+              <label className="text-xs font-bold text-gray-600 block">Session Notes</label>
+              <textarea
+                placeholder="Enter details of the discussion, medical remarks, or feedback notes..."
+                rows={3}
+                value={sessionNotes}
+                onChange={e => setSessionNotes(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none"
+              />
+            </div>
+
+            <div className="space-y-1 md:col-span-2">
+              <label className="text-xs font-bold text-gray-600 block">Internal Notes / Instructions (Remarks)</label>
               <textarea
                 placeholder="Details of what to ask or say during manual call..."
-                rows={3}
+                rows={2}
                 value={remarks}
                 onChange={e => setRemarks(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none"
@@ -280,26 +333,26 @@ export default function AdminFollowups() {
               const isCompleted = task.status === "Completed";
               const isPast = new Date(task.scheduledDate) < new Date() && !isCompleted;
               return (
-                <div key={task._id} className="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:bg-gray-50/50 transition">
-                  <div className="flex gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                <div key={task._id} className="p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 hover:bg-gray-50/50 transition border-b border-gray-100 last:border-b-0">
+                  <div className="flex gap-4 w-full">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 self-start mt-1 ${
                       isCompleted 
                         ? "bg-green-100 text-green-700" 
                         : isPast 
-                          ? "bg-red-100 text-red-700" 
+                          ? "bg-red-100 text-red-700 animate-pulse" 
                           : "bg-amber-100 text-amber-700"
                     }`}>
                       <Clock className="w-5 h-5" />
                     </div>
                     
-                    <div className="space-y-1 max-w-md">
+                    <div className="space-y-3 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-gray-900">{task.patientName}</span>
+                        <span className="font-bold text-gray-900 text-sm">{task.patientName}</span>
                         <span className="text-[10px] text-gray-400 font-bold bg-gray-100 px-2 py-0.5 rounded-full">{task.bookingId}</span>
-                        <span className="text-[10px] text-gray-500">{task.phone}</span>
+                        <span className="text-[10px] text-gray-500 font-semibold">📞 {task.phone}</span>
                       </div>
 
-                      <div className="flex items-center gap-2 pt-0.5">
+                      <div className="flex items-center gap-3 pt-0.5 flex-wrap">
                         <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase bg-primary-light text-primary border border-primary/20">
                           {task.type}
                         </span>
@@ -308,15 +361,58 @@ export default function AdminFollowups() {
                         </span>
                       </div>
 
-                      {/* Inline Remarks Input */}
-                      <div className="pt-2">
-                        <input
-                          type="text"
-                          placeholder="Click to add remarks..."
-                          value={task.remarks || ""}
-                          onChange={e => handleUpdateRemarks(task._id, e.target.value)}
-                          className="w-full bg-transparent border-b border-transparent hover:border-gray-200 focus:border-primary py-0.5 outline-none text-[11px] text-gray-500 font-medium"
-                        />
+                      {/* Interactive Field Grid */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-gray-50/50 p-4 rounded-2xl border border-gray-100 mt-2">
+                        {/* Follow-up Status Dropdown */}
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Follow-up Status</label>
+                          <select
+                            value={task.followupStatus || "Pending"}
+                            onChange={e => handleUpdateFollowupField(task._id, "followupStatus", e.target.value)}
+                            className="bg-white border border-gray-200 rounded-lg p-1.5 text-[11px] font-bold text-gray-700 outline-none w-full font-medium"
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="Contacted">Contacted</option>
+                            <option value="No Answer">No Answer</option>
+                            <option value="Scheduled">Scheduled</option>
+                            <option value="Closed">Closed</option>
+                          </select>
+                        </div>
+
+                        {/* Next Follow-up Date Input */}
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Next Follow-up Date</label>
+                          <input
+                            type="date"
+                            value={task.nextFollowupDate ? new Date(task.nextFollowupDate).toISOString().split("T")[0] : ""}
+                            onChange={e => handleUpdateFollowupField(task._id, "nextFollowupDate", e.target.value)}
+                            className="bg-white border border-gray-200 rounded-lg p-1.5 text-[11px] font-medium text-gray-700 outline-none w-full"
+                          />
+                        </div>
+
+                        {/* Session Notes Textarea */}
+                        <div className="sm:col-span-2 space-y-1">
+                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Session Notes</label>
+                          <textarea
+                            placeholder="Write medical session notes / discussion details here..."
+                            rows={2}
+                            value={task.sessionNotes || ""}
+                            onChange={e => handleUpdateFollowupField(task._id, "sessionNotes", e.target.value)}
+                            className="w-full bg-white border border-gray-200 rounded-lg p-2 outline-none text-[11px] text-gray-600 font-medium resize-none focus:border-primary"
+                          />
+                        </div>
+
+                        {/* Internal Remarks */}
+                        <div className="sm:col-span-2 space-y-1">
+                          <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest block">Staff Instructions / Remarks</label>
+                          <input
+                            type="text"
+                            placeholder="Add task remarks or instructions..."
+                            value={task.remarks || ""}
+                            onChange={e => handleUpdateFollowupField(task._id, "remarks", e.target.value)}
+                            className="w-full bg-white border border-gray-200 rounded-lg p-2 outline-none text-[11px] text-gray-600 font-medium focus:border-primary"
+                          />
+                        </div>
                       </div>
 
                     </div>

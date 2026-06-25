@@ -45,7 +45,9 @@ function BookingFormInner({
     package: defaultPackage,
     appointmentDate: "",
     appointmentTime: "",
-    message: prefilledMessage || ""
+    patientAddress: "",
+    googleMapLocation: "",
+    patientCondition: prefilledMessage || ""
   });
 
   // Fetch categories and doctors on mount
@@ -189,7 +191,10 @@ function BookingFormInner({
           package: formData.package || '',
           appointmentDate: formData.appointmentDate || new Date().toISOString().split('T')[0],
           appointmentTime: formData.appointmentTime || '09:00',
-          notes: formData.message,
+          notes: formData.patientCondition,
+          patientAddress: formData.patientAddress,
+          googleMapLocation: formData.googleMapLocation,
+          patientCondition: formData.patientCondition,
           recaptchaToken: token,
           leadSource: leadSource
         })
@@ -197,7 +202,7 @@ function BookingFormInner({
       const data = await res.json();
       if (res.ok) {
         setBookingId(data.bookingId);
-        setFormData({ name: "", phone: "", email: "", service: defaultService, otherService: "", doctor: "", appointmentDate: "", appointmentTime: "", message: "" });
+        setFormData({ name: "", phone: "", email: "", service: defaultService, otherService: "", doctor: "", appointmentDate: "", appointmentTime: "", patientAddress: "", googleMapLocation: "", patientCondition: "" });
         setAgreed(false);
         onSuccess();
         
@@ -304,6 +309,29 @@ function BookingFormInner({
             onChange={e => setFormData({...formData, email: e.target.value})}
             type="email"
             placeholder="Email Address"
+            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+          />
+        </div>
+
+        <div className="relative">
+          <input
+            name="patientAddress"
+            required
+            value={formData.patientAddress}
+            onChange={e => setFormData({...formData, patientAddress: e.target.value})}
+            type="text"
+            placeholder="Patient Address"
+            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+          />
+        </div>
+
+        <div className="relative">
+          <input
+            name="googleMapLocation"
+            value={formData.googleMapLocation}
+            onChange={e => setFormData({...formData, googleMapLocation: e.target.value})}
+            type="text"
+            placeholder="Google Map Location Link (Optional)"
             className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
           />
         </div>
@@ -448,10 +476,11 @@ function BookingFormInner({
         </div>
 
         <textarea
-          name="message"
-          value={formData.message}
-          onChange={e => setFormData({...formData, message: e.target.value})}
-          placeholder="Your Message / Symptoms"
+          name="patientCondition"
+          required
+          value={formData.patientCondition}
+          onChange={e => setFormData({...formData, patientCondition: e.target.value})}
+          placeholder="Patient Condition / Symptoms / Complaint"
           rows={3}
           className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition resize-none"
         />

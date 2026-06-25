@@ -219,7 +219,7 @@ export default function PatientHistory() {
                         <th className="px-4 py-3">Booking ID</th>
                         <th className="px-4 py-3">Service</th>
                         <th className="px-4 py-3">Date & Time</th>
-                        <th className="px-4 py-3">Consultant</th>
+                        <th className="px-4 py-3">Consultant / Assigned Staff</th>
                         <th className="px-4 py-3">Booking Status</th>
                         <th className="px-4 py-3">Payment</th>
                       </tr>
@@ -236,7 +236,19 @@ export default function PatientHistory() {
                             {booking.appointmentDate}
                             <span className="block text-[10px] text-gray-400 font-normal">{booking.appointmentTime}</span>
                           </td>
-                          <td className="px-4 py-3.5 font-medium">{booking.doctor || 'Any Available'}</td>
+                          <td className="px-4 py-3.5 font-medium text-gray-600">
+                            <div>Pref: <span className="text-gray-900 font-semibold">{booking.doctor || 'Any Available'}</span></div>
+                            {(booking.doctorAssigned || booking.physiotherapistAssigned || booking.nurseAssigned || booking.ambulanceAssigned) ? (
+                              <div className="mt-1 pt-1 border-t border-gray-100 space-y-0.5 text-[10px] font-normal text-gray-400">
+                                {booking.doctorAssigned && <div>👨‍⚕️ Doc: <span className="text-gray-800 font-bold">{booking.doctorAssigned}</span></div>}
+                                {booking.physiotherapistAssigned && <div>🏃‍♂️ Physio: <span className="text-gray-800 font-bold">{booking.physiotherapistAssigned}</span></div>}
+                                {booking.nurseAssigned && <div>👩‍⚕️ Nurse: <span className="text-gray-800 font-bold">{booking.nurseAssigned}</span></div>}
+                                {booking.ambulanceAssigned && <div>🚑 Ambul: <span className="text-gray-800 font-bold">{booking.ambulanceAssigned}</span></div>}
+                              </div>
+                            ) : (
+                              <div className="text-[10px] text-gray-400 font-normal italic">No staff assigned</div>
+                            )}
+                          </td>
                           <td className="px-4 py-3.5">
                             <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${getStatusColor(booking.bookingStatus || booking.status)}`}>
                               {booking.bookingStatus || booking.status}

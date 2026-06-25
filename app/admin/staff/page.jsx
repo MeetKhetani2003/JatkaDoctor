@@ -21,10 +21,27 @@ export default function AdminStaffManagement() {
   const [name, setName] = useState("");
   const [role, setRole] = useState("Nurse");
   const [description, setDescription] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
+  const [zone, setZone] = useState("Gomti Nagar");
+  const [experience, setExperience] = useState("");
+  const [qualification, setQualification] = useState("");
+  const [status, setStatus] = useState("Active");
+  const [filterZone, setFilterZone] = useState("");
+
+  const LUCKNOW_AREAS = [
+    "Gomti Nagar", "Hazratganj", "Aliganj", "Indira Nagar", 
+    "Dubagga", "Charbagh", "Chowk", "Aashiana", 
+    "Jankipuram", "Mahanagar", "Rajajipuram", "Kalyanpur"
+  ];
 
   const fetchStaff = async () => {
     try {
-      const res = await fetch("/api/admin/staff");
+      let url = "/api/admin/staff";
+      if (filterZone) {
+        url += `?zone=${encodeURIComponent(filterZone)}`;
+      }
+      const res = await fetch(url);
       const data = await res.json();
       setStaff(Array.isArray(data) ? data : []);
     } catch (e) {
@@ -36,8 +53,9 @@ export default function AdminStaffManagement() {
   };
 
   useEffect(() => {
+    setLoading(true);
     fetchStaff();
-  }, []);
+  }, [filterZone]);
 
   const handleAddStaff = async (e) => {
     e.preventDefault();
@@ -48,7 +66,17 @@ export default function AdminStaffManagement() {
       const res = await fetch("/api/admin/staff", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, role, description })
+        body: JSON.stringify({ 
+          name, 
+          role, 
+          description,
+          mobile,
+          whatsapp,
+          zone,
+          experience,
+          qualification,
+          status
+        })
       });
 
       const data = await res.json();
@@ -56,6 +84,11 @@ export default function AdminStaffManagement() {
         setStaff([data, ...staff]);
         setName("");
         setDescription("");
+        setMobile("");
+        setWhatsapp("");
+        setExperience("");
+        setQualification("");
+        setStatus("Active");
         setMessage({ text: `✓ Staff member ${name} added successfully!`, type: "success" });
       } else {
         setMessage({ text: data.error || "Failed to add staff member.", type: "error" });
@@ -130,18 +163,100 @@ export default function AdminStaffManagement() {
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-600 block">Role</label>
+                  <select
+                    required
+                    value={role}
+                    onChange={e => setRole(e.target.value)}
+                    className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    <option value="Doctor">Doctor</option>
+                    <option value="Physiotherapist">Physiotherapist</option>
+                    <option value="Nurse">Nurse</option>
+                    <option value="Ambulance Staff">Ambulance Staff</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-600 block">Status</label>
+                  <select
+                    required
+                    value={status}
+                    onChange={e => setStatus(e.target.value)}
+                    className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20"
+                  >
+                    <option value="Active">Active</option>
+                    <option value="Busy">Busy</option>
+                    <option value="Offline">Offline</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-600 block">Mobile No</label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="e.g. 9876543210"
+                    value={mobile}
+                    onChange={e => setMobile(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-600 block">WhatsApp No</label>
+                  <input
+                    type="tel"
+                    required
+                    placeholder="e.g. 9876543210"
+                    value={whatsapp}
+                    onChange={e => setWhatsapp(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-600 block">Experience</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 5 Years"
+                    value={experience}
+                    onChange={e => setExperience(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-600 block">Qualification</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. MBBS, MD / GNM"
+                    value={qualification}
+                    onChange={e => setQualification(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-600 block">Role</label>
+                <label className="text-xs font-bold text-gray-600 block">Area / Zone (Lucknow)</label>
                 <select
                   required
-                  value={role}
-                  onChange={e => setRole(e.target.value)}
+                  value={zone}
+                  onChange={e => setZone(e.target.value)}
                   className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm text-gray-700 outline-none focus:ring-2 focus:ring-primary/20"
                 >
-                  <option value="Doctor">Doctor</option>
-                  <option value="Physiotherapist">Physiotherapist</option>
-                  <option value="Nurse">Nurse</option>
-                  <option value="Ambulance Staff">Ambulance Staff</option>
+                  {LUCKNOW_AREAS.map(area => (
+                    <option key={area} value={area}>{area}</option>
+                  ))}
                 </select>
               </div>
 
@@ -149,7 +264,7 @@ export default function AdminStaffManagement() {
                 <label className="text-xs font-bold text-gray-600 block">Bio / Notes</label>
                 <textarea
                   placeholder="Details about experience, availability, or contact..."
-                  rows={4}
+                  rows={3}
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/20 resize-none"
@@ -171,9 +286,26 @@ export default function AdminStaffManagement() {
         {/* Right Column: List */}
         <div className="lg:col-span-8">
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="font-bold text-gray-900">Active Staff Directory</h3>
-              <span className="text-xs font-bold text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">{staff.length} registered</span>
+            <div className="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-bold text-gray-900">Active Staff Directory</h3>
+                <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">{staff.length} registered</span>
+              </div>
+              
+              {/* Zone Filter */}
+              <div className="relative w-full sm:w-48">
+                <select
+                  value={filterZone}
+                  onChange={e => setFilterZone(e.target.value)}
+                  className="w-full pl-3 pr-8 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs text-gray-700 outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
+                >
+                  <option value="">All Areas / Zones</option>
+                  {LUCKNOW_AREAS.map(area => (
+                    <option key={area} value={area}>{area}</option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 text-xs">▼</div>
+              </div>
             </div>
 
             {loading ? (
@@ -191,19 +323,40 @@ export default function AdminStaffManagement() {
               <div className="divide-y divide-gray-100">
                 {staff.map((member) => (
                   <div key={member._id} className="p-6 flex justify-between items-start group hover:bg-gray-50/50 transition-colors">
-                    <div className="flex gap-4">
-                      <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shrink-0">
+                    <div className="flex gap-4 w-full">
+                      <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shrink-0 self-start">
                         <UserCheck className="w-6 h-6" />
                       </div>
-                      <div className="space-y-1">
-                        <h4 className="font-bold text-gray-900">{member.name}</h4>
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-primary-light text-primary border border-primary/20">
+                      <div className="space-y-1 flex-1 min-w-0">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <h4 className="font-bold text-gray-900 text-sm">{member.name}</h4>
+                          <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-primary-light text-primary border border-primary/20">
                             {member.role}
                           </span>
+                          
+                          {/* Status Badge */}
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                            member.status === 'Active' 
+                              ? 'bg-green-50 text-green-700 border border-green-200' 
+                              : member.status === 'Busy'
+                                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                : 'bg-gray-100 text-gray-600 border border-gray-200'
+                          }`}>
+                            ● {member.status || 'Active'}
+                          </span>
                         </div>
+
+                        {/* Professional Info Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-1.5 gap-x-4 text-[11px] text-gray-500 py-2">
+                          <div>📍 Area: <span className="text-gray-800 font-semibold">{member.zone || "Lucknow"}</span></div>
+                          <div>📞 Mob: <span className="text-gray-800 font-semibold">{member.mobile || "N/A"}</span></div>
+                          <div>💬 WA: <span className="text-gray-800 font-semibold">{member.whatsapp || "N/A"}</span></div>
+                          <div>🎓 Qual: <span className="text-gray-800 font-semibold">{member.qualification || "N/A"}</span></div>
+                          <div>⏳ Exp: <span className="text-gray-800 font-semibold">{member.experience || "N/A"}</span></div>
+                        </div>
+
                         {member.description && (
-                          <p className="text-xs text-gray-500 max-w-lg leading-relaxed pt-1">{member.description}</p>
+                          <p className="text-xs text-gray-500 max-w-lg leading-relaxed pt-1 border-t border-gray-100 mt-1">{member.description}</p>
                         )}
                       </div>
                     </div>

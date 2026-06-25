@@ -46,7 +46,25 @@ export async function GET(req) {
     }
 
     const payments = await Payment.find(filter).sort({ createdAt: -1 });
-    return NextResponse.json(payments);
+
+    // Fetch associated appointments to merge patient, service, and ledger details
+    const bookingIds = payments.map(p => p.bookingId).filter(Boolean);
+    const appointments = await Appointment.find({ bookingId: { $in: bookingIds } });
+
+    const appointmentMap = {};
+    appointments.forEach(app => {
+      appointmentMap[app.bookingId] = app;
+    });
+
+    const paymentsWithDetails = payments.map(p => {
+      const app = appointmentMap[p.bookingId] || null;
+      return {
+        ...p.toObject(),
+        appointment: app
+      };
+    });
+
+    return NextResponse.json(paymentsWithDetails);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -91,9 +109,11 @@ export async function POST(req) {
     // Update appointment paymentStatus
     appointment.paymentStatus = status === 'Paid' ? 'Paid' : 'Failed';
     
-    // If payment succeeds, update bookingStatus to Assigned or keep New depending on staff
+    // If payment succeeds, update bookingStatus to Assigned or keep New depending on staff, and update ledger
     if (status === 'Paid') {
       appointment.bookingStatus = appointment.doctorAssigned ? 'Assigned' : 'New';
+      appointment.advancePaid = (appointment.advancePaid || 0) + Number(amount);
+      appointment.balanceDue = Math.max(0, (appointment.totalAmount || 0) - appointment.advancePaid);
     }
     
     await appointment.save();

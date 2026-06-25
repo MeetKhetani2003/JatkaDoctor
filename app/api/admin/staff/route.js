@@ -8,10 +8,14 @@ export async function GET(req) {
     await connectDB();
     const { searchParams } = new URL(req.url);
     const role = searchParams.get('role');
+    const zone = searchParams.get('zone');
     
     let filter = {};
     if (role) {
       filter.role = role;
+    }
+    if (zone) {
+      filter.zone = zone;
     }
 
     const staff = await Staff.find(filter).sort({ createdAt: -1 });
@@ -29,7 +33,18 @@ export async function POST(req) {
 
     await connectDB();
     const body = await req.json();
-    const { name, role, description, image } = body;
+    const { 
+      name, 
+      role, 
+      description, 
+      image, 
+      mobile, 
+      whatsapp, 
+      zone, 
+      experience, 
+      qualification, 
+      status 
+    } = body;
 
     if (!name || !role) {
       return NextResponse.json({ error: 'Missing name or role' }, { status: 400 });
@@ -39,7 +54,13 @@ export async function POST(req) {
       name,
       role,
       description: description || '',
-      image: image || ''
+      image: image || '',
+      mobile: mobile || '',
+      whatsapp: whatsapp || '',
+      zone: zone || '',
+      experience: experience || '',
+      qualification: qualification || '',
+      status: status || 'Active'
     });
 
     await staff.save();
