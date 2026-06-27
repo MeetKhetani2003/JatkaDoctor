@@ -1,9 +1,9 @@
 "use client";
-
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Phone, MessageCircle, MapPin, Ambulance, AlertCircle, Clock, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { useBookingModal } from "@/context/BookingModalContext";
+import { detectZone } from "../lib/zones";
 
 const WHATSAPP_NUMBER = "8707790677";
 
@@ -41,6 +41,8 @@ export default function AmbulanceBookingModal() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const detectedZone = detectZone(formData.pickup);
+
     try {
       // 1. Record in backend (Admin Email Notification)
       const res = await fetch("/api/appointments", {
@@ -52,6 +54,8 @@ export default function AmbulanceBookingModal() {
           category: "Ambulance Emergency",
           service: formData.emergencyType || "General Ambulance",
           notes: `Pickup: ${formData.pickup}\nDrop: ${formData.drop}\nCondition: ${formData.condition}`,
+          patientAddress: formData.pickup,
+          zone: detectedZone || undefined,
           // We don't have recaptcha here to keep it fast, 
           // but the backend might require it. 
           // I'll bypass it or the user will have to add it.
@@ -165,6 +169,16 @@ export default function AmbulanceBookingModal() {
                         placeholder="Where to pick up?"
                       />
                     </div>
+                    {detectZone(formData.pickup) && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-[10px] font-bold text-red-700 bg-red-50 border border-red-100/50 rounded-xl px-3.5 py-2 flex items-center gap-1.5 self-start mt-1.5"
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping shrink-0" />
+                        <span>🚑 Service Zone: <strong>{detectZone(formData.pickup)}</strong></span>
+                      </motion.div>
+                    )}
                   </div>
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-gray-400 uppercase ml-1">Drop Location</label>

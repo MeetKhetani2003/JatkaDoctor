@@ -40,10 +40,12 @@ export default function AdminAppointments() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [statusLoadingId, setStatusLoadingId] = useState(null);
 
-  const LUCKNOW_AREAS = [
-    "Gomti Nagar", "Hazratganj", "Aliganj", "Indira Nagar", 
-    "Dubagga", "Charbagh", "Chowk", "Aashiana", 
-    "Jankipuram", "Mahanagar", "Rajajipuram", "Kalyanpur"
+  const LUCKNOW_ZONES = [
+    "Central Lucknow Zone",
+    "Gomti Nagar Zone",
+    "Indira Nagar Zone",
+    "Alambagh / Airport Zone",
+    "North / Outer Lucknow Zone"
   ];
 
   // Pagination
@@ -137,7 +139,7 @@ export default function AdminAppointments() {
       appt.bookingId?.toLowerCase().includes(searchLower)
     );
     const matchesZone = filterZone 
-      ? (appt.patientAddress?.toLowerCase().includes(filterZone.toLowerCase()) || appt.googleMapLocation?.toLowerCase().includes(filterZone.toLowerCase()))
+      ? (appt.zone === filterZone || appt.patientAddress?.toLowerCase().includes(filterZone.toLowerCase()) || appt.googleMapLocation?.toLowerCase().includes(filterZone.toLowerCase()))
       : true;
     return matchesSearch && matchesZone;
   });
@@ -347,6 +349,44 @@ export default function AdminAppointments() {
     document.body.removeChild(link);
   };
 
+  const renderStaffOptions = (role, appointmentZone) => {
+    const roleStaff = staff.filter(s => s.role === role);
+    
+    if (!appointmentZone) {
+      return (
+        <>
+          <option value="">None</option>
+          {roleStaff.map(s => (
+            <option key={s._id} value={s.name}>{s.name} ({s.zone || "No Zone"})</option>
+          ))}
+        </>
+      );
+    }
+    
+    const localStaff = roleStaff.filter(s => s.zone === appointmentZone);
+    const otherStaff = roleStaff.filter(s => s.zone !== appointmentZone);
+    
+    return (
+      <>
+        <option value="">None</option>
+        {localStaff.length > 0 && (
+          <optgroup label={`Local Zone Staff (${appointmentZone})`}>
+            {localStaff.map(s => (
+              <option key={s._id} value={s.name}>{s.name} (★ {s.rating || "4.9"})</option>
+            ))}
+          </optgroup>
+        )}
+        {otherStaff.length > 0 && (
+          <optgroup label="Other Zones / General Staff">
+            {otherStaff.map(s => (
+              <option key={s._id} value={s.name}>{s.name} ({s.zone || "No Zone"}) (★ {s.rating || "4.9"})</option>
+            ))}
+          </optgroup>
+        )}
+      </>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header with Filters */}
@@ -416,8 +456,8 @@ export default function AdminAppointments() {
               className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 text-gray-700 appearance-none"
             >
               <option value="">All Lucknow Zones</option>
-              {LUCKNOW_AREAS.map(area => (
-                <option key={area} value={area}>{area}</option>
+              {LUCKNOW_ZONES.map(zoneName => (
+                <option key={zoneName} value={zoneName}>{zoneName}</option>
               ))}
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
@@ -760,10 +800,7 @@ export default function AdminAppointments() {
                           onChange={e => setEditForm({ ...editForm, doctorAssigned: e.target.value })}
                           className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
                         >
-                          <option value="">None</option>
-                          {staff.filter(s => s.role === 'Doctor').map(s => (
-                            <option key={s._id} value={s.name}>{s.name}</option>
-                          ))}
+                          {renderStaffOptions('Doctor', appt.zone)}
                         </select>
                       </div>
 
@@ -774,10 +811,7 @@ export default function AdminAppointments() {
                           onChange={e => setEditForm({ ...editForm, physiotherapistAssigned: e.target.value })}
                           className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
                         >
-                          <option value="">None</option>
-                          {staff.filter(s => s.role === 'Physiotherapist').map(s => (
-                            <option key={s._id} value={s.name}>{s.name}</option>
-                          ))}
+                          {renderStaffOptions('Physiotherapist', appt.zone)}
                         </select>
                       </div>
                     </div>
@@ -790,10 +824,7 @@ export default function AdminAppointments() {
                           onChange={e => setEditForm({ ...editForm, nurseAssigned: e.target.value })}
                           className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
                         >
-                          <option value="">None</option>
-                          {staff.filter(s => s.role === 'Nurse').map(s => (
-                            <option key={s._id} value={s.name}>{s.name}</option>
-                          ))}
+                          {renderStaffOptions('Nurse', appt.zone)}
                         </select>
                       </div>
 
@@ -804,10 +835,7 @@ export default function AdminAppointments() {
                           onChange={e => setEditForm({ ...editForm, ambulanceAssigned: e.target.value })}
                           className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
                         >
-                          <option value="">None</option>
-                          {staff.filter(s => s.role === 'Ambulance Staff').map(s => (
-                            <option key={s._id} value={s.name}>{s.name}</option>
-                          ))}
+                          {renderStaffOptions('Ambulance Staff', appt.zone)}
                         </select>
                       </div>
                     </div>

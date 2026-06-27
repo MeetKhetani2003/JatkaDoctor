@@ -10,6 +10,7 @@ import fs from 'fs';
 import path from 'path';
 import { sendBookingConfirmation, sendAdminBookingAlert } from '@/lib/whatsapp';
 import { sanitize, validateBookingInput, isRateLimited } from '@/lib/security';
+import { detectZone } from '@/lib/zones';
 
 
 
@@ -316,11 +317,14 @@ export async function POST(req) {
     
     const bookingId = `DJM-${seqNum.toString().padStart(4, '0')}`;
     
+    const detectedZone = body.zone || detectZone(body.patientAddress || body.notes || '');
+
     // Create appointment and explicitly set bookingId to ensure it's saved
     const appointment = new Appointment({
       ...body,
       bookingId,
       doctorId: doctorId,
+      zone: detectedZone || undefined,
       appointmentDate: body.appointmentDate || new Date().toISOString().split('T')[0],
       appointmentTime: body.appointmentTime || '09:00',
       bookingStatus: body.bookingStatus || 'New',

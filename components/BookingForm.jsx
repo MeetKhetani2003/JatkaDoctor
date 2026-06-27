@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { Phone, MessageCircle, Send, User, Calendar, Loader2, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
@@ -8,6 +7,7 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useRef } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
+import { detectZone } from "../lib/zones";
 
 const PRIMARY = "#0F9D58";
 const phone = "8874744756";
@@ -178,6 +178,8 @@ function BookingFormInner({
       else if (rawSource.toLowerCase().includes('direct')) leadSource = 'Direct';
       else if (rawSource.toLowerCase().includes('other')) leadSource = 'Other';
 
+      const detectedZone = detectZone(formData.patientAddress);
+
       const res = await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -193,6 +195,7 @@ function BookingFormInner({
           appointmentTime: formData.appointmentTime || '09:00',
           notes: formData.patientCondition,
           patientAddress: formData.patientAddress,
+          zone: detectedZone || undefined,
           googleMapLocation: formData.googleMapLocation,
           patientCondition: formData.patientCondition,
           recaptchaToken: token,
@@ -324,6 +327,17 @@ function BookingFormInner({
             className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
           />
         </div>
+
+        {detectZone(formData.patientAddress) && (
+          <motion.div
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/60 rounded-xl px-3.5 py-2.5 flex items-center gap-2 self-start"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
+            <span>📍 Auto-routed: <strong>{detectZone(formData.patientAddress)}</strong></span>
+          </motion.div>
+        )}
 
         <div className="relative">
           <input
