@@ -3,15 +3,15 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Facebook, 
-  Instagram, 
-  Youtube, 
-  Linkedin, 
-  ChevronDown, 
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Facebook,
+  Instagram,
+  Youtube,
+  Linkedin,
+  ChevronDown,
   ShieldCheck,
   Clock,
   Zap,
@@ -101,20 +101,20 @@ const Footer = () => {
     return (
       <div className="flex flex-col gap-4">
         <h3 className="hidden md:block text-white font-semibold text-base mb-2">{title}</h3>
-        <button 
+        <button
           onClick={() => toggleSection(id)}
           className="md:hidden flex items-center justify-between w-full py-3 border-b border-white/10 text-white font-medium text-sm"
         >
           <span>{title}</span>
-          <ChevronDown 
-            size={16} 
-            className={`transition-transform duration-300 ${openSection === id ? "rotate-180" : ""}`} 
+          <ChevronDown
+            size={16}
+            className={`transition-transform duration-300 ${openSection === id ? "rotate-180" : ""}`}
           />
         </button>
-        
+
         <AnimatePresence>
           {(openSection === id || !isMobile) && (
-            <motion.ul 
+            <motion.ul
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -122,7 +122,7 @@ const Footer = () => {
             >
               {links.map((link, idx) => (
                 <li key={idx}>
-                  <Link 
+                  <Link
                     href={link.href}
                     className="text-gray-400 hover:text-[#0F9D58] transition-colors duration-200 text-sm"
                   >
@@ -142,21 +142,21 @@ const Footer = () => {
   return (
     <footer className="bg-[#111111] bg-gradient-to-b from-[#111111] to-[#0a140f] text-white pt-16 pb-8 px-6 md:px-12">
       <div className="max-w-7xl mx-auto">
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
-          
+
           {/* BRAND COL */}
           <div className="flex flex-col gap-6 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-3">
-              <div className="relative w-10 h-10 bg-white rounded-lg p-1.5">
-                <Image src="/Dr.Jhatka.png" alt="Logo" fill className="object-contain" />
+            <Link href="/" className="flex flex-col items-center gap-3">
+              <div className="bg-white">
+                <Image src="/Dr.Jhatka.png" alt="Logo" width={140} height={44} className="object-contain" />
               </div>
               <div>
                 <h2 className="text-lg font-bold leading-none tracking-tight">DR JHATKA MEDICARE</h2>
                 <p className="text-[#0F9D58] text-[10px] font-medium mt-1 leading-none uppercase tracking-wider">“Speed, Care & Trust – All in One.”</p>
               </div>
             </Link>
-            
+
             <p className="text-gray-400 text-sm leading-relaxed">
               Emergency, Home Healthcare, Physiotherapy, Ambulance & Medical Support Services. We provide quality medical care at your doorstep.
             </p>
@@ -189,7 +189,7 @@ const Footer = () => {
           {/* CONTACT INFO */}
           <div className="lg:col-span-1 flex flex-col gap-6">
             <h3 className="text-white font-semibold text-base mb-2">Connect With Us</h3>
-            
+
             <div className="flex flex-col gap-4">
               <a href="tel:8874744756" className="flex items-center gap-3 text-gray-400 hover:text-[#0F9D58] transition-colors group">
                 <div className="w-9 h-9 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#0F9D58]/10">

@@ -256,9 +256,9 @@ function MobileDrawer({ open, onClose }) {
               <Image
                 src="/Dr.Jhatka.png"
                 alt="Dr. Jhatka"
-                width={130}
-                height={42}
-                className="object-cover"
+                width={150}
+                height={48}
+                className="object-contain"
               />
               <button
                 onClick={onClose}
@@ -505,8 +505,8 @@ export default function Navbar() {
               <Image
                 src="/Dr.Jhatka.png"
                 alt="Dr. Jhatka"
-                width={140}
-                height={44}
+                width={180}
+                height={56}
                 className="object-contain"
                 priority
               />
