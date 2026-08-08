@@ -323,9 +323,51 @@ export async function POST(req) {
     let calculatedTotalAmount = 0;
     if (body.package) {
       const ServicePackage = (await import('@/lib/models/ServicePackage')).default;
-      const matchedPackage = await ServicePackage.findOne({ title: body.package });
+      const matchedPackage = await ServicePackage.findOne({ 
+        title: { $regex: new RegExp(`^${body.package}$`, 'i') } 
+      });
       if (matchedPackage && matchedPackage.price) {
-        calculatedTotalAmount = parseInt(matchedPackage.price.replace(/[^\d]/g, ''), 10) || 0;
+        calculatedTotalAmount = parseInt(matchedPackage.price.toString().replace(/[^\d]/g, ''), 10) || 0;
+      } else {
+        // Fallback for hardcoded lab tests
+        const hardcodedTests = [
+          { name: "CBC (Complete Blood Count)", price: 299 },
+          { name: "Blood Sugar Fasting (FBS)", price: 99 },
+          { name: "Thyroid Profile (T3, T4, TSH)", price: 499 },
+          { name: "Lipid Profile", price: 599 },
+          { name: "Liver Function Test (LFT)", price: 699 },
+          { name: "Kidney Function Test (KFT)", price: 699 },
+          { name: "Vitamin B12 Test", price: 999 },
+          { name: "Vitamin D Test", price: 1199 },
+          { name: "HbA1c (Glycosylated Hemoglobin)", price: 450 },
+          { name: "Urine Routine & Microscopy", price: 150 },
+          { name: "Calcium Serum", price: 300 },
+          { name: "Uric Acid Serum", price: 250 },
+          { name: "Iron Profile", price: 750 },
+          { name: "VDRL (RPR)", price: 200 },
+          { name: "Dengue NS1 Antigen", price: 650 },
+          { name: "Typhoid (Widal) Test", price: 250 },
+          { name: "C-Reactive Protein (CRP)", price: 450 },
+          { name: "ESR (Westergren)", price: 100 },
+          { name: "Liver Profile (Full)", price: 950 },
+          { name: "Renal Profile (Full)", price: 950 },
+          { name: "Electrolytes (Na, K, Cl)", price: 550 },
+          { name: "Prolactin Test", price: 500 },
+          { name: "Testosterone Total", price: 700 },
+          { name: "PSA Total (Prostate)", price: 900 },
+          { name: "Beta HCG", price: 600 },
+          { name: "Widal Slide Test", price: 200 },
+          { name: "HCV Antibody", price: 500 },
+          { name: "HBsAg (Hepatitis B)", price: 400 },
+          { name: "HIV I & II Antibody", price: 500 },
+          { name: "RA Factor (Rheumatoid)", price: 450 },
+          { name: "Stool Routine Test", price: 200 },
+          { name: "Semen Analysis", price: 500 }
+        ];
+        const matchedTest = hardcodedTests.find(t => t.name.toLowerCase() === body.package.toLowerCase());
+        if (matchedTest) {
+          calculatedTotalAmount = matchedTest.price;
+        }
       }
     }
 

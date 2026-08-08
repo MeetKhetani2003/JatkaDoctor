@@ -48,7 +48,10 @@ function PaymentContent() {
             try {
               const packRes = await fetch("/api/service-packages");
               const packages = await packRes.json();
-              const matchedPack = packages.find(p => p.title === appt.package || p.name === appt.package);
+              const matchedPack = packages.find(p => 
+                (p.title && p.title.toLowerCase() === (appt.package || "").toLowerCase()) || 
+                (p.name && p.name.toLowerCase() === (appt.package || "").toLowerCase())
+              );
               if (matchedPack && matchedPack.price) {
                 calculatedPrice = matchedPack.price;
               }

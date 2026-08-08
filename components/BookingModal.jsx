@@ -35,6 +35,8 @@ export default function BookingModal() {
               <BookingForm 
                 defaultService={bookingData.service}
                 defaultDoctor={bookingData.doctor}
+                defaultPackage={bookingData.test || bookingData.package}
+                fixedPackage={!!(bookingData.test || bookingData.package)}
                 prefilledMessage={
                   bookingData.test ? `I want to book the ${bookingData.test} test.` : 
                   bookingData.package ? `I am interested in the ${bookingData.package} package.` : 

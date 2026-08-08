@@ -19,6 +19,7 @@ function BookingFormInner({
   hideService = false,
   defaultDoctor = "",
   defaultPackage = "",
+  fixedPackage = false,
   prefilledMessage = "",
   onSuccess = () => {}
 }) {
@@ -438,7 +439,8 @@ function BookingFormInner({
               name="package" 
               value={formData.package}
               onChange={e => setFormData({...formData, package: e.target.value})}
-              className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-gray-700 appearance-none"
+              disabled={fixedPackage}
+              className={`w-full px-4 py-3.5 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition text-gray-700 appearance-none ${fixedPackage ? 'opacity-75 cursor-not-allowed' : ''}`}
             >
               <option value="">Select Preferred Package</option>
               {formData.package && !allPackages.some(p => p.name === formData.package) && (
