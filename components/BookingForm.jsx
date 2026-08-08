@@ -163,11 +163,15 @@ function BookingFormInner({
     
     setIsSubmitting(true);
     try {
-      const token = recaptchaRef.current.getValue();
-      if (!token) {
-        alert("Please complete the reCAPTCHA");
-        setIsSubmitting(false);
-        return;
+      let token = "emergency-bypass";
+      
+      if (process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY) {
+        token = recaptchaRef.current?.getValue();
+        if (!token) {
+          alert("Please complete the reCAPTCHA");
+          setIsSubmitting(false);
+          return;
+        }
       }
 
       // Capture lead source (Phase 9)
@@ -514,11 +518,17 @@ function BookingFormInner({
         </div>
 
         <div className="mb-2 overflow-hidden flex justify-center">
-          <ReCAPTCHA
-            ref={recaptchaRef}
-            sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
-            size="normal"
-          />
+          {process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ? (
+            <ReCAPTCHA
+              ref={recaptchaRef}
+              sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}
+              size="normal"
+            />
+          ) : (
+            <div className="text-red-500 text-xs border border-red-200 p-2 rounded bg-red-50">
+              Error: reCAPTCHA site key is missing. Booking is disabled.
+            </div>
+          )}
         </div>
 
         <button
