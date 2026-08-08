@@ -319,6 +319,16 @@ export async function POST(req) {
     
     const detectedZone = body.zone || detectZone(body.patientAddress || body.notes || '');
 
+    // Fetch package price if a package was selected
+    let calculatedTotalAmount = 0;
+    if (body.package) {
+      const ServicePackage = (await import('@/lib/models/ServicePackage')).default;
+      const matchedPackage = await ServicePackage.findOne({ title: body.package });
+      if (matchedPackage && matchedPackage.price) {
+        calculatedTotalAmount = parseInt(matchedPackage.price.replace(/[^\d]/g, ''), 10) || 0;
+      }
+    }
+
     // Create appointment and explicitly set bookingId to ensure it's saved
     const appointment = new Appointment({
       ...body,
@@ -329,7 +339,8 @@ export async function POST(req) {
       appointmentTime: body.appointmentTime || '09:00',
       bookingStatus: body.bookingStatus || 'New',
       paymentStatus: body.paymentStatus || 'Pending',
-      status: body.status || 'Pending'
+      status: body.status || 'Pending',
+      totalAmount: body.totalAmount || calculatedTotalAmount
     });
     
     await appointment.save();
