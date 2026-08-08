@@ -155,7 +155,7 @@ export default function BlogPage() {
               className="relative rounded-2xl overflow-hidden aspect-[16/10]"
             >
               <Image
-                src={featured.image}
+                src={featured.image || `/api/images/${featured.imageFileId}`}
                 alt={featured.title}
                 fill
                 className="object-cover"
@@ -203,7 +203,7 @@ export default function BlogPage() {
                 >
                   <div className="relative aspect-[16/10] overflow-hidden">
                     <Image
-                      src={blog.image}
+                      src={blog.image || `/api/images/${blog.imageFileId}`}
                       alt={blog.title}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"

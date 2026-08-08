@@ -150,13 +150,13 @@ export default function BlogSection() {
             </h3>
             <div className="flex items-center gap-2">
               <Image
-                src={blogs[0].authorAvatar}
-                alt={blogs[0].author}
+                src={(blogs[0].author?.photoUrl) || (blogs[0].author?.photoFileId ? `/api/images/${blogs[0].author.photoFileId}` : null) || blogs[0].authorAvatar || "https://placehold.co/100"}
+                alt={blogs[0].author?.name || blogs[0].author || "Author"}
                 width={24}
                 height={24}
                 className="w-6 h-6 rounded-full border-2 border-white/30"
               />
-              <span className="text-xs text-gray-200">{blogs[0].author}</span>
+              <span className="text-xs text-gray-200">{blogs[0].author?.name || (typeof blogs[0].author === 'string' ? blogs[0].author : "Expert")}</span>
             </div>
           </div>
         </Link>
@@ -248,14 +248,14 @@ export default function BlogSection() {
                     <div className="flex items-center justify-between mt-3">
                       <div className="flex items-center gap-2">
                         <Image
-                          src={blog.authorAvatar}
-                          alt={blog.author}
+                          src={(blog.author?.photoUrl) || (blog.author?.photoFileId ? `/api/images/${blog.author.photoFileId}` : null) || blog.authorAvatar || "https://placehold.co/100"}
+                          alt={blog.author?.name || blog.author || "Author"}
                           width={20}
                           height={20}
                           className="w-5 h-5 rounded-full"
                         />
                         <span className="text-[10px] text-gray-600">
-                          {blog.author}
+                          {blog.author?.name || (typeof blog.author === 'string' ? blog.author : "Expert")}
                         </span>
                       </div>
                       <div className="flex items-center gap-1 text-[10px] text-gray-400">

@@ -64,6 +64,9 @@ export async function POST(req) {
     await payment.save();
 
     // 4. Update Appointment
+    if (!appointment.totalAmount || appointment.totalAmount === 0) {
+      appointment.totalAmount = Number(amount);
+    }
     appointment.paymentStatus = 'Paid';
     appointment.bookingStatus = appointment.doctorAssigned ? 'Assigned' : 'New';
     appointment.advancePaid = (appointment.advancePaid || 0) + Number(amount);

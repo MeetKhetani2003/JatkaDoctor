@@ -441,7 +441,7 @@ function BookingFormInner({
                 <option value={formData.package}>{formData.package} (Selected)</option>
               )}
               {allPackages.filter(p => p.service === formData.service || p.category === formData.service).map(p => (
-                <option key={p._id} value={p.name}>{p.name} - {p.price}</option>
+                <option key={p._id} value={p.title}>{p.title} - {p.price}</option>
               ))}
               {!allPackages.filter(p => p.service === formData.service || p.category === formData.service).length && formData.package && (
                  <option value={formData.package}>{formData.package}</option>

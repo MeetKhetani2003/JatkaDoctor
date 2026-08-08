@@ -34,6 +34,7 @@ export default function AdminAppointments() {
   const [filterDate, setFilterDate] = useState("");
   const [filterZone, setFilterZone] = useState("");
   const [doctors, setDoctors] = useState([]);
+  const [ambulances, setAmbulances] = useState([]);
   const [staff, setStaff] = useState([]);
   const [payments, setPayments] = useState([]);
   const [deleteAppointmentId, setDeleteAppointmentId] = useState(null);
@@ -101,6 +102,16 @@ export default function AdminAppointments() {
     }
   };
 
+  const fetchAmbulances = async () => {
+    try {
+      const res = await fetch("/api/ambulances");
+      const data = await res.json();
+      setAmbulances(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const fetchData = async () => {
     try {
       let url = "/api/appointments?";
@@ -121,6 +132,7 @@ export default function AdminAppointments() {
   useEffect(() => {
     fetchDoctors();
     fetchStaff();
+    fetchAmbulances();
     fetchPayments();
   }, []);
 
@@ -800,7 +812,10 @@ export default function AdminAppointments() {
                           onChange={e => setEditForm({ ...editForm, doctorAssigned: e.target.value })}
                           className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
                         >
-                          {renderStaffOptions('Doctor', appt.zone)}
+                          <option value="">None</option>
+                          {doctors.map(doc => (
+                            <option key={doc._id} value={doc.name}>{doc.name}</option>
+                          ))}
                         </select>
                       </div>
 
@@ -835,7 +850,12 @@ export default function AdminAppointments() {
                           onChange={e => setEditForm({ ...editForm, ambulanceAssigned: e.target.value })}
                           className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
                         >
-                          {renderStaffOptions('Ambulance Staff', appt.zone)}
+                          <option value="">None</option>
+                          {ambulances.map(amb => (
+                            <option key={amb._id} value={`${amb.name}${amb.driverName ? ` - ${amb.driverName}` : ''}`}>
+                              {amb.name}{amb.driverName ? ` - ${amb.driverName}` : ''}
+                            </option>
+                          ))}
                         </select>
                       </div>
                     </div>

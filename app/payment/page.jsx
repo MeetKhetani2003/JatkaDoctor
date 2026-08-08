@@ -41,7 +41,10 @@ function PaymentContent() {
           
           // Determine price dynamically based on package or category
           let calculatedPrice = 500; // default general fee
-          if (appt.package) {
+          
+          if (appt.totalAmount && appt.totalAmount > 0) {
+            calculatedPrice = appt.totalAmount;
+          } else if (appt.package) {
             try {
               const packRes = await fetch("/api/service-packages");
               const packages = await packRes.json();
