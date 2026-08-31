@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import connectDB from '@/lib/db';
 import Payment from '@/lib/models/Payment';
 import Appointment from '@/lib/models/Appointment';
+import PhysioBooking from '@/lib/models/physio/PhysioBooking';
+import Patient from '@/lib/models/physio/Patient'; // Required for population
 import { sendPaymentConfirmation, sendAdminPaymentAlert } from '@/lib/whatsapp';
 
 export async function POST(req) {
@@ -39,7 +41,17 @@ export async function POST(req) {
     }
 
     // 2. Load Booking Details
-    const appointment = await Appointment.findOne({ bookingId });
+    let appointment = await Appointment.findOne({ bookingId });
+    let isPhysio = false;
+    
+    if (!appointment) {
+      // Try PhysioBooking
+      appointment = await PhysioBooking.findOne({ bookingId }).populate('patientId');
+      if (appointment) {
+        isPhysio = true;
+      }
+    }
+
     if (!appointment) {
       return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
     }
@@ -63,28 +75,40 @@ export async function POST(req) {
 
     await payment.save();
 
-    // 4. Update Appointment
-    if (!appointment.totalAmount || appointment.totalAmount === 0) {
-      appointment.totalAmount = Number(amount);
+    // 4. Update Booking Data
+    if (isPhysio) {
+      appointment.paymentStatus = 'Paid';
+      appointment.paidAmount = (appointment.paidAmount || 0) + Number(amount);
+      if (appointment.status === 'New') {
+        appointment.status = 'Assigned';
+      }
+      await appointment.save();
+    } else {
+      if (!appointment.totalAmount || appointment.totalAmount === 0) {
+        appointment.totalAmount = Number(amount);
+      }
+      appointment.paymentStatus = 'Paid';
+      appointment.bookingStatus = appointment.doctorAssigned ? 'Assigned' : 'New';
+      appointment.advancePaid = (appointment.advancePaid || 0) + Number(amount);
+      appointment.balanceDue = Math.max(0, (appointment.totalAmount || 0) - appointment.advancePaid);
+      await appointment.save();
     }
-    appointment.paymentStatus = 'Paid';
-    appointment.bookingStatus = appointment.doctorAssigned ? 'Assigned' : 'New';
-    appointment.advancePaid = (appointment.advancePaid || 0) + Number(amount);
-    appointment.balanceDue = Math.max(0, (appointment.totalAmount || 0) - appointment.advancePaid);
-    await appointment.save();
 
     // 5. Send WhatsApp notifications
     try {
+      const patientPhone = isPhysio ? appointment.patientId?.mobile : appointment.phone;
+      const patientName = isPhysio ? appointment.patientId?.name : appointment.patientName;
+
       await sendPaymentConfirmation({
-        phone: appointment.phone,
-        patientName: appointment.patientName,
+        phone: patientPhone,
+        patientName: patientName,
         bookingId,
         amount,
         paymentMethod: 'UPI'
       });
 
       await sendAdminPaymentAlert({
-        patientName: appointment.patientName,
+        patientName: patientName,
         bookingId,
         amount,
         paymentMethod: 'UPI'

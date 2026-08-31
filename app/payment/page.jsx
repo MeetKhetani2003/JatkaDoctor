@@ -15,6 +15,7 @@ function PaymentContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const bookingId = searchParams.get("bookingId");
+  const bookingType = searchParams.get("type");
 
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -31,12 +32,32 @@ function PaymentContent() {
 
     const fetchBookingDetails = async () => {
       try {
-        const res = await fetch(`/api/appointments?search=${bookingId}`);
+        let endpoint = `/api/appointments?search=${bookingId}`;
+        if (bookingType === 'physio') {
+          // If the API supports searching by bookingId (DJM-PTB-xxx), we need to ensure it returns an array or object
+          // Wait, let's just fetch all physio bookings and filter if a specific search endpoint doesn't exist
+          endpoint = `/api/admin/physio-bookings`; 
+        }
+        
+        const res = await fetch(endpoint);
         if (!res.ok) throw new Error("Failed to fetch booking details");
         
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          const appt = data[0];
+        let data = await res.json();
+        
+        // Handle if data is wrapped in { success: true, data: [...] } from physio endpoint
+        if (data.success && data.data) {
+           data = data.data;
+        }
+        
+        // Find the specific booking if it returns an array
+        let appt = null;
+        if (Array.isArray(data)) {
+           appt = data.find(b => b.bookingId === bookingId || b._id === bookingId);
+        } else {
+           appt = data;
+        }
+
+        if (appt) {
           setBooking(appt);
           
           // Determine price dynamically based on package or category
