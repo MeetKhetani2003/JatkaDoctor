@@ -5,7 +5,7 @@ import PhysioCondition from "@/lib/models/physio/PhysioCondition";
 export async function GET(req, { params }) {
   try {
     await dbConnect();
-    const { id } = params;
+    const { id } = await params;
     const condition = await PhysioCondition.findById(id).populate('groupId', 'name');
     if (!condition) return NextResponse.json({ success: false, message: "Not found" }, { status: 404 });
     return NextResponse.json({ success: true, data: condition });
@@ -17,9 +17,9 @@ export async function GET(req, { params }) {
 export async function PUT(req, { params }) {
   try {
     await dbConnect();
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
-    const condition = await PhysioCondition.findByIdAndUpdate(id, body, { new: true, runValidators: true });
+    const condition = await PhysioCondition.findByIdAndUpdate(id, body, { returnDocument: 'after', runValidators: true });
     if (!condition) return NextResponse.json({ success: false, message: "Not found" }, { status: 404 });
     return NextResponse.json({ success: true, data: condition });
   } catch (error) {
@@ -30,7 +30,7 @@ export async function PUT(req, { params }) {
 export async function DELETE(req, { params }) {
   try {
     await dbConnect();
-    const { id } = params;
+    const { id } = await params;
     const condition = await PhysioCondition.findByIdAndDelete(id);
     if (!condition) return NextResponse.json({ success: false, message: "Not found" }, { status: 404 });
     return NextResponse.json({ success: true, message: "Deleted successfully" });

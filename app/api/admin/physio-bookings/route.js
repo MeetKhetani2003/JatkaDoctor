@@ -9,10 +9,19 @@ import PhysioPackage from "@/lib/models/physio/PhysioPackage";
 export async function GET(req) {
   try {
     await dbConnect();
-    const bookings = await PhysioBooking.find()
+    const url = new URL(req.url);
+    const patientId = url.searchParams.get('patientId');
+    
+    let query = {};
+    if (patientId) {
+       query.patientId = patientId;
+    }
+
+    const bookings = await PhysioBooking.find(query)
       .populate('patientId', 'name mobile patientId')
       .populate('departmentId', 'name')
       .populate('packageId', 'title')
+      .populate('assignedTherapistId', 'name')
       .sort({ createdAt: -1 });
     return NextResponse.json({ success: true, data: bookings });
   } catch (error) {
@@ -32,6 +41,24 @@ export async function POST(req) {
     }
     if (!patient) {
        return NextResponse.json({ success: false, message: "Patient not found" }, { status: 400 });
+    }
+
+    // 1.5 Duplicate Booking Check
+    if (!body.overrideDuplicate && body.preferredDate && body.preferredTime) {
+       const existingBooking = await PhysioBooking.findOne({
+           patientId: patient._id,
+           preferredDate: body.preferredDate,
+           preferredTime: body.preferredTime,
+           status: { $nin: ['Cancelled'] }
+       });
+       
+       if (existingBooking) {
+           return NextResponse.json({ 
+               success: false, 
+               isDuplicate: true,
+               message: "This patient already has a booking on the same date and time." 
+           }, { status: 409 });
+       }
     }
 
     // 2. Auto-generate Booking ID
