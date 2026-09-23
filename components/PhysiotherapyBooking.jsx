@@ -16,12 +16,27 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBookingModal } from '@/context/BookingModalContext';
+import { usePatientAuth } from '@/context/PatientAuthContext';
 
 export default function PhysiotherapyBooking() {
   const router = useRouter();
   const { closeModal } = useBookingModal();
+  const { patient, loggedIn, profileComplete, loading: authLoading } = usePatientAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  // Redirect if not logged in or profile is incomplete
+  useEffect(() => {
+    if (authLoading) return;
+    if (!loggedIn) {
+      closeModal();
+      router.push("/patient/login");
+    } else if (!profileComplete) {
+      closeModal();
+      router.push("/patient/complete-profile");
+    }
+  }, [loggedIn, profileComplete, authLoading, router, closeModal]);
+
   
   const [data, setData] = useState({
     departments: [],
@@ -37,9 +52,20 @@ export default function PhysiotherapyBooking() {
     pkg: null,
     date: "",
     time: "",
-    patientName: "",
-    mobile: "",
+    patientName: patient?.name || "",
+    mobile: patient?.mobile && !patient.mobile.startsWith('google_') ? patient.mobile : "",
   });
+
+  // Re-sync if patient context loads after initial mount
+  useEffect(() => {
+    if (patient) {
+      setSelection(prev => ({
+        ...prev,
+        patientName: prev.patientName || patient.name || "",
+        mobile: prev.mobile || (patient.mobile && !patient.mobile.startsWith('google_') ? patient.mobile : ""),
+      }));
+    }
+  }, [patient]);
 
   // Fetch initial departments
   useEffect(() => {
@@ -107,22 +133,35 @@ export default function PhysiotherapyBooking() {
         preferredTime: selection.time,
       };
       
-      if (selection.department?._id && selection.department._id !== 'other') payload.departmentId = selection.department._id;
-      if (selection.group?._id && selection.group._id !== 'other') payload.groupId = selection.group._id;
-      if (selection.condition?._id && selection.condition._id !== 'other') payload.conditionId = selection.condition._id;
-      if (selection.pkg?._id && selection.pkg._id !== 'custom') payload.packageId = selection.pkg._id;
-
-      // 1. Create Patient First (Simulated directly or via dedicated API, here we just pass it to booking API if it supports it, 
-      // but let's assume we create patient first for safety)
-      const patientRes = await fetch('/api/admin/physio-patients', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: selection.patientName, mobile: selection.mobile })
-      });
-      const patientData = await patientRes.json();
+      // Only send valid MongoDB ObjectIds (24 hex characters) to avoid CastError 400s
+      const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
       
-      if(patientData.success) {
-         payload.patientId = patientData.data._id;
+      if (isValidObjectId(selection.department?._id)) payload.departmentId = selection.department._id;
+      if (isValidObjectId(selection.group?._id)) payload.groupId = selection.group._id;
+      if (isValidObjectId(selection.condition?._id)) payload.conditionId = selection.condition._id;
+      if (isValidObjectId(selection.pkg?._id)) payload.packageId = selection.pkg._id;
+
+      // 1. Link to existing patient or create new
+      let finalPatientId = null;
+      
+      if (loggedIn && patient?.patientId) {
+        finalPatientId = patient.patientId;
+      } else {
+        const patientRes = await fetch('/api/admin/physio-patients', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: selection.patientName, mobile: selection.mobile })
+        });
+        const patientData = await patientRes.json();
+        if (patientData.success) {
+          finalPatientId = patientData.data._id;
+        } else {
+          throw new Error("Failed to create patient");
+        }
+      }
+      
+      if (finalPatientId) {
+         payload.patientId = finalPatientId;
          
          const bookRes = await fetch('/api/admin/physio-bookings', {
             method: 'POST',
@@ -136,12 +175,14 @@ export default function PhysiotherapyBooking() {
             closeModal();
             const paymentUrl = `/payment?bookingId=${bookData.data.bookingId}&amount=${bookData.data.totalAmount}&type=physio`;
             router.push(paymentUrl);
+         } else {
+            throw new Error(bookData.message || "Failed to create booking");
          }
       }
 
     } catch(err) {
        console.error("Booking failed", err);
-       alert("Booking Failed. Please try again.");
+       alert(err.message || "Booking Failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -339,13 +380,25 @@ export default function PhysiotherapyBooking() {
                   ))
                 ) : (
                   <div className="col-span-full text-center py-8">
-                    <p className="text-gray-500 text-sm mb-4">No specific packages listed yet. Please select standard consultation.</p>
-                    <button
-                      onClick={() => handlePackageSelect({ _id: 'custom', title: 'Consultation & Trial', sessionsCount: 1, basePrice: 499, validityDays: 1 })}
-                      className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition"
-                    >
-                      Book Standard Trial (₹499)
-                    </button>
+                    <p className="text-gray-500 text-sm mb-2">No specific packages listed yet.</p>
+                    <p className="text-gray-400 text-xs mb-6">Please contact us or book a standard trial session.</p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <button
+                        onClick={() => handlePackageSelect({ _id: 'custom', title: 'Standard Trial Session', sessionsCount: 1, basePrice: 499, validityDays: 1 })}
+                        className="inline-flex items-center gap-2 bg-gray-100 text-gray-800 border border-gray-200 px-6 py-3 rounded-xl font-semibold hover:bg-gray-200 transition"
+                      >
+                        Book Trial Session (₹499)
+                      </button>
+                      <button
+                        onClick={() => handlePackageSelect({ _id: 'custom-consult', title: 'Standard Consultation', sessionsCount: 1, basePrice: 800, validityDays: 7 })}
+                        className="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-semibold hover:bg-primary-dark transition"
+                      >
+                        Book Consultation (₹800)
+                      </button>
+                    </div>
+                    <p className="text-xs text-primary mt-4 font-medium">
+                      💡 To add custom packages, go to Admin → Physio Packages
+                    </p>
                   </div>
                 )}
 

@@ -7,7 +7,9 @@ export async function GET(req) {
     await dbConnect();
     const url = new URL(req.url);
     const groupId = url.searchParams.get('groupId');
-    const query = groupId ? { groupId } : {};
+    
+    // Ignore "other" or invalid group IDs
+    const query = (groupId && groupId !== 'other' && groupId.length === 24) ? { groupId } : {};
     
     const conditions = await PhysioCondition.find(query).populate('groupId', 'name').sort({ order: 1 });
     return NextResponse.json({ success: true, data: conditions });

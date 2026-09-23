@@ -16,11 +16,13 @@ function PaymentContent() {
   const router = useRouter();
   const bookingId = searchParams.get("bookingId");
   const bookingType = searchParams.get("type");
+  // If amount is passed directly in URL (e.g. from PhysiotherapyBooking), use it immediately
+  const amountParam = searchParams.get("amount");
 
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState(amountParam ? parseInt(amountParam, 10) : 0);
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
@@ -60,34 +62,36 @@ function PaymentContent() {
         if (appt) {
           setBooking(appt);
           
-          // Determine price dynamically based on package or category
-          let calculatedPrice = 500; // default general fee
+          // Determine price: URL param takes priority, then booking's totalAmount, then package lookup, then category fallback
+          let calculatedPrice = amountParam ? parseInt(amountParam, 10) : 500;
           
-          if (appt.totalAmount && appt.totalAmount > 0) {
-            calculatedPrice = appt.totalAmount;
-          } else if (appt.package) {
-            try {
-              const packRes = await fetch("/api/service-packages");
-              const packages = await packRes.json();
-              const matchedPack = packages.find(p => 
-                (p.title && p.title.toLowerCase() === (appt.package || "").toLowerCase()) || 
-                (p.name && p.name.toLowerCase() === (appt.package || "").toLowerCase())
-              );
-              if (matchedPack && matchedPack.price) {
-                calculatedPrice = matchedPack.price;
+          if (!amountParam) {
+            if (appt.totalAmount && appt.totalAmount > 0) {
+              calculatedPrice = appt.totalAmount;
+            } else if (appt.package) {
+              try {
+                const packRes = await fetch("/api/service-packages");
+                const packages = await packRes.json();
+                const matchedPack = packages.find(p => 
+                  (p.title && p.title.toLowerCase() === (appt.package || "").toLowerCase()) || 
+                  (p.name && p.name.toLowerCase() === (appt.package || "").toLowerCase())
+                );
+                if (matchedPack && matchedPack.price) {
+                  calculatedPrice = matchedPack.price;
+                }
+              } catch (e) {
+                console.error("Failed to fetch package price:", e);
               }
-            } catch (e) {
-              console.error("Failed to fetch package price:", e);
+            } else {
+              // Service category fallbacks
+              const service = (appt.category || appt.service || "").toLowerCase();
+              if (service.includes("ambulance")) calculatedPrice = 1500;
+              else if (service.includes("physio")) calculatedPrice = 800;
+              else if (service.includes("doctor")) calculatedPrice = 1000;
+              else if (service.includes("icu")) calculatedPrice = 5000;
+              else if (service.includes("nurse") || service.includes("care")) calculatedPrice = 1200;
+              else if (service.includes("lab")) calculatedPrice = 600;
             }
-          } else {
-            // Service category fallbacks
-            const service = (appt.category || appt.service || "").toLowerCase();
-            if (service.includes("ambulance")) calculatedPrice = 1500;
-            else if (service.includes("physio")) calculatedPrice = 800;
-            else if (service.includes("doctor")) calculatedPrice = 1000;
-            else if (service.includes("icu")) calculatedPrice = 5000;
-            else if (service.includes("nurse") || service.includes("care")) calculatedPrice = 1200;
-            else if (service.includes("lab")) calculatedPrice = 600;
           }
           setAmount(calculatedPrice);
         } else {

@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import StickyBottomBar from "@/components/StickyBottomBar";
 import { BookingModalProvider } from "@/context/BookingModalContext";
+import { PatientAuthProvider } from "@/context/PatientAuthContext";
 import BookingModal from "@/components/BookingModal";
 import AmbulanceBookingModal from "@/components/AmbulanceBookingModal";
 import OfferPopup from "@/components/OfferPopup";
@@ -62,6 +63,7 @@ export default function RootLayout({ children }) {
         )}
         <ScrollToTop />
         <PWARegister />
+        <PatientAuthProvider>
         <BookingModalProvider>
           <Header />
           {/* Main Content Area - Full width but max container for large screens */}
@@ -72,6 +74,7 @@ export default function RootLayout({ children }) {
           <AmbulanceBookingModal />
           <OfferPopup />
         </BookingModalProvider>
+        </PatientAuthProvider>
       </body>
     </html>
   );

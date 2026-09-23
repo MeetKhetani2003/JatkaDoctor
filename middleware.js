@@ -14,9 +14,29 @@ export function middleware(request) {
     }
   }
 
+  // Protect /patient/profile - require patient_session cookie
+  if (pathname === '/patient/profile') {
+    const patientSession = request.cookies.get('patient_session');
+    if (!patientSession) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/patient/login';
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // Protect /patient/complete-profile - require patient_session cookie
+  if (pathname === '/patient/complete-profile') {
+    const patientSession = request.cookies.get('patient_session');
+    if (!patientSession) {
+      const url = request.nextUrl.clone();
+      url.pathname = '/patient/login';
+      return NextResponse.redirect(url);
+    }
+  }
+
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ['/admin/:path*', '/patient/profile', '/patient/complete-profile'],
 };
