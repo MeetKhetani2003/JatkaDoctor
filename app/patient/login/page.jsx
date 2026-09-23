@@ -1,8 +1,8 @@
 "use client";
-import { useEffect } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function PatientLoginPage() {
+function LoginContent() {
   const searchParams = useSearchParams();
   const error = searchParams.get("error");
   const router = useRouter();
@@ -63,5 +63,13 @@ export default function PatientLoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PatientLoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-900 flex items-center justify-center text-white">Loading...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }
