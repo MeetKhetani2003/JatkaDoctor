@@ -479,6 +479,91 @@ export default function PhysioMasterData() {
                 </div>
               )}
 
+              {/* Live Previews */}
+              <div className="mt-6 border-t pt-4">
+                <h4 className="text-sm font-semibold text-gray-700 mb-3">Live Preview</h4>
+                
+                {/* Package Live Preview */}
+                {activeTab === 'packages' && (
+                  <div className="border rounded-2xl p-4 w-full max-w-sm mx-auto shadow-sm relative overflow-hidden bg-white">
+                    {formData.isRecommended && (
+                      <div className="absolute top-0 right-0 bg-blue-600 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg">
+                        RECOMMENDED
+                      </div>
+                    )}
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-16 h-16 bg-blue-50 rounded-xl flex items-center justify-center overflow-hidden shrink-0">
+                        {formData.icon ? (
+                          <img src={formData.icon} alt="Icon" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="text-gray-400 text-xs text-center px-1">No Icon</div>
+                        )}
+                      </div>
+                      <div>
+                        <h5 className="font-bold text-lg text-gray-900 leading-tight">{formData.title || "Package Title"}</h5>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {formData.sessionsCount || 0} Sessions • {formData.validityDays || 0} Days Validity
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-end gap-2 mb-3">
+                      <span className="text-2xl font-bold text-blue-600">₹{formData.offerPrice || formData.basePrice || 0}</span>
+                      {formData.offerPrice && formData.basePrice && formData.offerPrice !== formData.basePrice && (
+                        <span className="text-sm text-gray-400 line-through mb-1">₹{formData.basePrice}</span>
+                      )}
+                    </div>
+
+                    {formData.description && (
+                      <p className="text-sm text-gray-600 mb-4 whitespace-pre-wrap">{formData.description}</p>
+                    )}
+
+                    <button type="button" disabled className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-medium opacity-80 cursor-not-allowed">
+                      Book Now
+                    </button>
+                  </div>
+                )}
+
+                {/* Departments & Groups Live Preview */}
+                {(activeTab === 'departments' || activeTab === 'groups') && (
+                  <div className="border rounded-2xl p-5 w-full max-w-xs mx-auto shadow-sm bg-white text-center hover:shadow-md transition-shadow">
+                    <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center overflow-hidden mx-auto mb-4 border border-blue-100 p-2">
+                      {formData.icon ? (
+                        <img src={formData.icon} alt="Icon" className="w-full h-full object-contain" />
+                      ) : (
+                        <div className="text-gray-400 text-xs text-center">No Icon</div>
+                      )}
+                    </div>
+                    <h5 className="font-bold text-lg text-gray-900 mb-2">{formData.name || `${activeTab === 'departments' ? 'Department' : 'Group'} Name`}</h5>
+                    <p className="text-sm text-gray-500 line-clamp-2">
+                      {formData.shortDescription || "Short description will appear here..."}
+                    </p>
+                  </div>
+                )}
+
+                {/* Conditions Live Preview */}
+                {activeTab === 'conditions' && (
+                  <div className="border rounded-2xl w-full max-w-sm mx-auto shadow-sm overflow-hidden bg-white">
+                    <div className="h-40 bg-gray-100 relative">
+                      {formData.image ? (
+                        <img src={formData.image} alt="Cover" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="flex items-center justify-center h-full text-gray-400 text-sm">No Cover Image</div>
+                      )}
+                    </div>
+                    <div className="p-5">
+                      <h5 className="font-bold text-xl text-gray-900 mb-2">{formData.name || "Condition Name"}</h5>
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-3">
+                        {formData.shortDescription || "Short description will appear here..."}
+                      </p>
+                      <button type="button" disabled className="text-blue-600 font-medium text-sm flex items-center gap-1 opacity-80 cursor-not-allowed">
+                        Read more →
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center gap-6 pt-2">
                 <div className="flex-1">
                   <label className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
