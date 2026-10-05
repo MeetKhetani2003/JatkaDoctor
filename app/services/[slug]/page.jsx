@@ -2363,6 +2363,25 @@ function AmbulancePage() {
 function PhysiotherapyPage() {
   const { openModal } = useBookingModal();
   const phone = "919026365448";
+  const [packages, setPackages] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPackages = async () => {
+      try {
+        const res = await fetch("/api/admin/physio-packages");
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          setPackages(data.data.filter(p => p.isActive !== false));
+        }
+      } catch (e) {
+        console.error("Failed to fetch physio packages:", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPackages();
+  }, []);
 
   return (
     <main className="min-h-screen bg-white pb-20">
@@ -2416,130 +2435,60 @@ function PhysiotherapyPage() {
           Transparent Pricing
         </h3>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Card 1 */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col">
-            <div className="absolute top-0 right-0 bg-red-50 text-red-500 font-normal text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-              50% OFF
-            </div>
-            <h4 className="font-normal text-gray-800 text-base">
-              1 Session (Trial)
-            </h4>
-            <div className="mt-3 flex items-end gap-2">
-              <span className="text-2xl font-normal text-black tracking-tight">
-                ₹499
-              </span>
-              <span className="text-xs text-gray-400 line-through mb-1.5">
-                ₹999
-              </span>
-            </div>
-            <button
-              onClick={() => openModal({ service: 'Physiotherapy', package: 'Trial Session' })}
-              className="mt-5 w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-gray-100 transition active:scale-95"
-            >
-              Book Trial
-            </button>
+        {loading ? (
+          <div className="flex justify-center items-center h-32">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
+        ) : packages.length === 0 ? (
+          <div className="text-center text-gray-500 py-10">No packages found</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {packages.map((pkg) => (
+              <div 
+                key={pkg._id} 
+                className={`${pkg.isRecommended ? "bg-primary/5 border-primary/20 sm:col-span-2 lg:col-span-1" : "bg-white border-gray-100"} rounded-2xl p-5 border shadow-[0_2px_12px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col`}
+              >
+                {pkg.isRecommended ? (
+                  <div className="absolute top-0 right-0 bg-primary text-white font-normal text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider flex items-center gap-1">
+                    <Star className="w-3 h-3 fill-white" /> Recommended
+                  </div>
+                ) : pkg.offerPrice && pkg.basePrice && pkg.offerPrice < pkg.basePrice ? (
+                  <div className="absolute top-0 right-0 bg-green-50 text-primary font-normal text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider">
+                    Save ₹{pkg.basePrice - pkg.offerPrice}
+                  </div>
+                ) : null}
 
-          {/* Card 2 */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col">
-            <div className="absolute top-0 right-0 bg-green-50 text-primary font-normal text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-              Save ₹1000
-            </div>
-            <h4 className="font-normal text-gray-800 text-base">
-              7 Days Package
-            </h4>
-            <div className="mt-3 flex items-end gap-2">
-              <span className="text-2xl font-normal text-black tracking-tight">
-                ₹2999
-              </span>
-              <span className="text-xs text-gray-400 line-through mb-1.5">
-                ₹3999
-              </span>
-            </div>
-            <button
-              onClick={() => openModal({ service: 'Physiotherapy', package: '7 Days Package' })}
-              className="mt-5 w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-gray-100 transition active:scale-95"
-            >
-              Book Package
-            </button>
-          </div>
+                <h4 className={`font-normal text-base ${pkg.isRecommended ? "text-primary text-lg mt-2" : "text-gray-800"}`}>
+                  {pkg.title}
+                </h4>
 
-          {/* Card 3 - MOST POPULAR (Soft Highlight) */}
-          <div className="bg-primary/5 rounded-2xl p-5 border border-primary/20 shadow-sm relative overflow-hidden flex flex-col sm:col-span-2 lg:col-span-1">
-            <div className="absolute top-0 right-0 bg-primary text-white font-normal text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider flex items-center gap-1">
-              <Star className="w-3 h-3 fill-white" /> Most Popular (Save ₹1500)
-            </div>
-            <h4 className="font-normal text-primary text-lg mt-2">
-              15 Days Package
-            </h4>
-            <div className="mt-2 flex items-end gap-2">
-              <span className="text-3xl font-normal text-black tracking-tight">
-                ₹5499
-              </span>
-              <span className="text-sm text-gray-400 line-through mb-1.5">
-                ₹6999
-              </span>
-            </div>
-            <p className="text-[11px] text-gray-500 mt-2">
-              Recommended for optimal recovery
-            </p>
-            <button
-              onClick={() => openModal({ service: 'Physiotherapy', package: '15 Days Package' })}
-              className="mt-5 w-full bg-primary text-white py-3.5 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-primary-dark transition active:scale-95 shadow-sm"
-            >
-              Book 15 Days Now
-            </button>
-          </div>
+                <div className={`mt-${pkg.isRecommended ? "2" : "3"} flex items-end gap-2`}>
+                  <span className={`${pkg.isRecommended ? "text-3xl" : "text-2xl"} font-normal text-black tracking-tight`}>
+                    ₹{pkg.offerPrice || pkg.basePrice}
+                  </span>
+                  {pkg.offerPrice && pkg.offerPrice !== pkg.basePrice && (
+                    <span className={`text-${pkg.isRecommended ? "sm" : "xs"} text-gray-400 line-through mb-1.5`}>
+                      ₹{pkg.basePrice}
+                    </span>
+                  )}
+                </div>
 
-          {/* Card 4 */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col">
-            <div className="absolute top-0 right-0 bg-amber-50 text-amber-600 font-normal text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-              Best Value | Save ₹3000
-            </div>
-            <h4 className="font-normal text-gray-800 text-base">
-              30 Days Package
-            </h4>
-            <div className="mt-3 flex items-end gap-2">
-              <span className="text-2xl font-normal text-black tracking-tight">
-                ₹9999
-              </span>
-              <span className="text-xs text-gray-400 line-through mb-1.5">
-                ₹12999
-              </span>
-            </div>
-            <button
-              onClick={() => openModal({ service: 'Physiotherapy', package: '30 Days Package' })}
-              className="mt-5 w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-gray-100 transition active:scale-95"
-            >
-              Book 30 Days
-            </button>
-          </div>
+                {pkg.description && (
+                  <p className="text-[11px] text-gray-500 mt-2 whitespace-pre-wrap">
+                    {pkg.description}
+                  </p>
+                )}
 
-          {/* Card 5 */}
-          <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col">
-            <div className="absolute top-0 right-0 bg-blue-50 text-blue-600 font-normal text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-              Same Day Service
-            </div>
-            <h4 className="font-normal text-gray-800 text-base">
-              Emergency Visit
-            </h4>
-            <div className="mt-3 flex items-end gap-2">
-              <span className="text-2xl font-normal text-black tracking-tight">
-                ₹799
-              </span>
-              <span className="text-xs text-gray-400 line-through mb-1.5">
-                ₹1499
-              </span>
-            </div>
-            <Link
-              href={`/book?service=physiotherapy&package=emergency`}
-              className="mt-5 w-full bg-gray-50 text-gray-700 py-3 rounded-xl text-sm font-normal flex items-center justify-center hover:bg-gray-100 transition active:scale-95"
-            >
-              Request Emergency
-            </Link>
+                <button
+                  onClick={() => openModal({ service: 'Physiotherapy', package: pkg.title })}
+                  className={`mt-5 w-full py-3 rounded-xl text-sm font-normal flex items-center justify-center transition active:scale-95 ${pkg.isRecommended ? "bg-primary text-white hover:bg-primary-dark shadow-sm py-3.5" : "bg-gray-50 text-gray-700 hover:bg-gray-100"}`}
+                >
+                  {pkg.isRecommended ? `Book ${pkg.title} Now` : `Book ${pkg.title}`}
+                </button>
+              </div>
+            ))}
           </div>
-        </div>
+        )}
       </section>
 
       <PhysiotherapyCenters />
