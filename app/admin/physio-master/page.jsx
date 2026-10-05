@@ -196,16 +196,16 @@ export default function PhysioMasterData() {
   };
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Physiotherapy Master Data</h1>
-        <button onClick={fetchData} className="flex items-center gap-2 bg-blue-50 text-blue-600 px-4 py-2 rounded-lg hover:bg-blue-100">
+    <div className="p-3 sm:p-6 max-w-7xl mx-auto">
+      <div className="flex flex-wrap gap-4 justify-between items-center mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold">Physiotherapy Master Data</h1>
+        <button onClick={fetchData} className="flex items-center gap-2 bg-blue-50 text-blue-600 px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-100 whitespace-nowrap text-sm sm:text-base">
           <RefreshCw size={18} /> Refresh
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-4 border-b mb-6">
+      <div className="flex gap-4 border-b mb-6 overflow-x-auto whitespace-nowrap pb-1">
         {tabs.map(tab => (
           <button
             key={tab.id}
@@ -223,16 +223,16 @@ export default function PhysioMasterData() {
       {loading ? (
         <div className="text-center py-20">Loading data...</div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border p-6 relative">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold capitalize">{activeTab}</h2>
-            <button onClick={() => handleOpenModal()} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+        <div className="bg-white rounded-xl shadow-sm border p-3 sm:p-6 relative">
+          <div className="flex flex-wrap gap-4 justify-between items-center mb-6">
+            <h2 className="text-lg sm:text-xl font-semibold capitalize">{activeTab}</h2>
+            <button onClick={() => handleOpenModal()} className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 whitespace-nowrap text-sm sm:text-base">
               <Plus size={18} /> Add New
             </button>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse min-w-[600px]">
               <thead>
                 <tr className="bg-gray-50 border-b">
                   <th className="p-3 font-medium text-gray-600 w-12">Order</th>
