@@ -20,6 +20,8 @@ import {
   User,
   LogOut,
   LayoutDashboard,
+  CreditCard,
+  Sparkles,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useBookingModal } from "@/context/BookingModalContext";
@@ -84,6 +86,7 @@ const services = [
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Services", href: "/services", hasSubmenu: true },
+  { label: "Free Health Card", href: "/health-card" },
   { label: "Our Team", href: "/our-medical-team" },
   { label: "Lab Tests", href: "/services/lab-test" },
   { label: "About", href: "/about" },
@@ -774,6 +777,20 @@ export default function Navbar() {
                   </a>
                 )
               )}
+
+              {/* FREE HEALTH CARD CTA BUTTON */}
+              <Link
+                href="/health-card"
+                id="header-free-health-card-btn"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-bold text-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] shadow-md shadow-emerald-800/20"
+                style={{
+                  background: "linear-gradient(135deg, #006837, #004d26)",
+                  border: "1px solid #00843D"
+                }}
+              >
+                <CreditCard className="w-4 h-4 text-emerald-300" />
+                <span>FREE Health Card</span>
+              </Link>
 
               <button
                 id="book-appointment-btn"

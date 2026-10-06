@@ -28,6 +28,8 @@ import { useRouter } from "next/navigation";
 
 const sidebarLinks = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Health Cards & 360°", href: "/admin/health-cards", icon: CreditCard },
+  { label: "Camp Management", href: "/admin/camps", icon: Activity },
   { label: "Bookings", href: "/admin/appointments", icon: CalendarCheck },
   { label: "Payments", href: "/admin/payments", icon: CreditCard },
   { label: "Staff Directory", href: "/admin/staff", icon: UserPlus },

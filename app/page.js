@@ -16,6 +16,7 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 import FAQSection from "@/components/FAQSection";
 import BookingForm from "@/components/BookingForm";
 import GalleryCarousel from "@/components/GalleryCarousel";
+import FreeHealthCardBanner from "@/components/FreeHealthCardBanner";
 
 const homeFaqs = [
   { q: "Q1. Kya sach me doctor ghar par available hai 24/7?", a: "Haan, Dr Jhatka Medicare me 24/7 doctor support available hai. Emergency aur urgent cases me nearest available doctor ko turant assign kiya jata hai." },
@@ -30,6 +31,7 @@ export default function Home() {
     <main className="min-h-screen bg-white pb-20">
       <Header />
       <HeroCarousel />
+      <FreeHealthCardBanner />
       <ServicesGrid />
       <StatsStrip />
       <WhyChooseUs />
