@@ -1,0 +1,11 @@
+{
+  "database": "jataka-claude",
+  "backedUpAt": "2026-10-06T12:18:36.855Z",
+  "totalDocuments": 22,
+  "collections": [
+    "servicepackages",
+    "ambulancepackages",
+    "ambulances"
+  ],
+  "sourceUri": "mongodb+srv:***@cluster0.fhbeqyk.mongodb.net/?appName=Cluster0"
+}

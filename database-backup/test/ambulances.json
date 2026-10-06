@@ -1,0 +1,1 @@
+[{"_id":{"$oid":"69f9b66a5bf35b2ad73df7da"},"name":"Arjunganj ","city":"Lucknow","status":"available","eta":"10 - 15 Min","icon":"Building2","badge":"AVAILABLE","verified":true,"createdAt":{"$date":{"$numberLong":"1777972842871"}},"updatedAt":{"$date":{"$numberLong":"1777972842871"}},"__v":{"$numberInt":"0"}}]

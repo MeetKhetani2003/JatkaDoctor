@@ -1,0 +1,22 @@
+{
+  "database": "TestingPersonal",
+  "backedUpAt": "2026-10-06T12:18:36.568Z",
+  "totalDocuments": 9,
+  "collections": [
+    "Blog",
+    "Project",
+    "SeoMetadata",
+    "ContactInquiry",
+    "ProjectCategory",
+    "AnalyticsEvent",
+    "Testimonial",
+    "BlogCategory",
+    "Visitor",
+    "Session",
+    "User",
+    "MediaAsset",
+    "PricingPackage",
+    "PricingInquiry"
+  ],
+  "sourceUri": "mongodb+srv:***@cluster0.fhbeqyk.mongodb.net/?appName=Cluster0"
+}

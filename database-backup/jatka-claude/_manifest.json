@@ -1,0 +1,18 @@
+{
+  "database": "jatka-claude",
+  "backedUpAt": "2026-10-06T12:18:37.379Z",
+  "totalDocuments": 0,
+  "collections": [
+    "staffs",
+    "doctors",
+    "appointments",
+    "ambulances",
+    "partnerregistrations",
+    "servicepackages",
+    "physiocenters",
+    "blogs",
+    "categories",
+    "galleries"
+  ],
+  "sourceUri": "mongodb+srv:***@cluster0.fhbeqyk.mongodb.net/?appName=Cluster0"
+}

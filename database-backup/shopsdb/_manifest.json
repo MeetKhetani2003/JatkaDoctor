@@ -1,0 +1,9 @@
+{
+  "database": "shopsdb",
+  "backedUpAt": "2026-10-06T12:18:48.526Z",
+  "totalDocuments": 1,
+  "collections": [
+    "shops"
+  ],
+  "sourceUri": "mongodb+srv:***@cluster0.fhbeqyk.mongodb.net/?appName=Cluster0"
+}

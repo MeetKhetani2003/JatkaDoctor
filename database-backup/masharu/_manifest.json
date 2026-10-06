@@ -1,0 +1,13 @@
+{
+  "database": "masharu",
+  "backedUpAt": "2026-10-06T12:18:37.654Z",
+  "totalDocuments": 3,
+  "collections": [
+    "inquiries",
+    "products",
+    "testimonials",
+    "services",
+    "heroslides"
+  ],
+  "sourceUri": "mongodb+srv:***@cluster0.fhbeqyk.mongodb.net/?appName=Cluster0"
+}

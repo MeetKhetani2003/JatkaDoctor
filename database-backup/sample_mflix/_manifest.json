@@ -1,0 +1,14 @@
+{
+  "database": "sample_mflix",
+  "backedUpAt": "2026-10-06T12:18:48.440Z",
+  "totalDocuments": 67661,
+  "collections": [
+    "movies",
+    "sessions",
+    "users",
+    "comments",
+    "theaters",
+    "embedded_movies"
+  ],
+  "sourceUri": "mongodb+srv:***@cluster0.fhbeqyk.mongodb.net/?appName=Cluster0"
+}
