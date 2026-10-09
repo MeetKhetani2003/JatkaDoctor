@@ -23,7 +23,8 @@ import {
   Layers,
   ChevronRight,
   ShieldCheck,
-  Stethoscope
+  Stethoscope,
+  Trash2
 } from "lucide-react";
 import HealthCard from "@/components/HealthCard";
 
@@ -152,6 +153,32 @@ export default function HealthCardsAdminPage() {
       setActionMsg("Error triggering resend");
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  // Completely Delete Patient
+  const handleDeletePatient = async (patientId) => {
+    if (!window.confirm("Are you sure you want to permanently delete this Health Card? This action cannot be undone.")) {
+      return;
+    }
+    
+    try {
+      const res = await fetch(`/api/admin/health-cards/${patientId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        alert("Health Card completely deleted.");
+        if (selectedPatientId === patientId) {
+          setSelectedPatientId(null);
+        }
+        fetchPatients();
+      } else {
+        alert(data.message || "Failed to delete Health Card");
+      }
+    } catch (err) {
+      alert("An error occurred while deleting the Health Card.");
     }
   };
 
@@ -349,13 +376,22 @@ export default function HealthCardsAdminPage() {
                       </span>
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      <button
-                        onClick={() => handleOpenPatient360(p.patientId)}
-                        className="px-3 py-1.5 bg-[#006837] hover:bg-[#004d26] text-white rounded-lg text-xs font-bold transition inline-flex items-center gap-1 shadow-xs"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                        <span>360° Profile</span>
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleOpenPatient360(p.patientId)}
+                          className="px-3 py-1.5 bg-[#006837] hover:bg-[#004d26] text-white rounded-lg text-xs font-bold transition inline-flex items-center gap-1 shadow-xs"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>360° Profile</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeletePatient(p.patientId)}
+                          className="p-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition"
+                          title="Delete Card"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

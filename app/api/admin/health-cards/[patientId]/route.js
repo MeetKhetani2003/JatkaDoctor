@@ -139,3 +139,24 @@ export async function PATCH(req, context) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE(req, context) {
+  try {
+    const params = await context.params;
+    const patientId = params.patientId;
+
+    await dbConnect();
+    const patient = await Patient.findOne({ patientId });
+    if (!patient) {
+      return NextResponse.json({ success: false, message: 'Patient not found' }, { status: 404 });
+    }
+
+    // Completely remove the patient profile
+    await Patient.deleteOne({ patientId });
+
+    return NextResponse.json({ success: true, message: 'Patient Health Card completely deleted' });
+  } catch (error) {
+    console.error('Delete patient error:', error);
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  }
+}

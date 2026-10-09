@@ -73,6 +73,7 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
       const dataUrl = await htmlToImage.toPng(targetEl, {
         pixelRatio: 3,
         quality: 1,
+        cacheBust: true,
       });
 
       const link = document.createElement("a");
@@ -97,8 +98,8 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
 
       if (!frontRef.current || !backRef.current) return;
 
-      const frontImg = await htmlToImage.toPng(frontRef.current, { pixelRatio: 4 });
-      const backImg = await htmlToImage.toPng(backRef.current, { pixelRatio: 4 });
+      const frontImg = await htmlToImage.toPng(frontRef.current, { pixelRatio: 4, cacheBust: true });
+      const backImg = await htmlToImage.toPng(backRef.current, { pixelRatio: 4, cacheBust: true });
 
       // Create PDF in landscape matching standard CR80 PVC dimensions (85.6mm x 53.98mm)
       const pdf = new jsPDF({
@@ -358,7 +359,8 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
                   <div className="w-16 h-18 sm:w-20 sm:h-24 rounded-xl overflow-hidden border-2 border-[#006837] bg-emerald-50 shadow-sm flex items-center justify-center">
                     {patient.photo ? (
                       <img
-                        src={patient.photo}
+                        src={patient.photo.startsWith('/') ? `${baseUrl}${patient.photo}` : patient.photo}
+                        crossOrigin="anonymous"
                         alt={patient.name}
                         className="w-full h-full object-cover"
                       />
@@ -371,86 +373,79 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
                   </div>
                 </div>
 
-                {/* Middle: Patient Dynamic Information (Only filled fields shown, NO NA/blank labels!) */}
-                <div className="col-span-5 sm:col-span-5 flex flex-col justify-center text-[10px] sm:text-[11.5px] space-y-0.5 sm:space-y-1">
+                {/* Middle: Patient Dynamic Information */}
+                <div className="col-span-5 sm:col-span-5 flex flex-col justify-center text-[9px] sm:text-[10px] space-y-1 sm:space-y-1.5 text-gray-800 font-medium">
                   
-                  {/* Patient Name */}
-                  <div className="leading-tight">
-                    <span className="text-[9px] sm:text-[10px] text-gray-400 font-medium block">
-                      Patient Name
-                    </span>
-                    <span className="text-xs sm:text-sm font-extrabold text-gray-900 line-clamp-1">
+                  {/* Grid for Label : Value layout */}
+                  <div className="grid grid-cols-[60px_5px_1fr] sm:grid-cols-[70px_8px_1fr] items-center gap-y-1 sm:gap-y-1.5">
+                    
+                    {/* Name */}
+                    <div className="text-gray-600">Name</div>
+                    <div>:</div>
+                    <div className="font-extrabold text-gray-900 truncate">
                       {patient.name}
-                    </span>
-                  </div>
+                    </div>
 
-                  {/* Permanent Patient ID */}
-                  <div className="flex items-center gap-1.5 pt-0.5">
-                    <span className="text-[9px] sm:text-[10px] font-semibold text-gray-500">
-                      Patient ID:
-                    </span>
-                    <span className="bg-[#004d26] text-white text-[9.5px] sm:text-[11px] font-black px-2 py-0.5 rounded shadow-sm tracking-wide">
-                      {patient.patientId}
-                    </span>
-                  </div>
-
-                  {/* Family ID (Only if available) */}
-                  {patient.familyId && (
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[9px] sm:text-[10px] font-semibold text-gray-500">
-                        Family ID:
-                      </span>
-                      <span className="bg-emerald-100 text-emerald-900 text-[9px] sm:text-[10.5px] font-bold px-1.5 py-0.2 rounded border border-emerald-300">
-                        {patient.familyId}
+                    {/* Patient ID */}
+                    <div className="text-gray-600">Patient ID</div>
+                    <div>:</div>
+                    <div>
+                      <span className="inline-block bg-[#dcfce7] text-[#006837] font-black px-1.5 py-0.5 rounded shadow-sm tracking-wide">
+                        {patient.patientId}
                       </span>
                     </div>
-                  )}
 
-                  {/* Mobile (Only if provided) */}
-                  {patient.mobile && (
-                    <div className="flex items-center gap-1.5 text-gray-700">
-                      <span className="text-[9px] sm:text-[10px] font-semibold text-gray-500">
-                        Mobile:
-                      </span>
-                      <span className="font-bold">
-                        +91 {patient.mobile.slice(-10)}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Age & Gender Row (Only if provided) */}
-                  {(patient.age || patient.gender) && (
-                    <div className="flex items-center gap-3 text-gray-700">
-                      {patient.age ? (
+                    {/* Family ID (Only if available) */}
+                    {patient.familyId && (
+                      <>
+                        <div className="text-gray-600">Family ID</div>
+                        <div>:</div>
                         <div>
-                          <span className="text-[9px] sm:text-[10px] font-semibold text-gray-500">
-                            Age:{" "}
+                          <span className="inline-block bg-[#dcfce7] text-[#006837] font-bold px-1.5 py-0.5 rounded shadow-sm tracking-wide">
+                            {patient.familyId}
                           </span>
-                          <span className="font-bold">{patient.age} Yrs</span>
                         </div>
-                      ) : null}
-                      {patient.gender ? (
-                        <div>
-                          <span className="text-[9px] sm:text-[10px] font-semibold text-gray-500">
-                            Gender:{" "}
-                          </span>
-                          <span className="font-bold">{patient.gender}</span>
-                        </div>
-                      ) : null}
-                    </div>
-                  )}
+                      </>
+                    )}
 
-                  {/* Blood Group (Only if provided, without NA!) */}
-                  {patient.bloodGroup && (
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[9px] sm:text-[10px] font-semibold text-gray-500">
-                        Blood Group:
-                      </span>
-                      <span className="text-red-700 font-extrabold bg-red-50 border border-red-200 px-1.5 py-0.2 rounded text-[9.5px]">
-                        {patient.bloodGroup}
-                      </span>
-                    </div>
-                  )}
+                    {/* Mobile */}
+                    {patient.mobile && (
+                      <>
+                        <div className="text-gray-600">Mobile</div>
+                        <div>:</div>
+                        <div className="font-bold">
+                          +91 {patient.mobile.slice(-10)}
+                        </div>
+                      </>
+                    )}
+
+                    {/* Age */}
+                    {patient.age && (
+                      <>
+                        <div className="text-gray-600">Age</div>
+                        <div>:</div>
+                        <div className="font-bold">{patient.age} {isNaN(Number(patient.age)) ? "" : "Years"}</div>
+                      </>
+                    )}
+
+                    {/* Gender */}
+                    {patient.gender && (
+                      <>
+                        <div className="text-gray-600">Gender</div>
+                        <div>:</div>
+                        <div className="font-bold">{patient.gender}</div>
+                      </>
+                    )}
+
+                    {/* Blood Group */}
+                    {patient.bloodGroup && (
+                      <>
+                        <div className="text-gray-600">Blood Group</div>
+                        <div>:</div>
+                        <div className="font-bold">{patient.bloodGroup}</div>
+                      </>
+                    )}
+                  </div>
                 </div>
 
                 {/* Right: Unique QR Code Box + Status Badge */}

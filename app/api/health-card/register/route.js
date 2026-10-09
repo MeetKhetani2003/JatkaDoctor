@@ -8,6 +8,7 @@ import Notification from '@/lib/models/Notification';
 import { generatePatientId, generateFamilyId, generateSecureToken } from '@/lib/idGenerator';
 import { sendHealthCardWhatsApp } from '@/lib/whatsapp';
 import { sendHealthCardEmail } from '@/lib/mail';
+import { uploadToGridFS } from '@/lib/gridfs';
 
 export async function POST(req) {
   try {
@@ -23,7 +24,20 @@ export async function POST(req) {
       return NextResponse.json({ success: false, message: 'Patient Name is required' }, { status: 400 });
     }
 
-    // 1. Check for Duplicate Patient by mobile number
+    // 1. Process Base64 Photo to GridFS first
+    let photoUrl = undefined;
+    if (body.photo && body.photo.startsWith('data:image')) {
+      const match = body.photo.match(/^data:(image\/\w+);base64,(.+)$/);
+      if (match) {
+        const contentType = match[1];
+        const base64Data = match[2];
+        const buffer = Buffer.from(base64Data, 'base64');
+        const fileId = await uploadToGridFS(buffer, `passport_${Date.now()}`, contentType);
+        photoUrl = `/api/images/${fileId}`;
+      }
+    }
+
+    // 2. Check for Duplicate Patient by mobile number
     const existingPatient = await Patient.findOne({ 
       $or: [
         { mobile: cleanMobile },
@@ -76,6 +90,12 @@ export async function POST(req) {
         }
       }
 
+      // Update the photo if they provided a new one
+      if (photoUrl) {
+        existingPatient.photo = photoUrl;
+        await existingPatient.save();
+      }
+
       // Return existing patient info - No duplicate patient ID is created!
       return NextResponse.json({
         success: true,
@@ -93,7 +113,7 @@ export async function POST(req) {
     }
     const qrToken = generateSecureToken();
 
-    // 3. Compute Age & Senior Citizen Eligibility
+    // 4. Compute Age & Senior Citizen Eligibility
     let calculatedAge = body.age ? parseInt(body.age, 10) : undefined;
     if (!calculatedAge && body.dob) {
       const birthYear = new Date(body.dob).getFullYear();
@@ -120,7 +140,7 @@ export async function POST(req) {
       area: body.area || undefined,
       address: body.address || undefined,
       pincode: body.pincode || undefined,
-      photo: body.photo || undefined,
+      photo: photoUrl || undefined,
       
       // Emergency Contact
       emergencyContactName: body.emergencyContactName || undefined,

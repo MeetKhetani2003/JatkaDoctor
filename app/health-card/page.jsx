@@ -32,7 +32,7 @@ function HealthCardRegistrationContent() {
 
   // Step state: 1 = Mobile & OTP, 2 = Details Form, 3 = Card Issued
   const [step, setStep] = useState(1);
-  const [mobile, setMobile] = useState("");
+  const [emailAuth, setEmailAuth] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
@@ -70,24 +70,24 @@ function HealthCardRegistrationContent() {
 
   const [formLoading, setFormLoading] = useState(false);
   const [formError, setFormError] = useState("");
+  const [photoPreview, setPhotoPreview] = useState(null);
 
-  // Keep mobile in formData in sync
+  // Keep email in formData in sync
   useEffect(() => {
-    if (mobile) {
+    if (emailAuth) {
       setFormData((prev) => ({
         ...prev,
-        mobile,
-        whatsappNumber: prev.sameAsMobile ? mobile : prev.whatsappNumber,
+        email: emailAuth,
       }));
     }
-  }, [mobile]);
+  }, [emailAuth]);
 
   // Request OTP
   const handleSendOtp = async (e) => {
     if (e) e.preventDefault();
-    const clean = mobile.replace(/[^0-9]/g, "").slice(-10);
-    if (clean.length < 10) {
-      setOtpError("Please enter a valid 10-digit mobile number");
+    const clean = emailAuth.trim().toLowerCase();
+    if (!clean || !clean.includes("@")) {
+      setOtpError("Please enter a valid email address");
       return;
     }
 
@@ -97,7 +97,7 @@ function HealthCardRegistrationContent() {
       const res = await fetch("/api/health-card/otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobile: clean }),
+        body: JSON.stringify({ email: clean }),
       });
       const data = await res.json();
       if (data.success) {
@@ -105,6 +105,10 @@ function HealthCardRegistrationContent() {
         setDemoOtpHint(data.otp || "123456");
       } else {
         setOtpError(data.message || "Failed to send OTP");
+        if (data.isExisting) {
+            // Show toast/message that card already exists
+            alert("A Health Card already exists for this email address. Please login.");
+        }
       }
     } catch (err) {
       setOtpError("Network error. Please try again.");
@@ -116,7 +120,7 @@ function HealthCardRegistrationContent() {
   // Verify OTP
   const handleVerifyOtp = async (e) => {
     if (e) e.preventDefault();
-    const clean = mobile.replace(/[^0-9]/g, "").slice(-10);
+    const clean = emailAuth.trim().toLowerCase();
     if (!otp || otp.length < 4) {
       setOtpError("Please enter the verification OTP");
       return;
@@ -128,20 +132,13 @@ function HealthCardRegistrationContent() {
       const res = await fetch("/api/health-card/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mobile: clean, otp: otp.trim() }),
+        body: JSON.stringify({ email: clean, otp: otp.trim() }),
       });
       const data = await res.json();
 
       if (data.success) {
-        if (data.isExisting && data.patient) {
-          // Existing Patient Found! Directly view card
-          setActivePatient(data.patient);
-          setExistingFound(true);
-          setStep(3);
-        } else {
-          // New Patient -> Go to Step 2 Details Form
-          setStep(2);
-        }
+        // New Patient -> Go to Step 2 Details Form
+        setStep(2);
       } else {
         setOtpError(data.message || "Invalid OTP code");
       }
@@ -170,10 +167,9 @@ function HealthCardRegistrationContent() {
     try {
       const payload = {
         ...formData,
-        mobile: mobile.replace(/[^0-9]/g, "").slice(-10),
         whatsappNumber: formData.sameAsMobile
-          ? mobile.replace(/[^0-9]/g, "").slice(-10)
-          : (formData.whatsappNumber || mobile).replace(/[^0-9]/g, "").slice(-10),
+          ? formData.mobile
+          : formData.whatsappNumber,
         source: sourceParam,
         campId: campParam || undefined,
         registeredBy: campParam ? "Camp Self QR" : "Website Registration",
@@ -240,7 +236,7 @@ function HealthCardRegistrationContent() {
             }`}
           >
             <span>1</span>
-            <span>Mobile & OTP</span>
+            <span>Email & OTP</span>
           </div>
           <span className="text-gray-300">──</span>
           <div
@@ -278,10 +274,10 @@ function HealthCardRegistrationContent() {
                 <CreditCard className="w-7 h-7" />
               </div>
               <h2 className="text-lg sm:text-xl font-bold text-gray-900">
-                Enter Mobile Number
+                Enter Email Address
               </h2>
               <p className="text-xs text-gray-500 mt-1">
-                We will send an instant OTP to verify your account
+                We will send an instant OTP to your email to verify your account
               </p>
             </div>
 
@@ -296,19 +292,18 @@ function HealthCardRegistrationContent() {
               <form onSubmit={handleSendOtp} className="space-y-4">
                 <div>
                   <label className="block text-xs font-bold text-gray-700 mb-1.5">
-                    10-Digit Mobile Number
+                    Email Address
                   </label>
                   <div className="relative">
                     <span className="absolute left-3.5 top-3 text-sm font-bold text-gray-400">
-                      +91
+                      <Mail className="w-4 h-4" />
                     </span>
                     <input
-                      type="tel"
-                      maxLength={10}
-                      value={mobile}
-                      onChange={(e) => setMobile(e.target.value.replace(/[^0-9]/g, ""))}
-                      placeholder="9876543210"
-                      className="w-full pl-14 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837] transition"
+                      type="email"
+                      value={emailAuth}
+                      onChange={(e) => setEmailAuth(e.target.value.toLowerCase())}
+                      placeholder="name@example.com"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837] transition"
                       autoFocus
                     />
                   </div>
@@ -316,7 +311,7 @@ function HealthCardRegistrationContent() {
 
                 <button
                   type="submit"
-                  disabled={otpLoading || mobile.length < 10}
+                  disabled={otpLoading || !emailAuth.includes("@")}
                   className="w-full py-3 bg-[#006837] hover:bg-[#004d26] text-white rounded-xl text-sm font-bold shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {otpLoading ? "Sending OTP..." : "Continue with OTP"}
@@ -335,7 +330,7 @@ function HealthCardRegistrationContent() {
                       onClick={() => setOtpSent(false)}
                       className="text-[11px] text-[#006837] hover:underline font-semibold"
                     >
-                      Change Number ({mobile})
+                      Change Email ({emailAuth})
                     </button>
                   </div>
                   <input
@@ -390,7 +385,7 @@ function HealthCardRegistrationContent() {
                   Health Card Registration
                 </h2>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  Mobile Verified: <strong className="text-[#006837]">+91 {mobile}</strong>
+                  Email Verified: <strong className="text-[#006837]">{emailAuth}</strong>
                 </p>
               </div>
               <button
@@ -472,6 +467,22 @@ function HealthCardRegistrationContent() {
                     />
                   </div>
 
+                  {/* Mobile Number */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Mobile Number <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      maxLength={10}
+                      value={formData.mobile}
+                      onChange={(e) => setFormData({ ...formData, mobile: e.target.value.replace(/[^0-9]/g, "") })}
+                      placeholder="e.g. 9876543210"
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
+                    />
+                  </div>
+
                   {/* WhatsApp Number */}
                   <div className="sm:col-span-2">
                     <div className="flex items-center gap-2 mb-1.5">
@@ -485,7 +496,7 @@ function HealthCardRegistrationContent() {
                         className="rounded text-[#006837] focus:ring-[#006837]"
                       />
                       <label htmlFor="sameAsMobile" className="text-xs text-gray-700 font-medium">
-                        WhatsApp number is same as Mobile (+91 {mobile})
+                        WhatsApp number is same as Mobile
                       </label>
                     </div>
 
@@ -505,15 +516,59 @@ function HealthCardRegistrationContent() {
                   {/* Email */}
                   <div className="sm:col-span-2">
                     <label className="block text-xs font-bold text-gray-700 mb-1">
-                      Email Address <span className="text-gray-400 font-normal">(Optional - for card delivery)</span>
+                      Email Address
                     </label>
                     <input
                       type="email"
                       value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="name@example.com"
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
+                      disabled
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-500 text-sm focus:outline-none"
                     />
+                  </div>
+                  
+                  {/* Passport Photo */}
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                      Passport Size Photo <span className="text-red-500">*</span> <span className="text-gray-400 font-normal">(Max 30KB)</span>
+                    </label>
+                    <div className="flex items-center gap-4">
+                      {photoPreview ? (
+                        <div className="w-16 h-16 rounded overflow-hidden border border-gray-300 shrink-0">
+                          <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <div className="w-16 h-16 rounded border border-gray-300 bg-gray-50 flex items-center justify-center shrink-0">
+                          <User className="w-6 h-6 text-gray-300" />
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          required
+                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition-all cursor-pointer"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (!file) return;
+                            
+                            if (file.size > 30 * 1024) {
+                              setFormError("Image size must be less than 30KB. Please compress your image.");
+                              e.target.value = "";
+                              setPhotoPreview(null);
+                              return;
+                            }
+                            
+                            setFormError("");
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setPhotoPreview(reader.result);
+                              setFormData({ ...formData, photo: reader.result });
+                            };
+                            reader.readAsDataURL(file);
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
