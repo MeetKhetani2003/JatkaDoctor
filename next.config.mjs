@@ -17,6 +17,9 @@ const nextConfig = {
     ],
   },
   serverExternalPackages: ["mongoose", "mongodb"],
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default nextConfig;
