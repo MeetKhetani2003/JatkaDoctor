@@ -23,6 +23,7 @@ import FAQSection from "@/components/FAQSection";
 import BookingForm from "@/components/BookingForm";
 import GalleryCarousel from "@/components/GalleryCarousel";
 import FreeHealthCardBanner from "@/components/FreeHealthCardBanner";
+import UpcomingCampBanner from "@/components/UpcomingCampBanner";
 
 const homeFaqs = [
   { q: "Q1. Kya sach me doctor ghar par available hai 24/7?", a: "Haan, Dr Jhatka Medicare me 24/7 doctor support available hai. Emergency aur urgent cases me nearest available doctor ko turant assign kiya jata hai." },
@@ -41,9 +42,11 @@ export default function Home() {
       <HeroCarousel />
       {/* 1. Dynamic Search Bar immediately below Hero */}
       <HeroSearchBar onOpenPrescriptionModal={() => setIsPrescriptionModalOpen(true)} />
-      {/* 2. Quick Actions Section featuring Upload Prescription */}
-      <QuickActions onOpenPrescriptionModal={() => setIsPrescriptionModalOpen(true)} />
+      {/* 2. Upcoming Free Medical & Physiotherapy Camp Banner */}
+      <UpcomingCampBanner />
       <FreeHealthCardBanner />
+      {/* 3. Quick Actions Section featuring Upload Prescription */}
+      <QuickActions onOpenPrescriptionModal={() => setIsPrescriptionModalOpen(true)} />
       <ServicesGrid />
       <StatsStrip />
       <WhyChooseUs />

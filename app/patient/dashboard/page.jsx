@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   CreditCard,
@@ -55,6 +56,12 @@ function PatientDashboardContent() {
   const [bookings, setBookings] = useState([]);
   const [payments, setPayments] = useState([]);
   const [notifications, setNotifications] = useState([]);
+
+  // Medical Camps State
+  const [campsList, setCampsList] = useState([]);
+  const [registeredCampIds, setRegisteredCampIds] = useState([]);
+  const [campRegisteringId, setCampRegisteringId] = useState(null);
+  const [campFeedbackMsg, setCampFeedbackMsg] = useState("");
 
   // Modals
   const [showEditProfile, setShowEditProfile] = useState(false);
@@ -137,11 +144,55 @@ function PatientDashboardContent() {
             setFamilyData({ family: famData.family, members: famData.members || [] });
           }
         }
+
+        // Fetch upcoming & active medical camps
+        try {
+          const campPId = data.patient.patientId;
+          const campsRes = await fetch(`/api/camps?patientId=${campPId}`);
+          const campsData = await campsRes.json();
+          if (campsData.success) {
+            setCampsList(campsData.camps || []);
+            setRegisteredCampIds(campsData.registeredCampIds || []);
+          }
+        } catch (cErr) {
+          console.error("Fetch camps error:", cErr);
+        }
       }
     } catch (err) {
       console.error("Dashboard load error:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 1-Click Camp Registration Handler
+  const handleRegisterForCamp = async (campId) => {
+    if (!patientData) return;
+    setCampRegisteringId(campId);
+    setCampFeedbackMsg("");
+    try {
+      const res = await fetch("/api/camps/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          campId,
+          patientId: patientData.patientId,
+          name: patientData.name,
+          mobile: patientData.mobile,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setRegisteredCampIds((prev) => [...prev, campId]);
+        setCampFeedbackMsg("🎉 Registration Successful! Your Health Card ID is your Camp Entry Pass.");
+        setTimeout(() => setCampFeedbackMsg(""), 5000);
+      } else {
+        setCampFeedbackMsg(data.message || "Camp registration failed");
+      }
+    } catch {
+      setCampFeedbackMsg("Failed to register for camp. Please try again.");
+    } finally {
+      setCampRegisteringId(null);
     }
   };
 
@@ -374,6 +425,7 @@ function PatientDashboardContent() {
   const tabs = [
     { id: "card", label: "My Health Card", icon: CreditCard },
     { id: "profile", label: "My Profile", icon: User },
+    { id: "camps", label: "Free Health Camps", icon: Stethoscope, badge: campsList.length || null, highlight: "Free Camps" },
     { id: "family", label: "My Family", icon: Users, badge: familyData.members.length || null },
     { id: "bookings", label: "My Bookings", icon: CalendarCheck, badge: bookings.length || null },
     { id: "health", label: "My Health Records", icon: Activity, badge: campVisits.length || null },
@@ -473,6 +525,43 @@ function PatientDashboardContent() {
         {/* ============================================================== */}
         {activeTab === "card" && (
           <div className="space-y-6">
+            {/* Upcoming Camp Highlight Banner */}
+            {campsList.length > 0 && (
+              <div className="bg-gradient-to-r from-emerald-800 via-[#006837] to-teal-800 text-white p-4 sm:p-5 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-emerald-500/30">
+                <div className="flex items-start sm:items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+                    <Stethoscope className="w-5 h-5 text-emerald-200" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="bg-red-500 text-white text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full">
+                        📢 UPCOMING FREE CAMP
+                      </span>
+                      <span className="text-xs font-extrabold text-emerald-100">
+                        {campsList[0].city || "Lucknow"}
+                      </span>
+                    </div>
+                    <h4 className="text-sm sm:text-base font-black leading-snug">
+                      {campsList[0].name}
+                    </h4>
+                    <p className="text-xs text-emerald-100/90 mt-0.5">
+                      📅 {campsList[0].date} ({campsList[0].time}) • 📍 {campsList[0].location}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => setActiveTab("camps")}
+                    className="px-4 py-2.5 bg-white text-[#006837] hover:bg-emerald-50 rounded-xl text-xs font-black shadow-sm transition active:scale-95 flex items-center gap-1.5"
+                  >
+                    <span>View Camps & Register</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
               <div>
                 <h2 className="text-lg font-extrabold text-gray-900 flex items-center gap-2">
@@ -532,6 +621,43 @@ function PatientDashboardContent() {
         {/* ============================================================== */}
         {activeTab === "profile" && (
           <div className="max-w-4xl mx-auto space-y-6">
+            {/* Upcoming Camp Highlight in Profile */}
+            {campsList.length > 0 && (
+              <div className="bg-gradient-to-r from-emerald-800 via-[#006837] to-teal-800 text-white p-4 sm:p-5 rounded-2xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-emerald-500/30">
+                <div className="flex items-start sm:items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
+                    <Stethoscope className="w-5 h-5 text-emerald-200" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="bg-red-500 text-white text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full">
+                        📢 UPCOMING FREE CAMP
+                      </span>
+                      <span className="text-xs font-extrabold text-emerald-100">
+                        {campsList[0].city || "Lucknow"}
+                      </span>
+                    </div>
+                    <h4 className="text-sm sm:text-base font-black leading-snug">
+                      {campsList[0].name}
+                    </h4>
+                    <p className="text-xs text-emerald-100/90 mt-0.5">
+                      📅 {campsList[0].date} ({campsList[0].time}) • 📍 {campsList[0].location}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => setActiveTab("camps")}
+                    className="px-4 py-2.5 bg-white text-[#006837] hover:bg-emerald-50 rounded-xl text-xs font-black shadow-sm transition active:scale-95 flex items-center gap-1.5"
+                  >
+                    <span>View Camps & Register</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
               <div>
                 <h2 className="text-lg font-bold text-gray-900">Personal & Healthcare Profile</h2>
@@ -640,6 +766,301 @@ function PatientDashboardContent() {
                   )}
                 </span>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB: FREE HEALTH CAMPS */}
+        {/* ============================================================== */}
+        {activeTab === "camps" && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-lg font-extrabold text-gray-900">Dr Jhatka Free Medical Camps</h2>
+                  <span className="bg-red-500 text-white text-[10px] font-black uppercase px-2 py-0.5 rounded-full">
+                    Free Community Service
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  100% Free Blood Pressure, Sugar, BMI checks, Physiotherapy Consultations & Free Digital Health Card for all Lucknow residents.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <a
+                  href="tel:+918874744756"
+                  className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-[#006837] rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200"
+                >
+                  <Phone className="w-3.5 h-3.5" />
+                  <span>Camp Helpline: 8874744756</span>
+                </a>
+              </div>
+            </div>
+
+            {campFeedbackMsg && (
+              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs text-emerald-900 font-bold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#006837] shrink-0" />
+                <span>{campFeedbackMsg}</span>
+              </div>
+            )}
+
+            {/* SECTION 1: UPCOMING & ACTIVE CAMPS LIST */}
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-[#006837]" />
+                  <span>Upcoming & Active Camps in Lucknow</span>
+                </h3>
+                <span className="text-xs text-gray-500">
+                  {campsList.length} Camp{campsList.length === 1 ? "" : "s"} scheduled
+                </span>
+              </div>
+
+              {campsList.length === 0 ? (
+                <div className="bg-white p-8 rounded-3xl border border-gray-100 text-center text-gray-400">
+                  <Stethoscope className="w-10 h-10 mx-auto mb-2 opacity-40 text-emerald-600" />
+                  <p className="text-sm font-bold text-gray-700">No active camps scheduled right now</p>
+                  <p className="text-xs text-gray-500 mt-1">Check back soon! Dr Jhatka Medicare organizes regular health check-up camps across Lucknow.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {campsList.map((c) => {
+                    const isRegistered = registeredCampIds.includes(c.campId);
+                    const isRegistering = campRegisteringId === c.campId;
+                    return (
+                      <div
+                        key={c.campId}
+                        className="bg-white p-5 sm:p-6 rounded-3xl border border-gray-200 shadow-xs hover:border-emerald-300 transition-all flex flex-col justify-between"
+                      >
+                        <div>
+                          {/* Camp Header */}
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                                  c.status === "Active" ? "bg-red-500 text-white" : "bg-emerald-100 text-[#006837]"
+                                }`}>
+                                  {c.status === "Active" ? "LIVE TODAY" : "UPCOMING"}
+                                </span>
+                                <span className="text-[11px] font-mono text-gray-400 font-bold">
+                                  {c.campId}
+                                </span>
+                              </div>
+                              <h4 className="text-base sm:text-lg font-black text-gray-900 leading-snug">
+                                {c.name}
+                              </h4>
+                            </div>
+                            {isRegistered && (
+                              <span className="shrink-0 bg-emerald-100 text-[#006837] text-[11px] font-extrabold px-3 py-1 rounded-full flex items-center gap-1 border border-emerald-300">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Pass Active</span>
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Camp Date, Time, Venue */}
+                          <div className="space-y-2 bg-gray-50 p-3.5 rounded-2xl border border-gray-100 mb-4 text-xs">
+                            <div className="flex items-center gap-2 text-gray-700">
+                              <Calendar className="w-4 h-4 text-[#006837] shrink-0" />
+                              <span className="font-extrabold">{c.date}</span>
+                              <span className="text-gray-400">•</span>
+                              <Clock className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+                              <span>{c.time}</span>
+                            </div>
+                            <div className="flex items-start gap-2 text-gray-700">
+                              <MapPin className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                              <div>
+                                <span className="font-bold text-gray-900">{c.location}</span>
+                                {c.address && (
+                                  <p className="text-[11px] text-gray-500 leading-tight">{c.address}</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Free checks included */}
+                          <div className="mb-4">
+                            <p className="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-2">
+                              Free Screenings & Consultations:
+                            </p>
+                            <div className="flex flex-wrap gap-1.5 text-[11px]">
+                              <span className="bg-emerald-50 text-emerald-800 font-semibold px-2.5 py-1 rounded-lg border border-emerald-100">
+                                Free BP Check
+                              </span>
+                              <span className="bg-emerald-50 text-emerald-800 font-semibold px-2.5 py-1 rounded-lg border border-emerald-100">
+                                Free Sugar (RBS)
+                              </span>
+                              <span className="bg-emerald-50 text-emerald-800 font-semibold px-2.5 py-1 rounded-lg border border-emerald-100">
+                                Free BMI Check
+                              </span>
+                              <span className="bg-emerald-50 text-emerald-800 font-semibold px-2.5 py-1 rounded-lg border border-emerald-100">
+                                Physio Consultation
+                              </span>
+                              <span className="bg-emerald-50 text-emerald-800 font-semibold px-2.5 py-1 rounded-lg border border-emerald-100">
+                                Permanent Health Card
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Staff on Duty */}
+                          {c.assignedStaff && c.assignedStaff.length > 0 && (
+                            <div className="mb-4 text-xs">
+                              <span className="text-[11px] font-bold text-gray-400 block mb-1">Attending Doctors & Staff:</span>
+                              <div className="flex flex-wrap gap-2">
+                                {c.assignedStaff.map((st, idx) => (
+                                  <span key={idx} className="bg-gray-100 text-gray-700 px-2 py-0.5 rounded text-[11px]">
+                                    👨‍⚕️ <strong>{st.name}</strong> ({st.role})
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Card Footer Actions */}
+                        <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
+                          <span className="text-[11px] text-gray-500">
+                            {c.totalRegistered || 0} registered • 100% Free
+                          </span>
+
+                          {isRegistered ? (
+                            <button
+                              onClick={() => setActiveTab("card")}
+                              className="px-4 py-2 bg-emerald-50 text-[#006837] border border-emerald-300 rounded-xl text-xs font-bold hover:bg-emerald-100 transition flex items-center gap-1.5"
+                            >
+                              <CreditCard className="w-3.5 h-3.5" />
+                              <span>Show Health Card ID at Camp</span>
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => handleRegisterForCamp(c.campId)}
+                              disabled={isRegistering}
+                              className="px-5 py-2.5 bg-[#006837] hover:bg-[#00502a] text-white rounded-xl text-xs font-extrabold shadow-sm transition active:scale-95 flex items-center gap-1.5"
+                            >
+                              {isRegistering ? (
+                                <span>Registering...</span>
+                              ) : (
+                                <>
+                                  <span>1-Click Register for Camp</span>
+                                  <ArrowRight className="w-3.5 h-3.5" />
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* SECTION 2: ATTENDED CAMP VISITS & HEALTH VITALS RECORD */}
+            <div className="pt-4 border-t border-gray-200">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-extrabold text-gray-900 uppercase tracking-wider flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-[#006837]" />
+                  <span>My Attended Camp Health Checkup Records</span>
+                </h3>
+                <span className="text-xs text-gray-500">
+                  {campVisits.length} record{campVisits.length === 1 ? "" : "s"}
+                </span>
+              </div>
+
+              {campVisits.length === 0 ? (
+                <div className="bg-white p-8 rounded-3xl border border-gray-100 text-center text-gray-400">
+                  <Activity className="w-10 h-10 mx-auto mb-2 opacity-40 text-emerald-600" />
+                  <p className="text-sm font-bold text-gray-700">No Camp Health Records Yet</p>
+                  <p className="text-xs text-gray-500 mt-1 max-w-md mx-auto">
+                    When you attend any Dr Jhatka Medicare Free Camp, your Blood Pressure, Sugar, BMI and doctor notes will be recorded here automatically under your Health Card ID ({patientData.patientId}).
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {campVisits.map((v, i) => (
+                    <div key={i} className="bg-white p-5 sm:p-6 rounded-3xl border border-gray-100 shadow-xs">
+                      <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-extrabold text-sm text-gray-900">{v.campName || v.campId}</h4>
+                            <span className="bg-emerald-100 text-[#006837] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                              Camp Checkup Verified
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-gray-500">
+                            {new Date(v.visitDate).toLocaleDateString()} • {v.location || "Lucknow"} • Staff: {v.registeredBy || "Camp Medical Staff"}
+                          </p>
+                        </div>
+                        <span className="text-xs font-mono font-bold text-gray-400">
+                          {v.campId}
+                        </span>
+                      </div>
+
+                      {/* Vitals Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5 text-xs mb-4">
+                        <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 text-center">
+                          <span className="text-[10px] text-gray-500 font-bold block">Blood Pressure</span>
+                          <span className="text-sm font-black text-gray-900">
+                            {v.bpSystolic && v.bpDiastolic ? `${v.bpSystolic}/${v.bpDiastolic} mmHg` : "N/A"}
+                          </span>
+                        </div>
+
+                        <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 text-center">
+                          <span className="text-[10px] text-gray-500 font-bold block">Sugar (RBS)</span>
+                          <span className="text-sm font-black text-gray-900">
+                            {v.sugarRBS ? `${v.sugarRBS} mg/dL` : "N/A"}
+                          </span>
+                        </div>
+
+                        <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 text-center">
+                          <span className="text-[10px] text-gray-500 font-bold block">SpO2 Oxygen</span>
+                          <span className="text-sm font-black text-gray-900">
+                            {v.spo2 ? `${v.spo2}%` : "N/A"}
+                          </span>
+                        </div>
+
+                        <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 text-center">
+                          <span className="text-[10px] text-gray-500 font-bold block">Pulse Rate</span>
+                          <span className="text-sm font-black text-gray-900">
+                            {v.pulse ? `${v.pulse} bpm` : "N/A"}
+                          </span>
+                        </div>
+
+                        <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 text-center">
+                          <span className="text-[10px] text-gray-500 font-bold block">Weight / Height</span>
+                          <span className="text-sm font-black text-gray-900">
+                            {v.weight ? `${v.weight} kg` : "N/A"}
+                          </span>
+                        </div>
+
+                        <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 text-center">
+                          <span className="text-[10px] text-gray-500 font-bold block">Body Mass Index</span>
+                          <span className="text-sm font-black text-gray-900">
+                            {v.bmi || "N/A"}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Doctor & Physiotherapy Advice */}
+                      {(v.physiotherapyAdvice || v.doctorNotes) && (
+                        <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-100 text-xs space-y-1">
+                          {v.physiotherapyAdvice && (
+                            <p className="text-emerald-950">
+                              <strong>Physiotherapy Advice:</strong> {v.physiotherapyAdvice}
+                            </p>
+                          )}
+                          {v.doctorNotes && (
+                            <p className="text-gray-700">
+                              <strong>Doctor Notes:</strong> {v.doctorNotes}
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
