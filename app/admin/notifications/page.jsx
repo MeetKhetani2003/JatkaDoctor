@@ -113,6 +113,7 @@ export default function AdminNotificationCenter() {
 
   const tabs = [
     { name: "All", count: unreadCounts.all },
+    { name: "Prescriptions", count: unreadCounts.prescriptions || 0 },
     { name: "Booking Leads", count: unreadCounts.leads },
     { name: "Payments", count: unreadCounts.payments },
     { name: "System", count: unreadCounts.system }
@@ -428,15 +429,28 @@ export default function AdminNotificationCenter() {
                     <span>Email</span>
                   </a>
 
-                  {/* 4. View Booking Details Page */}
-                  <Link
-                    href={`/admin/appointments?search=${encodeURIComponent(notif.bookingId)}`}
-                    onClick={(e) => e.stopPropagation()}
-                    className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-gray-900 hover:bg-black text-white font-semibold text-xs transition-all shadow-sm shadow-black/10 active:scale-95"
-                  >
-                    <Eye className="w-4 h-4" />
-                    <span>View Booking</span>
-                  </Link>
+                  {/* 4. View Booking Details Page or View/Download Prescription */}
+                  {notif.category === 'Prescription' || notif.service === 'Prescription Upload' ? (
+                    <a
+                      href={`/api/prescriptions/${notif.bookingId}/file`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-semibold text-xs transition-all shadow-sm active:scale-95"
+                    >
+                      <FileText className="w-4 h-4" />
+                      <span>View Prescription</span>
+                    </a>
+                  ) : (
+                    <Link
+                      href={`/admin/appointments?search=${encodeURIComponent(notif.bookingId)}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-gray-900 hover:bg-black text-white font-semibold text-xs transition-all shadow-sm shadow-black/10 active:scale-95"
+                    >
+                      <Eye className="w-4 h-4" />
+                      <span>View Booking</span>
+                    </Link>
+                  )}
                 </div>
               </div>
             );

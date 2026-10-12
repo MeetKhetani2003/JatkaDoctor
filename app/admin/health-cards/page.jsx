@@ -463,9 +463,10 @@ export default function HealthCardsAdminPage() {
                   {[
                     { id: "card", label: "Health Card & Delivery" },
                     { id: "profile", label: "Patient Profile" },
+                    { id: "prescriptions", label: `Prescriptions (${(patient360Data.prescriptions || []).length})` },
                     { id: "family", label: `Family Members (${(patient360Data.familyMembers || []).length})` },
                     { id: "visits", label: `Camp & Checks (${(patient360Data.campVisits || []).length})` },
-                    { id: "bookings", label: `Bookings (${(patient360Data.appointments || []).length + (patient360Data.physioBookings || []).length})` },
+                    { id: "bookings", label: `Bookings (${(patient360Data.appointments || []).length + (patient360Data.physioBookings || []).length + (patient360Data.icuRequests || []).length})` },
                     { id: "followups", label: "Follow-up & Notes" },
                     { id: "audit", label: "Audit Trail" },
                   ].map((t) => (
@@ -589,6 +590,86 @@ export default function HealthCardsAdminPage() {
                   </div>
                 )}
 
+                {/* 2.5 PRESCRIPTIONS */}
+                {active360Tab === "prescriptions" && (
+                  <div className="space-y-4">
+                    {(!patient360Data.prescriptions || patient360Data.prescriptions.length === 0) ? (
+                      <div className="p-8 text-center text-xs text-gray-400 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                        No prescriptions uploaded for this patient yet.
+                      </div>
+                    ) : (
+                      patient360Data.prescriptions.map((rx) => (
+                        <div key={rx._id || rx.prescriptionId} className="bg-gray-50/70 p-4 rounded-2xl border border-gray-200 text-xs space-y-3">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold font-mono text-emerald-800 text-sm">
+                                  {rx.prescriptionId}
+                                </span>
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                  rx.status === 'Accepted' ? 'bg-emerald-100 text-emerald-800' :
+                                  rx.status === 'Reviewed' ? 'bg-blue-100 text-blue-800' :
+                                  rx.status === 'Rejected' ? 'bg-rose-100 text-rose-800' :
+                                  'bg-amber-100 text-amber-800'
+                                }`}>
+                                  {rx.status || 'Pending'}
+                                </span>
+                              </div>
+                              <p className="text-[11px] text-gray-500 mt-0.5">
+                                Uploaded on {new Date(rx.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })} • Via {rx.uploadSource || 'Web'}
+                              </p>
+                            </div>
+
+                            <div className="flex items-center gap-2 shrink-0">
+                              <a
+                                href={rx.fileUrl || `/api/prescriptions/${rx.prescriptionId}/file`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold flex items-center gap-1.5 shadow-sm transition"
+                              >
+                                <Eye className="w-3.5 h-3.5" /> View File
+                              </a>
+                              <a
+                                href={rx.downloadUrl || `/api/prescriptions/${rx.prescriptionId}/file?download=1`}
+                                className="px-3 py-1.5 bg-white hover:bg-gray-100 text-gray-700 border border-gray-200 rounded-xl font-bold flex items-center gap-1.5 transition"
+                              >
+                                <Download className="w-3.5 h-3.5" /> Download
+                              </a>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-white p-3 rounded-xl border border-gray-100">
+                            <div>
+                              <span className="text-gray-400 block text-[10px]">File Name</span>
+                              <span className="font-semibold text-gray-800 truncate block max-w-[150px]" title={rx.fileName}>
+                                {rx.fileName}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400 block text-[10px]">Format / Size</span>
+                              <span className="font-semibold text-gray-800 uppercase">
+                                {rx.fileType?.split('/')[1] || 'Doc'} • {(rx.fileSize ? (rx.fileSize / 1024).toFixed(0) : 0)} KB
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400 block text-[10px]">Linked Booking</span>
+                              <span className="font-semibold text-gray-800">
+                                {rx.bookingId || 'Direct Upload'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {rx.notes && (
+                            <p className="text-gray-600 bg-white p-2.5 rounded-xl border border-gray-100 italic">
+                              Note: {rx.notes}
+                            </p>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+
                 {/* 3. FAMILY MEMBERS */}
                 {active360Tab === "family" && (
                   <div className="space-y-3">
@@ -645,18 +726,30 @@ export default function HealthCardsAdminPage() {
                 {/* 5. BOOKINGS & SERVICES */}
                 {active360Tab === "bookings" && (
                   <div className="space-y-2 text-xs">
-                    {[...(patient360Data.appointments || []), ...(patient360Data.physioBookings || [])].length === 0 ? (
+                    {[...(patient360Data.appointments || []), ...(patient360Data.physioBookings || []), ...(patient360Data.icuRequests || []).map(r => ({ ...r, bookingId: r.requestId, service: r.careType, date: r.startDate, isIcu: true }))].length === 0 ? (
                       <div className="p-8 text-center text-gray-400 bg-gray-50 rounded-2xl">
                         No booking history found for this patient.
                       </div>
                     ) : (
-                      [...(patient360Data.appointments || []), ...(patient360Data.physioBookings || [])].map((b, i) => (
-                        <div key={i} className="p-3 bg-gray-50 rounded-xl border flex justify-between">
+                      [...(patient360Data.appointments || []), ...(patient360Data.physioBookings || []), ...(patient360Data.icuRequests || []).map(r => ({ ...r, bookingId: r.requestId, service: r.careType, date: r.startDate, isIcu: true }))].map((b, i) => (
+                        <div key={i} className="p-3 bg-gray-50 rounded-xl border flex items-center justify-between">
                           <div>
-                            <span className="font-bold">{b.bookingId || "BK"} - {b.service || b.category || "Service"}</span>
-                            <p className="text-gray-500 text-[11px]">{b.date || b.preferredDate}</p>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold">{b.bookingId || "BK"} - {b.service || b.category || "Service"}</span>
+                              {b.isIcu && (
+                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800">
+                                  ICU at Home
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-gray-500 text-[11px] mt-0.5">{b.date || b.preferredDate} {b.time || b.preferredTime || b.duration ? `• ${b.time || b.preferredTime || b.duration}` : ""}</p>
                           </div>
-                          <span className="font-bold text-emerald-700">{b.status}</span>
+                          <div className="text-right">
+                            <span className="font-bold text-emerald-700 block">{b.status}</span>
+                            {b.paymentStatus && (
+                              <span className="text-[10px] text-gray-400 font-medium">Payment: {b.paymentStatus}</span>
+                            )}
+                          </div>
                         </div>
                       ))
                     )}

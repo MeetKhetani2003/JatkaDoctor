@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import BlogSection from "@/components/Blogs";
 import MedicalTeamSection from "@/components/MedicalTeamSection";
 import EmergencyCTA from "@/components/EmergencyCTA";
@@ -5,6 +8,9 @@ import Footer from "@/components/Footer";
 import FounderSection from "@/components/FounderSection";
 import Header from "@/components/Header";
 import HeroCarousel from "@/components/HeroCarousel";
+import HeroSearchBar from "@/components/HeroSearchBar";
+import QuickActions from "@/components/QuickActions";
+import PrescriptionUploadModal from "@/components/PrescriptionUploadModal";
 import HowItWorks from "@/components/HowitWorks";
 import PartnersSection from "@/components/OurClinicsAndPartners";
 import ServiceArea from "@/components/ServiceArea";
@@ -27,10 +33,16 @@ const homeFaqs = [
 ];
 
 export default function Home() {
+  const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false);
+
   return (
     <main className="min-h-screen bg-white pb-20">
       <Header />
       <HeroCarousel />
+      {/* 1. Dynamic Search Bar immediately below Hero */}
+      <HeroSearchBar onOpenPrescriptionModal={() => setIsPrescriptionModalOpen(true)} />
+      {/* 2. Quick Actions Section featuring Upload Prescription */}
+      <QuickActions onOpenPrescriptionModal={() => setIsPrescriptionModalOpen(true)} />
       <FreeHealthCardBanner />
       <ServicesGrid />
       <StatsStrip />
@@ -51,6 +63,12 @@ export default function Home() {
         </div>
       </div>
       <ServiceArea />
+
+      {/* 3. Prescription Upload Modal */}
+      <PrescriptionUploadModal
+        isOpen={isPrescriptionModalOpen}
+        onClose={() => setIsPrescriptionModalOpen(false)}
+      />
     </main>
   );
 }

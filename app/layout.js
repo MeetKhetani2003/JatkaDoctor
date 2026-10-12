@@ -36,6 +36,9 @@ export const viewport = {
   themeColor: "#0F9D58",
 };
 
+import { LocationProvider } from "@/context/LocationContext";
+import LocationModal from "@/components/LocationModal";
+
 export default function RootLayout({ children }) {
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
@@ -64,6 +67,7 @@ export default function RootLayout({ children }) {
         <ScrollToTop />
         <PWARegister />
         <PatientAuthProvider>
+        <LocationProvider>
         <BookingModalProvider>
           <Header />
           {/* Main Content Area - Full width but max container for large screens */}
@@ -73,7 +77,9 @@ export default function RootLayout({ children }) {
           <BookingModal />
           <AmbulanceBookingModal />
           <OfferPopup />
+          <LocationModal />
         </BookingModalProvider>
+        </LocationProvider>
         </PatientAuthProvider>
       </body>
     </html>

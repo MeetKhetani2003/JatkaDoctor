@@ -22,10 +22,12 @@ import {
   LayoutDashboard,
   CreditCard,
   Sparkles,
+  MapPin,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useBookingModal } from "@/context/BookingModalContext";
 import { usePatientAuth } from "@/context/PatientAuthContext";
+import { useLocation } from "@/context/LocationContext";
 
 const PRIMARY = "#0F9D58";
 const PRIMARY_LIGHT = "#E8F8F1";
@@ -307,7 +309,7 @@ function PatientDropdown({ patient, logout, profileComplete }) {
               </Link>
             )}
             <Link
-              href="/patient/profile"
+              href="/patient/dashboard?tab=bookings"
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-4 py-3 text-[13px] font-medium transition-colors hover:bg-gray-50"
               style={{ color: TEXT }}
@@ -334,6 +336,8 @@ function PatientDropdown({ patient, logout, profileComplete }) {
 function MobileDrawer({ open, onClose }) {
   const [servicesOpen, setServicesOpen] = useState(false);
   const { patient, loggedIn, logout } = usePatientAuth();
+  const { currentLocation, openLocationModal } = useLocation();
+  const displayLocation = currentLocation?.area || currentLocation?.city || "Lucknow";
 
   const handleLogout = async () => {
     await logout();
@@ -388,6 +392,25 @@ function MobileDrawer({ open, onClose }) {
               >
                 <X className="w-4 h-4 text-white" />
               </button>
+            </div>
+
+            {/* Mobile Location Quick Bar */}
+            <div className="px-5 py-2.5 bg-emerald-50/70 border-b border-gray-100 flex items-center justify-between">
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  openLocationModal();
+                }}
+                className="flex items-center gap-1.5 text-xs font-semibold text-emerald-800 hover:text-emerald-950 transition-colors"
+              >
+                <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="truncate max-w-[190px]">{displayLocation}</span>
+                <ChevronDown className="w-3 h-3 text-emerald-600/70" />
+              </button>
+              <span className="text-[10px] font-bold text-emerald-700 bg-white border border-emerald-200 px-2 py-0.5 rounded-full">
+                Change
+              </span>
             </div>
 
             {/* Nav list */}
@@ -552,7 +575,7 @@ function MobileDrawer({ open, onClose }) {
                     </div>
                   </div>
                   <Link
-                    href="/patient/profile"
+                    href="/patient/dashboard?tab=bookings"
                     onClick={onClose}
                     className="flex items-center gap-2.5 px-4 py-3 text-[13px] font-medium border-t border-gray-100 transition-colors hover:bg-gray-50"
                     style={{ color: TEXT }}
@@ -630,6 +653,8 @@ function MobileDrawer({ open, onClose }) {
 export default function Navbar() {
   const { openModal } = useBookingModal();
   const { patient, loggedIn, profileComplete, loading: authLoading, logout } = usePatientAuth();
+  const { currentLocation, openLocationModal } = useLocation();
+  const displayLocation = currentLocation?.area || currentLocation?.city || "Lucknow";
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -673,17 +698,32 @@ export default function Navbar() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <Link href="/" className="flex items-center shrink-0">
-              <Image
-                src="/Dr.Jhatka.png"
-                alt="Dr. Jhatka"
-                width={180}
-                height={56}
-                className="object-contain"
-                priority
-              />
-            </Link>
+            {/* Logo + Location */}
+            <div className="flex items-center gap-3 shrink-0">
+              <Link href="/" className="flex items-center shrink-0">
+                <Image
+                  src="/Dr.Jhatka.png"
+                  alt="Dr. Jhatka"
+                  width={180}
+                  height={56}
+                  className="object-contain"
+                  priority
+                />
+              </Link>
+
+              {/* Location Pill Button */}
+              <button
+                type="button"
+                id="header-location-btn"
+                onClick={openLocationModal}
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200/80 transition-all cursor-pointer shadow-xs group"
+                title="Change Location (Lucknow & Zones)"
+              >
+                <MapPin className="w-3.5 h-3.5 text-emerald-600 group-hover:scale-110 transition-transform" />
+                <span className="max-w-[130px] truncate">{displayLocation}</span>
+                <ChevronDown className="w-3 h-3 text-emerald-600/70" />
+              </button>
+            </div>
 
             {/* Desktop Nav */}
             <nav className="hidden lg:flex items-center gap-0.5">
@@ -817,7 +857,18 @@ export default function Navbar() {
             </div>
 
             {/* Mobile right controls */}
-            <div className="flex lg:hidden items-center gap-2">
+            <div className="flex lg:hidden items-center gap-1.5 sm:gap-2">
+              <button
+                type="button"
+                id="header-location-mobile-btn"
+                onClick={openLocationModal}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80 active:scale-95 transition-all"
+                title="Change Location"
+              >
+                <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                <span className="max-w-[70px] truncate">{displayLocation}</span>
+                <ChevronDown className="w-3 h-3 text-emerald-600/70" />
+              </button>
               <a
                 href="tel:+918874744756"
                 className="w-9 h-9 rounded-xl flex items-center justify-center border"

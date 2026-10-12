@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   CreditCard,
   User,
@@ -31,12 +31,21 @@ import {
 import HealthCard from "@/components/HealthCard";
 import { usePatientAuth } from "@/context/PatientAuthContext";
 
-export default function PatientDashboardPage() {
+function PatientDashboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") || "card";
   const { patient: sessionPatient, loggedIn, loading: authLoading, logout, refresh } = usePatientAuth();
 
   // Active Tab: card | profile | family | bookings | health | payments | offers | rewards | followups | notifications
-  const [activeTab, setActiveTab] = useState("card");
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [searchParams]);
   const [patientData, setPatientData] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -101,7 +110,22 @@ export default function PatientDashboardPage() {
         setPatientData(data.patient);
         setEditForm({ ...data.patient });
         setCampVisits(data.campVisits || []);
-        setBookings([...(data.appointments || []), ...(data.physioBookings || [])]);
+        setBookings([
+          ...(data.appointments || []),
+          ...(data.physioBookings || []),
+          ...(data.icuRequests || []).map(r => ({
+            bookingId: r.requestId,
+            category: "ICU at Home",
+            service: r.careType,
+            date: r.startDate,
+            time: r.duration,
+            status: r.status,
+            paymentStatus: r.paymentStatus,
+            doctor: r.condition,
+            isIcu: true,
+            icuData: r
+          }))
+        ]);
         setPayments(data.payments || []);
         setNotifications(data.notifications || []);
         
@@ -1680,5 +1704,19 @@ export default function PatientDashboardPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function PatientDashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-[#006837] border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <PatientDashboardContent />
+    </Suspense>
   );
 }

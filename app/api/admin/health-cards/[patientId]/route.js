@@ -7,6 +7,8 @@ import PhysioBooking from '@/lib/models/physio/PhysioBooking';
 import Payment from '@/lib/models/Payment';
 import Family from '@/lib/models/Family';
 import Notification from '@/lib/models/Notification';
+import Prescription from '@/lib/models/Prescription';
+import IcuRequest from '@/lib/models/IcuRequest';
 
 export async function GET(req, context) {
   try {
@@ -14,7 +16,10 @@ export async function GET(req, context) {
     const patientId = params.patientId;
 
     await dbConnect();
-    const patient = await Patient.findOne({ patientId }).lean();
+    let patient = await Patient.findOne({ patientId }).lean();
+    if (!patient && patientId && patientId.length === 24) {
+      patient = await Patient.findById(patientId).lean();
+    }
     if (!patient) {
       return NextResponse.json({ success: false, message: 'Patient not found' }, { status: 404 });
     }
@@ -26,12 +31,17 @@ export async function GET(req, context) {
       family = await Family.findOne({ familyId: patient.familyId }).lean();
       familyMembers = await Patient.find({ 
         familyId: patient.familyId, 
-        patientId: { $ne: patientId } 
+        patientId: { $ne: patient.patientId } 
       }).lean();
     }
 
     // 2. Camp visits & health checks
-    const campVisits = await CampVisit.find({ patientId }).sort({ visitDate: -1 }).lean();
+    const campVisits = await CampVisit.find({ 
+      $or: [
+        { patientId: patient.patientId },
+        { patientId: patientId }
+      ]
+    }).sort({ visitDate: -1 }).lean();
 
     // 3. Appointments & Bookings
     const appointments = await Appointment.find({
@@ -62,8 +72,37 @@ export async function GET(req, context) {
       bookingId: { $in: bookingIds }
     }).sort({ createdAt: -1 }).lean();
 
-    // 5. Notifications
-    const notifications = await Notification.find({ patientId }).sort({ createdAt: -1 }).lean();
+    // 5. Prescriptions
+    const prescriptions = await Prescription.find({
+      $or: [
+        { patientId: patientId },
+        { patientDbId: patient._id },
+        { patientPhone: patient.mobile }
+      ]
+    }).sort({ createdAt: -1 }).lean();
+
+    const formattedPrescriptions = prescriptions.map(p => ({
+      ...p,
+      fileUrl: `/api/prescriptions/${p.prescriptionId}/file`,
+      downloadUrl: `/api/prescriptions/${p.prescriptionId}/file?download=1`
+    }));
+
+    // 6. Notifications
+    const notifications = await Notification.find({ 
+      $or: [
+        { patientId: patient.patientId },
+        { patientId: patientId }
+      ]
+    }).sort({ createdAt: -1 }).lean();
+
+    // 7. ICU at Home Requests & Care Plans
+    const icuRequests = await IcuRequest.find({
+      $or: [
+        { patientId: patient.patientId },
+        { phone: patient.mobile },
+        { phone: `+91${patient.mobile}` }
+      ]
+    }).sort({ createdAt: -1 }).lean();
 
     return NextResponse.json({
       success: true,
@@ -73,7 +112,9 @@ export async function GET(req, context) {
       campVisits,
       appointments,
       physioBookings,
+      icuRequests,
       payments,
+      prescriptions: formattedPrescriptions,
       notifications
     });
   } catch (error) {
