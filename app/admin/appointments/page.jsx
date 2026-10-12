@@ -21,8 +21,12 @@ import {
   Notebook,
   Share2,
   CalendarDays,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Mail,
+  MessageCircle,
+  Eye
 } from "lucide-react";
+import { buildPrefilledMessage, getWhatsAppActionUrl, getEmailActionUrl, getCallActionUrl } from "@/lib/notificationActions";
 
 export default function AdminAppointments() {
   const router = useRouter();
@@ -921,8 +925,57 @@ export default function AdminAppointments() {
                   </div>
                 )}
 
+                {/* One-Click Action Quick Bar (Task 1) */}
+                {(() => {
+                  const prefilledMsg = buildPrefilledMessage({
+                    patientName: appt.patientName,
+                    bookingId: appt.bookingId,
+                    service: appt.service || appt.category,
+                    problem: appt.patientCondition || appt.notes,
+                    date: appt.appointmentDate,
+                    time: appt.appointmentTime,
+                    location: appt.patientAddress || appt.zone,
+                    paymentStatus: appt.paymentStatus || 'Pending'
+                  });
+                  const waUrl = getWhatsAppActionUrl(appt.phone, prefilledMsg);
+                  const callUrl = getCallActionUrl(appt.phone);
+                  const mailUrl = getEmailActionUrl(appt.email, appt.bookingId, prefilledMsg);
+
+                  return (
+                    <div className="px-6 pb-2 pt-1 flex gap-2">
+                      <a
+                        href={waUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-bold shadow-sm shadow-emerald-600/20 active:scale-95 transition"
+                        title="Chat on WhatsApp with prefilled message"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5 fill-white" /> WhatsApp
+                      </a>
+                      <a
+                        href={callUrl}
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[11px] font-bold shadow-sm shadow-blue-600/20 active:scale-95 transition"
+                        title="Call patient"
+                      >
+                        <Phone className="w-3.5 h-3.5" /> Call
+                      </a>
+                      <a
+                        href={mailUrl}
+                        className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] font-bold transition shadow-sm ${
+                          appt.email
+                            ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-rose-600/20 active:scale-95'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed pointer-events-none'
+                        }`}
+                        title={appt.email ? "Email patient" : "No email"}
+                      >
+                        <Mail className="w-3.5 h-3.5" /> Email
+                      </a>
+                    </div>
+                  );
+                })()}
+
                 {/* Actions bottom bar */}
-                <div className="p-6 pt-0 flex gap-2 border-t border-gray-50 pt-4">
+                <div className="p-6 pt-0 flex gap-2 border-t border-gray-50 pt-3">
                   {!isEditing ? (
                     <button
                       onClick={() => startEditing(appt)}

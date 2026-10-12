@@ -47,18 +47,36 @@ export default function PatientHistory() {
         b => b.phone.replace(/[^0-9]/g, "").includes(phoneQuery.replace(/[^0-9]/g, ""))
       );
 
-      if (exactBookings.length === 0) {
+      // Fetch ICU requests matching phone
+      let icuRequests = [];
+      try {
+        const icuRes = await fetch(`/api/icu-requests?search=${phoneQuery}`);
+        if (icuRes.ok) {
+          const icuData = await icuRes.json();
+          if (icuData.success && Array.isArray(icuData.data)) {
+            icuRequests = icuData.data.filter(
+              r => r.phone.replace(/[^0-9]/g, "").includes(phoneQuery.replace(/[^0-9]/g, ""))
+            );
+          }
+        }
+      } catch (e) {
+        console.error("Failed to fetch ICU records:", e);
+      }
+
+      if (exactBookings.length === 0 && icuRequests.length === 0) {
         setError(`No patient records found matching phone number: ${phoneQuery}`);
         setLoading(false);
         return;
       }
 
-      // Pick patient details from first booking
+      // Pick patient details from first booking or ICU request
+      const firstRecord = exactBookings[0] || icuRequests[0];
       const details = {
-        name: exactBookings[0].patientName,
-        phone: exactBookings[0].phone,
-        email: exactBookings[0].email,
-        isRepeat: exactBookings.length > 1
+        name: firstRecord.patientName,
+        phone: firstRecord.phone,
+        email: firstRecord.email,
+        isRepeat: (exactBookings.length + icuRequests.length) > 1,
+        icuRequests: icuRequests
       };
       setPatientDetails(details);
       setBookings(exactBookings);
@@ -67,7 +85,7 @@ export default function PatientHistory() {
       const payRes = await fetch("/api/payments");
       if (payRes.ok) {
         const payData = await payRes.json();
-        const bookingIds = exactBookings.map(b => b.bookingId);
+        const bookingIds = [...exactBookings.map(b => b.bookingId), ...icuRequests.map(r => r.requestId)];
         const patientPayments = payData.filter(p => bookingIds.includes(p.bookingId));
         setPayments(patientPayments);
       }
@@ -266,6 +284,42 @@ export default function PatientHistory() {
                     </tbody>
                   </table>
                 </div>
+
+                {/* ICU at Home Care Plans & Requests Section */}
+                {patientDetails?.icuRequests && patientDetails.icuRequests.length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-gray-100 space-y-3">
+                    <h5 className="font-bold text-gray-900 flex items-center gap-2 text-xs">
+                      <Activity className="w-4 h-4 text-emerald-600" />
+                      ICU at Home Care Plans &amp; Requests ({patientDetails.icuRequests.length})
+                    </h5>
+                    <div className="space-y-2">
+                      {patientDetails.icuRequests.map((icu) => (
+                        <div key={icu._id} className="p-3.5 bg-emerald-50/40 rounded-2xl border border-emerald-100 flex items-center justify-between gap-3 text-xs">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-emerald-800 font-mono">{icu.requestId}</span>
+                              <span className="font-semibold text-gray-800">{icu.careType}</span>
+                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-white text-emerald-700 border border-emerald-200">
+                                {icu.status}
+                              </span>
+                            </div>
+                            <p className="text-gray-500 text-[11px] mt-0.5">
+                              Condition: {icu.condition} • Duration: {icu.duration} • Start: {icu.startDate}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-xs font-black text-gray-900 block">
+                              {icu.quote?.totalAmount ? `₹${icu.quote.totalAmount}` : 'Quote Pending'}
+                            </span>
+                            <span className={`text-[10px] font-bold ${icu.paymentStatus === 'Paid' ? 'text-emerald-700' : 'text-amber-700'}`}>
+                              Payment: {icu.paymentStatus}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

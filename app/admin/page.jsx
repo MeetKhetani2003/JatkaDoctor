@@ -78,6 +78,7 @@ export default function AdminDashboard() {
 
   const widgets = [
     { label: 'Total Bookings', value: stats?.totalBookings || 0, icon: CalendarCheck, color: 'bg-blue-500', shadow: 'shadow-blue-500/20' },
+    { label: 'ICU at Home', value: stats?.totalIcuRequests || 0, icon: Activity, color: 'bg-emerald-600', shadow: 'shadow-emerald-600/20' },
     { label: 'Pending Bookings', value: stats?.pendingBookings || 0, icon: Clock, color: 'bg-amber-500', shadow: 'shadow-amber-500/20' },
     { label: 'Completed Bookings', value: stats?.completedBookings || 0, icon: CheckCircle, color: 'bg-green-600', shadow: 'shadow-green-600/20' },
     { label: 'Cancelled Bookings', value: stats?.cancelledBookings || 0, icon: XCircle, color: 'bg-red-500', shadow: 'shadow-red-500/20' },

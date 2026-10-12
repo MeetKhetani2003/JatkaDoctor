@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Appointment from '@/lib/models/Appointment';
 import Payment from '@/lib/models/Payment';
+import IcuRequest from '@/lib/models/IcuRequest';
 import { verifyAdmin } from '@/lib/adminAuth';
 
 export async function GET(req) {
@@ -31,6 +32,12 @@ export async function GET(req) {
         { bookingStatus: 'Cancelled' },
         { status: 'Cancelled' }
       ]
+    });
+
+    // ICU Stats
+    const totalIcuRequests = await IcuRequest.countDocuments();
+    const activeIcuCarePlans = await IcuRequest.countDocuments({
+      status: { $in: ['Booking Confirmed', 'Staff Assigned', 'Service Started'] }
     });
 
     // 2. Revenue aggregation
@@ -103,6 +110,8 @@ export async function GET(req) {
       completedBookings,
       cancelledBookings,
       totalRevenue,
+      totalIcuRequests,
+      activeIcuCarePlans,
       serviceStats,
       monthlyRevenueGraph,
       bookingTrendGraph

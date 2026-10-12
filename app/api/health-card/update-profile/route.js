@@ -4,6 +4,7 @@ import Patient from '@/lib/models/physio/Patient';
 import Notification from '@/lib/models/Notification';
 import { sendHealthCardEmail } from '@/lib/mail';
 import { sendHealthCardWhatsApp } from '@/lib/whatsapp';
+import { uploadToGridFS } from '@/lib/gridfs';
 
 export async function PATCH(req) {
   try {
@@ -18,6 +19,23 @@ export async function PATCH(req) {
     const patient = await Patient.findOne({ patientId });
     if (!patient) {
       return NextResponse.json({ success: false, message: 'Patient not found' }, { status: 404 });
+    }
+
+    // Process Base64 photo upload if provided
+    let photoUrl = body.photo;
+    if (body.photo && body.photo.startsWith('data:image')) {
+      try {
+        const match = body.photo.match(/^data:(image\/\w+);base64,(.+)$/);
+        if (match) {
+          const contentType = match[1];
+          const base64Data = match[2];
+          const buffer = Buffer.from(base64Data, 'base64');
+          const fileId = await uploadToGridFS(buffer, `passport_${Date.now()}`, contentType);
+          photoUrl = `/api/images/${fileId}`;
+        }
+      } catch (err) {
+        console.error('GridFS upload error in update-profile:', err);
+      }
     }
 
     // Check if mobile number is being changed
@@ -36,7 +54,7 @@ export async function PATCH(req) {
       }
     }
 
-    // Track updated fields for Card Versioning
+    // Track updated fields
     const updatedFields = [];
     if (body.name && body.name !== patient.name) {
       patient.name = body.name.trim();
@@ -59,7 +77,7 @@ export async function PATCH(req) {
         patient.isSeniorCitizen = patient.age >= 70;
       }
       updatedFields.push('DOB/Age');
-    } else if (body.age !== undefined) {
+    } else if (body.age !== undefined && body.age !== '') {
       patient.age = parseInt(body.age, 10);
       patient.isSeniorCitizen = patient.age >= 70;
       updatedFields.push('Age');
@@ -80,13 +98,18 @@ export async function PATCH(req) {
     if (body.area !== undefined) patient.area = body.area;
     if (body.city !== undefined) patient.city = body.city;
     if (body.pincode !== undefined) patient.pincode = body.pincode;
-    if (body.photo !== undefined) patient.photo = body.photo;
+    if (photoUrl !== undefined) {
+      patient.photo = photoUrl;
+      updatedFields.push('Photo');
+    }
     
     // Emergency contact
     if (body.emergencyContactName !== undefined) patient.emergencyContactName = body.emergencyContactName;
     if (body.emergencyContactPhone !== undefined) patient.emergencyContactPhone = body.emergencyContactPhone;
     if (body.emergencyContactRelation !== undefined) patient.emergencyContactRelation = body.emergencyContactRelation;
-    if (body.emergencyContactName || body.emergencyContactPhone) updatedFields.push('Emergency Contact');
+    if (body.emergencyContactName || body.emergencyContactPhone || body.emergencyContactRelation) {
+      updatedFields.push('Emergency Contact');
+    }
 
     // Health conditions & Allergies
     if (body.existingConditions !== undefined) patient.existingConditions = body.existingConditions;
@@ -100,20 +123,32 @@ export async function PATCH(req) {
       patient.seniorCitizenBenefitActive = !!body.seniorCitizenBenefitActive;
     }
 
-    // CARD VERSIONING LOGIC:
-    // Increment card version when profile changes (V1 -> V2 -> V3...)
-    // Patient ID REMAINS PERMANENT!
-    if (updatedFields.length > 0) {
-      patient.cardVersion = (patient.cardVersion || 1) + 1;
-      patient.cardHistory.push({
-        version: patient.cardVersion,
-        generatedAt: new Date(),
-        updatedFields,
-        generatedBy: body.updatedBy || 'Patient Self-Service'
-      });
+    // Synchronize Health Card details so the card reflects the updated options
+    if (!patient.healthCardDetails) {
+      patient.healthCardDetails = {};
+    }
+    if (patient.name) patient.healthCardDetails.name = patient.name;
+    if (patient.mobile) patient.healthCardDetails.mobile = patient.mobile;
+    if (patient.whatsappNumber) patient.healthCardDetails.whatsappNumber = patient.whatsappNumber;
+    if (patient.dob) patient.healthCardDetails.dob = patient.dob;
+    if (patient.age !== undefined) patient.healthCardDetails.age = patient.age;
+    if (patient.gender) patient.healthCardDetails.gender = patient.gender;
+    if (patient.bloodGroup !== undefined) patient.healthCardDetails.bloodGroup = patient.bloodGroup;
+    if (patient.photo) patient.healthCardDetails.photo = patient.photo;
+    if (patient.city) patient.healthCardDetails.city = patient.city;
+    if (patient.area !== undefined) patient.healthCardDetails.area = patient.area;
+    if (patient.address !== undefined) patient.healthCardDetails.address = patient.address;
+    if (patient.pincode !== undefined) patient.healthCardDetails.pincode = patient.pincode;
+    if (patient.emergencyContactName !== undefined) patient.healthCardDetails.emergencyContactName = patient.emergencyContactName;
+    if (patient.emergencyContactPhone !== undefined) patient.healthCardDetails.emergencyContactPhone = patient.emergencyContactPhone;
+    if (patient.emergencyContactRelation !== undefined) patient.healthCardDetails.emergencyContactRelation = patient.emergencyContactRelation;
+    if (patient.existingConditions !== undefined) patient.healthCardDetails.existingConditions = patient.existingConditions;
+    if (patient.allergies !== undefined) patient.healthCardDetails.allergies = patient.allergies;
 
+    // Logging & Notification
+    if (updatedFields.length > 0) {
       patient.auditLogs.push({
-        action: `Profile Updated (Card V${patient.cardVersion})`,
+        action: 'Health Card & Profile Updated',
         performedBy: body.updatedBy || 'Patient',
         details: `Updated fields: ${updatedFields.join(', ')}`,
         timestamp: new Date()
@@ -121,31 +156,19 @@ export async function PATCH(req) {
 
       await Notification.create({
         patientId,
-        title: `Health Card Updated (V${patient.cardVersion})`,
-        message: `Your Dr Jhatka Medicare Free Health Card has been updated with latest information (${updatedFields.join(', ')}). Your Permanent ID ${patientId} remains the same.`,
+        title: 'Health Card & Profile Updated',
+        message: `Your Dr Jhatka Medicare Free Health Card & profile have been updated with latest information (${updatedFields.join(', ')}). Permanent ID ${patientId} remains active.`,
         type: 'Card',
         actionUrl: '/patient/dashboard'
       });
-
-      // If email added or updated, trigger email delivery
-      if (patient.email && updatedFields.includes('Email')) {
-        const cardUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.drjhatka.com'}/health-card/view/${patient.patientId}`;
-        sendHealthCardEmail({
-          email: patient.email,
-          patientName: patient.name,
-          patientId: patient.patientId,
-          cardUrl
-        }).catch(e => console.error('Email resend on update error:', e));
-      }
     }
 
     await patient.save();
 
     return NextResponse.json({
       success: true,
-      message: `Profile updated and Health Card Version ${patient.cardVersion} generated successfully!`,
+      message: 'Health Card & profile updated successfully!',
       patient,
-      cardVersion: patient.cardVersion,
     });
   } catch (error) {
     console.error('Update profile error:', error);

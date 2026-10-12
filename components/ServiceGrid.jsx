@@ -35,7 +35,7 @@ const services = [
   {
     title: "ICU\nat Home",
     icon: Bed,
-    link: "/services/icu",
+    link: "/icu-at-home",
     desc: "Critical Care",
   },
   {

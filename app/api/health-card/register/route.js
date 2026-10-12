@@ -93,8 +93,31 @@ export async function POST(req) {
       // Update the photo if they provided a new one
       if (photoUrl) {
         existingPatient.photo = photoUrl;
-        await existingPatient.save();
       }
+
+      // If existing patient does not yet have healthCardDetails recorded from health card form, initialize it
+      if (!existingPatient.healthCardDetails || !existingPatient.healthCardDetails.name) {
+        existingPatient.healthCardDetails = {
+          name: (body.name || existingPatient.name || '').trim(),
+          mobile: existingPatient.mobile,
+          whatsappNumber: existingPatient.whatsappNumber || existingPatient.mobile,
+          dob: body.dob || existingPatient.dob,
+          age: body.age ? parseInt(body.age, 10) : existingPatient.age,
+          gender: body.gender || existingPatient.gender,
+          bloodGroup: body.bloodGroup || existingPatient.bloodGroup,
+          photo: photoUrl || existingPatient.photo,
+          city: body.city || existingPatient.city || 'Lucknow',
+          area: body.area || existingPatient.area,
+          address: body.address || existingPatient.address,
+          pincode: body.pincode || existingPatient.pincode,
+          emergencyContactName: body.emergencyContactName || existingPatient.emergencyContactName,
+          emergencyContactPhone: body.emergencyContactPhone || existingPatient.emergencyContactPhone,
+          emergencyContactRelation: body.emergencyContactRelation || existingPatient.emergencyContactRelation,
+          issuedFrom: 'Health Card Form',
+          submittedAt: new Date(),
+        };
+      }
+      await existingPatient.save();
 
       // Return existing patient info - No duplicate patient ID is created!
       return NextResponse.json({
@@ -152,6 +175,27 @@ export async function POST(req) {
       bloodGroupStatus: 'Self-reported',
       existingConditions: body.existingConditions || undefined,
       allergies: body.allergies || undefined,
+
+      // Digital Health Card Details (Strictly originating from Health Card Form)
+      healthCardDetails: {
+        name: body.name.trim(),
+        mobile: cleanMobile.slice(-10),
+        whatsappNumber: (body.whatsappNumber || cleanMobile).slice(-10),
+        dob: body.dob || undefined,
+        age: calculatedAge,
+        gender: body.gender || undefined,
+        bloodGroup: body.bloodGroup || undefined,
+        photo: photoUrl || undefined,
+        city: body.city || 'Lucknow',
+        area: body.area || undefined,
+        address: body.address || undefined,
+        pincode: body.pincode || undefined,
+        emergencyContactName: body.emergencyContactName || undefined,
+        emergencyContactPhone: body.emergencyContactPhone || undefined,
+        emergencyContactRelation: body.emergencyContactRelation || undefined,
+        issuedFrom: 'Health Card Form',
+        submittedAt: new Date(),
+      },
 
       // Health Card Status
       cardStatus: 'ACTIVE',

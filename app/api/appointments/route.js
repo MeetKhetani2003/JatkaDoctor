@@ -11,6 +11,7 @@ import path from 'path';
 import { sendBookingConfirmation, sendAdminBookingAlert } from '@/lib/whatsapp';
 import { sanitize, validateBookingInput, isRateLimited } from '@/lib/security';
 import { detectZone } from '@/lib/zones';
+import { recordBookingLeadNotification } from '@/lib/notificationHelper';
 
 
 
@@ -387,21 +388,29 @@ export async function POST(req) {
     
     await appointment.save();
 
-    // Trigger WhatsApp notifications (Phase 5)
+    // Trigger WhatsApp notifications & Record Lead Notification Log (Task 1)
     try {
+      await recordBookingLeadNotification({
+        bookingId: appointment.bookingId,
+        patientName: appointment.patientName,
+        phone: appointment.phone,
+        email: appointment.email || '',
+        service: appointment.service || appointment.category || 'General Consultation',
+        problem: appointment.notes || appointment.patientCondition || 'General Consultation',
+        preferredDate: appointment.appointmentDate,
+        preferredTime: appointment.appointmentTime,
+        location: appointment.patientAddress || appointment.zone || 'Lucknow',
+        paymentStatus: appointment.paymentStatus || 'Pending',
+        source: appointment.leadSource || 'Website',
+        notificationType: 'Booking Lead'
+      });
+
       await sendBookingConfirmation({
         phone: appointment.phone,
         patientName: appointment.patientName,
         bookingId: appointment.bookingId,
         date: appointment.appointmentDate,
         time: appointment.appointmentTime,
-        category: appointment.category || appointment.service
-      });
-
-      await sendAdminBookingAlert({
-        patientName: appointment.patientName,
-        bookingId: appointment.bookingId,
-        phone: appointment.phone,
         category: appointment.category || appointment.service
       });
     } catch (waError) {

@@ -59,6 +59,16 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
 
   if (!patient) return null;
 
+  // Information on Health Card comes strictly from the Health Card Form:
+  const cardDetails = patient.healthCardDetails || {};
+  const cardName = cardDetails.name || patient.name;
+  const cardMobile = cardDetails.mobile || patient.mobile;
+  const cardWhatsapp = cardDetails.whatsappNumber || patient.whatsappNumber || cardMobile;
+  const cardAge = cardDetails.age !== undefined && cardDetails.age !== null ? cardDetails.age : patient.age;
+  const cardGender = cardDetails.gender || patient.gender;
+  const cardBloodGroup = cardDetails.bloodGroup || patient.bloodGroup;
+  const cardPhoto = cardDetails.photo || patient.photo;
+
   const isActive = patient.cardStatus !== "INACTIVE";
 
   // 1. Download Digital Card (PNG)
@@ -161,14 +171,14 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
       // Also open WhatsApp web as instant fallback for user
       const waText = encodeURIComponent(
         `*Dr Jhatka Medicare - Free Health Card*\n\n` +
-        `Patient Name: *${patient.name}*\n` +
+        `Patient Name: *${cardName}*\n` +
         `Permanent Patient ID: *${patient.patientId}*\n` +
         `Family ID: *${patient.familyId || "N/A"}*\n` +
         `Status: *${patient.cardStatus || "ACTIVE"}*\n\n` +
         `View & Download Digital Card: ${verifyUrl}\n\n` +
         `Helpline: +91 87077 90677 | www.drjhatka.com`
       );
-      window.open(`https://wa.me/91${(patient.whatsappNumber || patient.mobile).replace(/[^0-9]/g, "").slice(-10)}?text=${waText}`, "_blank");
+      window.open(`https://wa.me/91${(cardWhatsapp || cardMobile || "").replace(/[^0-9]/g, "").slice(-10)}?text=${waText}`, "_blank");
 
       setStatusMsg("Card sent via WhatsApp!");
       setTimeout(() => setStatusMsg(""), 3500);
@@ -357,11 +367,11 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
                 {/* Left: Patient Avatar/Photo */}
                 <div className="col-span-3 sm:col-span-3 flex flex-col items-center justify-start">
                   <div className="w-16 h-18 sm:w-20 sm:h-24 rounded-xl overflow-hidden border-2 border-[#006837] bg-emerald-50 shadow-sm flex items-center justify-center">
-                    {patient.photo ? (
+                    {cardPhoto ? (
                       <img
-                        src={patient.photo.startsWith('/') ? `${baseUrl}${patient.photo}` : patient.photo}
+                        src={cardPhoto.startsWith('/') ? `${baseUrl}${cardPhoto}` : cardPhoto}
                         crossOrigin="anonymous"
-                        alt={patient.name}
+                        alt={cardName}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -383,7 +393,7 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
                     <div className="text-gray-600">Name</div>
                     <div>:</div>
                     <div className="font-extrabold text-gray-900 truncate">
-                      {patient.name}
+                      {cardName}
                     </div>
 
                     {/* Patient ID */}
@@ -409,40 +419,40 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
                     )}
 
                     {/* Mobile */}
-                    {patient.mobile && (
+                    {cardMobile && (
                       <>
                         <div className="text-gray-600">Mobile</div>
                         <div>:</div>
                         <div className="font-bold">
-                          +91 {patient.mobile.slice(-10)}
+                          +91 {cardMobile.slice(-10)}
                         </div>
                       </>
                     )}
 
                     {/* Age */}
-                    {patient.age && (
+                    {cardAge !== undefined && cardAge !== null && (
                       <>
                         <div className="text-gray-600">Age</div>
                         <div>:</div>
-                        <div className="font-bold">{patient.age} {isNaN(Number(patient.age)) ? "" : "Years"}</div>
+                        <div className="font-bold">{cardAge} {isNaN(Number(cardAge)) ? "" : "Years"}</div>
                       </>
                     )}
 
                     {/* Gender */}
-                    {patient.gender && (
+                    {cardGender && (
                       <>
                         <div className="text-gray-600">Gender</div>
                         <div>:</div>
-                        <div className="font-bold">{patient.gender}</div>
+                        <div className="font-bold">{cardGender}</div>
                       </>
                     )}
 
                     {/* Blood Group */}
-                    {patient.bloodGroup && (
+                    {cardBloodGroup && (
                       <>
                         <div className="text-gray-600">Blood Group</div>
                         <div>:</div>
-                        <div className="font-bold">{patient.bloodGroup}</div>
+                        <div className="font-bold">{cardBloodGroup}</div>
                       </>
                     )}
                   </div>

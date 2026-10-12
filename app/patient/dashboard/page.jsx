@@ -56,6 +56,8 @@ export default function PatientDashboardPage() {
   const [editForm, setEditForm] = useState({});
   const [editLoading, setEditLoading] = useState(false);
   const [editMsg, setEditMsg] = useState("");
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [photoError, setPhotoError] = useState("");
 
   // Add Family Member Form State
   const [familyForm, setFamilyForm] = useState({
@@ -123,7 +125,39 @@ export default function PatientDashboardPage() {
     loadPatientProfile();
   }, []);
 
-  // Handle Edit Profile Save (Auto Card Regeneration V1 -> V2)
+  // Open Edit Modal with complete Health Card & Profile form values
+  const handleOpenEditModal = () => {
+    const p = patientData || {};
+    const card = p.healthCardDetails || {};
+    const effectivePhoto = card.photo || p.photo || "";
+    setEditForm({
+      name: card.name || p.name || "",
+      email: p.email || "",
+      gender: card.gender || p.gender || "Male",
+      dob: card.dob || p.dob || "",
+      age: card.age !== undefined && card.age !== null ? card.age : (p.age !== undefined ? p.age : ""),
+      mobile: p.mobile || "",
+      whatsappNumber: card.whatsappNumber || p.whatsappNumber || p.mobile || "",
+      sameAsMobile: !card.whatsappNumber || card.whatsappNumber === p.mobile,
+      bloodGroup: card.bloodGroup || p.bloodGroup || "",
+      city: card.city || p.city || "Lucknow",
+      area: card.area || p.area || "",
+      address: card.address || p.address || "",
+      pincode: card.pincode || p.pincode || "",
+      emergencyContactName: card.emergencyContactName || p.emergencyContactName || "",
+      emergencyContactPhone: card.emergencyContactPhone || p.emergencyContactPhone || "",
+      emergencyContactRelation: card.emergencyContactRelation || p.emergencyContactRelation || "Spouse",
+      existingConditions: card.existingConditions || p.existingConditions || "",
+      allergies: card.allergies || p.allergies || "",
+      photo: effectivePhoto,
+    });
+    setPhotoPreview(effectivePhoto || null);
+    setPhotoError("");
+    setEditMsg("");
+    setShowEditProfile(true);
+  };
+
+  // Handle Save Health Card & Profile
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     setEditLoading(true);
@@ -136,6 +170,7 @@ export default function PatientDashboardPage() {
         body: JSON.stringify({
           patientId: patientData.patientId,
           ...editForm,
+          whatsappNumber: editForm.sameAsMobile ? editForm.mobile : editForm.whatsappNumber,
           updatedBy: "Patient Self-Service",
         }),
       });
@@ -143,16 +178,16 @@ export default function PatientDashboardPage() {
       const data = await res.json();
       if (data.success) {
         setPatientData(data.patient);
-        setEditMsg(`Profile updated! Digital Health Card automatically upgraded to Version ${data.cardVersion}.`);
+        setEditMsg("Health Card & Profile updated successfully!");
         setTimeout(() => {
           setShowEditProfile(false);
           setEditMsg("");
-        }, 2000);
+        }, 1800);
       } else {
-        setEditMsg(data.message || "Failed to update profile");
+        setEditMsg(data.message || "Failed to update details");
       }
     } catch (err) {
-      setEditMsg("Error updating profile");
+      setEditMsg("Error updating profile and health card");
     } finally {
       setEditLoading(false);
     }
@@ -429,7 +464,7 @@ export default function PatientDashboardPage() {
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setShowEditProfile(true)}
+                  onClick={handleOpenEditModal}
                   className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-[#006837] rounded-xl text-xs font-bold transition flex items-center gap-1.5 border border-emerald-200"
                 >
                   <Edit className="w-3.5 h-3.5" />
@@ -489,11 +524,11 @@ export default function PatientDashboardPage() {
                   <span>Change Mobile</span>
                 </button>
                 <button
-                  onClick={() => setShowEditProfile(true)}
+                  onClick={handleOpenEditModal}
                   className="px-4 py-1.5 bg-[#006837] hover:bg-[#004d26] text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5"
                 >
                   <Edit className="w-3.5 h-3.5" />
-                  <span>Edit Information</span>
+                  <span>Update Card & Profile</span>
                 </button>
               </div>
             </div>
@@ -1026,12 +1061,15 @@ export default function PatientDashboardPage() {
       {/* ============================================================== */}
       {/* MODAL 1: EDIT PROFILE / ADD MISSING INFORMATION */}
       {/* ============================================================== */}
+      {/* ============================================================== */}
+      {/* MODAL 1: EDIT PROFILE & HEALTH CARD (ALL OPTIONS) */}
+      {/* ============================================================== */}
       {showEditProfile && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+          <div className="bg-white rounded-3xl max-w-xl w-full max-h-[92vh] overflow-y-auto p-6 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4 sticky top-0 bg-white z-10">
               <div>
-                <h3 className="font-extrabold text-base text-gray-900">Update Profile & Health Card</h3>
+                <h3 className="font-extrabold text-base text-gray-900">Update Health Card & Profile</h3>
                 <p className="text-[11px] text-gray-500">
                   Permanent Patient ID: <strong className="text-[#006837]">{patientData.patientId}</strong>
                 </p>
@@ -1045,23 +1083,145 @@ export default function PatientDashboardPage() {
             </div>
 
             {editMsg && (
-              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl">
-                {editMsg}
+              <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                <span>{editMsg}</span>
               </div>
             )}
 
-            <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
-              <div>
-                <label className="block font-bold text-gray-700 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  value={editForm.name || ""}
-                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
-                />
+            {photoError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span>{photoError}</span>
               </div>
+            )}
 
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleSaveProfile} className="space-y-5 text-xs">
+              
+              {/* SECTION 1: BASIC INFORMATION */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 pb-1 border-b border-gray-100">
+                  <User className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>1. Basic Information</span>
+                </h4>
+
+                {/* Full Name */}
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">
+                    Full Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editForm.name || ""}
+                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                    placeholder="e.g. Rahul Kumar Verma"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
+                  />
+                </div>
+
+                {/* Gender & Age & DOB */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Gender</label>
+                    <select
+                      value={editForm.gender || "Male"}
+                      onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
+                    >
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Date of Birth (DOB)</label>
+                    <input
+                      type="date"
+                      value={editForm.dob || ""}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        const birthYear = new Date(val).getFullYear();
+                        const calculatedAge = !isNaN(birthYear) ? new Date().getFullYear() - birthYear : editForm.age;
+                        setEditForm({ ...editForm, dob: val, age: calculatedAge });
+                      }}
+                      className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Age (Years)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={120}
+                      value={editForm.age ?? ""}
+                      onChange={(e) => setEditForm({ ...editForm, age: e.target.value })}
+                      placeholder="e.g. 28"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
+                    />
+                  </div>
+                </div>
+
+                {/* Mobile & WhatsApp Number */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Primary Mobile</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="tel"
+                        disabled
+                        value={editForm.mobile ? `+91 ${editForm.mobile}` : ""}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-500 text-xs font-mono font-bold cursor-not-allowed"
+                      />
+                    </div>
+                    <span className="text-[10px] text-gray-400 mt-0.5 block">
+                      To change primary mobile, use the "Change Mobile" button.
+                    </span>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="font-bold text-gray-700">WhatsApp Number</label>
+                      <label className="flex items-center gap-1 cursor-pointer text-[11px] text-emerald-800 font-medium">
+                        <input
+                          type="checkbox"
+                          checked={editForm.sameAsMobile ?? true}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setEditForm({
+                              ...editForm,
+                              sameAsMobile: checked,
+                              whatsappNumber: checked ? editForm.mobile : editForm.whatsappNumber,
+                            });
+                          }}
+                          className="rounded text-[#006837] focus:ring-[#006837]"
+                        />
+                        <span>Same as Mobile</span>
+                      </label>
+                    </div>
+
+                    <input
+                      type="tel"
+                      disabled={editForm.sameAsMobile}
+                      maxLength={10}
+                      value={editForm.sameAsMobile ? (editForm.mobile || "") : (editForm.whatsappNumber || "")}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          whatsappNumber: e.target.value.replace(/[^0-9]/g, ""),
+                        })
+                      }
+                      placeholder="e.g. 9876543210"
+                      className={`w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs ${
+                        editForm.sameAsMobile ? "bg-gray-50 text-gray-500" : "focus:ring-2 focus:ring-[#006837]/30"
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* Email Address */}
                 <div>
                   <label className="block font-bold text-gray-700 mb-1">Email Address</label>
                   <input
@@ -1069,127 +1229,248 @@ export default function PatientDashboardPage() {
                     value={editForm.email || ""}
                     onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                     placeholder="name@example.com"
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
                   />
                 </div>
 
+                {/* Passport Size Photo Upload */}
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">Blood Group</label>
-                  <select
-                    value={editForm.bloodGroup || ""}
-                    onChange={(e) => setEditForm({ ...editForm, bloodGroup: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
-                  >
-                    <option value="">Select Blood Group</option>
-                    <option value="A+">A+</option>
-                    <option value="A-">A-</option>
-                    <option value="B+">B+</option>
-                    <option value="B-">B-</option>
-                    <option value="O+">O+</option>
-                    <option value="O-">O-</option>
-                    <option value="AB+">AB+</option>
-                    <option value="AB-">AB-</option>
-                  </select>
+                  <label className="block font-bold text-gray-700 mb-1">
+                    Passport Size Photo <span className="text-gray-400 font-normal">(Max 30KB)</span>
+                  </label>
+                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-2xl border border-gray-100">
+                    {photoPreview ? (
+                      <div className="w-14 h-16 rounded-xl overflow-hidden border border-emerald-300 bg-white shrink-0 shadow-xs relative">
+                        <img
+                          src={photoPreview.startsWith('/') ? photoPreview : photoPreview}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-14 h-16 rounded-xl border border-gray-300 bg-white flex flex-col items-center justify-center text-gray-400 shrink-0">
+                        <User className="w-6 h-6 text-gray-300" />
+                        <span className="text-[8px] font-bold mt-0.5">NO PHOTO</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex-1 space-y-1.5">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="block w-full text-[11px] text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-full file:border-0 file:text-[11px] file:font-bold file:bg-emerald-100 file:text-[#006837] hover:file:bg-emerald-200 transition-all cursor-pointer"
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (!file) return;
+
+                          if (file.size > 30 * 1024) {
+                            setPhotoError("Image size must be less than 30KB. Please compress your image.");
+                            e.target.value = "";
+                            return;
+                          }
+
+                          setPhotoError("");
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setPhotoPreview(reader.result);
+                            setEditForm({ ...editForm, photo: reader.result });
+                          };
+                          reader.readAsDataURL(file);
+                        }}
+                      />
+                      {photoPreview && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPhotoPreview(null);
+                            setEditForm({ ...editForm, photo: "" });
+                          }}
+                          className="text-[10px] text-red-600 hover:underline font-semibold block"
+                        >
+                          Remove Photo
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-gray-700 mb-1">Age (Years)</label>
-                  <input
-                    type="number"
-                    value={editForm.age || ""}
-                    onChange={(e) => setEditForm({ ...editForm, age: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
-                  />
+              {/* SECTION 2: LOCATION DETAILS */}
+              <div className="space-y-3 pt-2">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 pb-1 border-b border-gray-100">
+                  <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>2. Location Details</span>
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">City</label>
+                    <input
+                      type="text"
+                      value={editForm.city || ""}
+                      onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                      placeholder="Lucknow"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Area / Locality</label>
+                    <input
+                      type="text"
+                      value={editForm.area || ""}
+                      onChange={(e) => setEditForm({ ...editForm, area: e.target.value })}
+                      placeholder="e.g. Gomti Nagar, Aliganj"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Pincode</label>
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={editForm.pincode || ""}
+                      onChange={(e) => setEditForm({ ...editForm, pincode: e.target.value.replace(/[^0-9]/g, "") })}
+                      placeholder="e.g. 226010"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block font-bold text-gray-700 mb-1">Gender</label>
-                  <select
-                    value={editForm.gender || "Male"}
-                    onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
-                  >
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-gray-700 mb-1">City</label>
+                  <label className="block font-bold text-gray-700 mb-1">Full Address (Optional)</label>
                   <input
                     type="text"
-                    value={editForm.city || ""}
-                    onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-gray-700 mb-1">Area / Locality</label>
-                  <input
-                    type="text"
-                    value={editForm.area || ""}
-                    onChange={(e) => setEditForm({ ...editForm, area: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
+                    value={editForm.address || ""}
+                    onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
+                    placeholder="House / Flat / Street address"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="block font-bold text-gray-700 mb-1">Full Address</label>
-                <input
-                  type="text"
-                  value={editForm.address || ""}
-                  onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
-                />
-              </div>
+              {/* SECTION 3: HEALTH & EMERGENCY CONTACT */}
+              <div className="space-y-3 pt-2">
+                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1.5 pb-1 border-b border-gray-100">
+                  <Activity className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>3. Health & Emergency Contact</span>
+                </h4>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-bold text-gray-700 mb-1">Emergency Contact Name</label>
-                  <input
-                    type="text"
-                    value={editForm.emergencyContactName || ""}
-                    onChange={(e) => setEditForm({ ...editForm, emergencyContactName: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Blood Group</label>
+                    <select
+                      value={editForm.bloodGroup || ""}
+                      onChange={(e) => setEditForm({ ...editForm, bloodGroup: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
+                    >
+                      <option value="">Don't know / Select</option>
+                      <option value="A+">A+</option>
+                      <option value="A-">A-</option>
+                      <option value="B+">B+</option>
+                      <option value="B-">B-</option>
+                      <option value="O+">O+</option>
+                      <option value="O-">O-</option>
+                      <option value="AB+">AB+</option>
+                      <option value="AB-">AB-</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Emergency Contact Relation</label>
+                    <select
+                      value={editForm.emergencyContactRelation || "Spouse"}
+                      onChange={(e) => setEditForm({ ...editForm, emergencyContactRelation: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
+                    >
+                      <option value="Father">Father</option>
+                      <option value="Mother">Mother</option>
+                      <option value="Spouse">Spouse</option>
+                      <option value="Son">Son</option>
+                      <option value="Daughter">Daughter</option>
+                      <option value="Brother">Brother</option>
+                      <option value="Sister">Sister</option>
+                      <option value="Guardian">Guardian</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block font-bold text-gray-700 mb-1">Emergency Phone</label>
-                  <input
-                    type="tel"
-                    value={editForm.emergencyContactPhone || ""}
-                    onChange={(e) => setEditForm({ ...editForm, emergencyContactPhone: e.target.value })}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Emergency Contact Name</label>
+                    <input
+                      type="text"
+                      value={editForm.emergencyContactName || ""}
+                      onChange={(e) => setEditForm({ ...editForm, emergencyContactName: e.target.value })}
+                      placeholder="e.g. Suman Devi"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Emergency Phone Number</label>
+                    <input
+                      type="tel"
+                      maxLength={10}
+                      value={editForm.emergencyContactPhone || ""}
+                      onChange={(e) => setEditForm({ ...editForm, emergencyContactPhone: e.target.value.replace(/[^0-9]/g, "") })}
+                      placeholder="e.g. 9876543210"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Existing Medical Conditions (Optional)</label>
+                    <input
+                      type="text"
+                      value={editForm.existingConditions || ""}
+                      onChange={(e) => setEditForm({ ...editForm, existingConditions: e.target.value })}
+                      placeholder="e.g. Hypertension, Diabetes, None"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-gray-700 mb-1">Known Allergies (Optional)</label>
+                    <input
+                      type="text"
+                      value={editForm.allergies || ""}
+                      onChange={(e) => setEditForm({ ...editForm, allergies: e.target.value })}
+                      placeholder="e.g. Penicillin, Dust, None"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#006837]/30 focus:border-[#006837]"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <p className="text-[11px] text-gray-400">
-                ℹ️ Updating info will automatically increment your card version (V{patientData.cardVersion || 1} → V{(patientData.cardVersion || 1) + 1}). Your Permanent ID stays the same.
-              </p>
+              {/* Informative Note */}
+              <div className="p-3 bg-emerald-50/70 border border-emerald-100 rounded-xl text-[11px] text-emerald-800 flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <span>
+                  Updating these options will instantly synchronize both your <strong>Digital Health Card</strong> and your permanent healthcare record.
+                </span>
+              </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2">
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={() => setShowEditProfile(false)}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl font-bold"
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={editLoading}
-                  className="px-5 py-2 bg-[#006837] text-white rounded-xl font-bold hover:bg-[#004d26] transition disabled:opacity-50"
+                  className="px-5 py-2.5 bg-[#006837] text-white rounded-xl font-bold hover:bg-[#004d26] transition shadow-md hover:shadow-lg disabled:opacity-50 flex items-center gap-1.5"
                 >
-                  {editLoading ? "Updating..." : "Save & Regenerate Card"}
+                  <CreditCard className="w-4 h-4" />
+                  <span>{editLoading ? "Updating..." : "Save & Update Health Card"}</span>
                 </button>
               </div>
             </form>

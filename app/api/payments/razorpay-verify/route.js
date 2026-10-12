@@ -5,6 +5,7 @@ import Payment from '@/lib/models/Payment';
 import Appointment from '@/lib/models/Appointment';
 import PhysioBooking from '@/lib/models/physio/PhysioBooking';
 import Patient from '@/lib/models/physio/Patient'; // Required for population
+import BookingNotification from '@/lib/models/BookingNotification';
 import { sendPaymentConfirmation, sendAdminPaymentAlert } from '@/lib/whatsapp';
 
 export async function POST(req) {
@@ -92,6 +93,19 @@ export async function POST(req) {
       appointment.advancePaid = (appointment.advancePaid || 0) + Number(amount);
       appointment.balanceDue = Math.max(0, (appointment.totalAmount || 0) - appointment.advancePaid);
       await appointment.save();
+    }
+
+    // Update lead notification payment status
+    try {
+      await BookingNotification.findOneAndUpdate(
+        { bookingId },
+        { 
+          paymentStatus: 'Paid',
+          isRead: false
+        }
+      );
+    } catch (notifErr) {
+      console.error("BookingNotification update failed:", notifErr);
     }
 
     // 5. Send WhatsApp notifications

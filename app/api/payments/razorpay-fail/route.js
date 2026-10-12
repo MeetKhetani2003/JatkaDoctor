@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db';
 import Payment from '@/lib/models/Payment';
 import Appointment from '@/lib/models/Appointment';
+import BookingNotification from '@/lib/models/BookingNotification';
 
 export async function POST(req) {
   try {
@@ -30,10 +31,19 @@ export async function POST(req) {
 
     await payment.save();
 
-    // Update appointment paymentStatus
+    // Update appointment paymentStatus (Never delete the lead!)
     await Appointment.findOneAndUpdate(
       { bookingId },
       { paymentStatus: 'Failed' }
+    );
+
+    // Update BookingNotification paymentStatus
+    await BookingNotification.findOneAndUpdate(
+      { bookingId },
+      { 
+        paymentStatus: 'Failed',
+        isRead: false
+      }
     );
 
     return NextResponse.json(payment);

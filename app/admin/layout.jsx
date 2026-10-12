@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -22,15 +22,19 @@ import {
   UserPlus,
   PhoneCall,
   XOctagon,
-  Package
+  Package,
+  Bell,
+  MessageCircle
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 const sidebarLinks = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Notifications", href: "/admin/notifications", icon: Bell, isNotification: true },
   { label: "Health Cards & 360°", href: "/admin/health-cards", icon: CreditCard },
   { label: "Camp Management", href: "/admin/camps", icon: Activity },
   { label: "Bookings", href: "/admin/appointments", icon: CalendarCheck },
+  { label: "ICU at Home", href: "/admin/icu-requests", icon: Activity },
   { label: "Payments", href: "/admin/payments", icon: CreditCard },
   { label: "Staff Directory", href: "/admin/staff", icon: UserPlus },
   { label: "Patient History", href: "/admin/patients", icon: History },
@@ -55,6 +59,65 @@ export default function AdminLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [recentNotifs, setRecentNotifs] = useState([]);
+  const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
+  const [hasPermission, setHasPermission] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      setHasPermission(Notification.permission === "granted");
+    }
+  }, []);
+
+  const requestNotificationPermission = async () => {
+    if (typeof window !== "undefined" && "Notification" in window) {
+      const permission = await Notification.requestPermission();
+      setHasPermission(permission === "granted");
+      if (permission === "granted") {
+        new Notification("Dr Jhatka Medicare", {
+          body: "Push notifications enabled for new booking leads!",
+          icon: "/Dr.Jhatka.png"
+        });
+      }
+    }
+  };
+
+  // Poll notifications every 6 seconds
+  useEffect(() => {
+    let lastSeenId = null;
+
+    const checkNotifications = async () => {
+      try {
+        const res = await fetch("/api/admin/notifications?limit=5");
+        const data = await res.json();
+        if (data.success) {
+          setUnreadCount(data.unreadCounts?.all || 0);
+          setRecentNotifs(data.data || []);
+
+          // Trigger browser notification for fresh leads
+          if (data.data && data.data.length > 0) {
+            const newest = data.data[0];
+            if (lastSeenId && newest._id !== lastSeenId && !newest.isRead) {
+              if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+                new Notification(`🔔 ${newest.title || 'New Booking Lead Received'}`, {
+                  body: `${newest.patientName} | ${newest.service} | ${newest.phone}`,
+                  icon: "/Dr.Jhatka.png"
+                });
+              }
+            }
+            lastSeenId = newest._id;
+          }
+        }
+      } catch (err) {
+        // silent fail on network blips
+      }
+    };
+
+    checkNotifications();
+    const interval = setInterval(checkNotifications, 6000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -84,18 +147,28 @@ export default function AdminLayout({ children }) {
           {sidebarLinks.map((link) => {
             const Icon = link.icon;
             const isActive = pathname === link.href;
+            const isNotif = link.isNotification;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-normal transition-all ${
+                className={`flex items-center justify-between px-4 py-3 rounded-xl text-sm font-normal transition-all ${
                   isActive
                     ? "bg-primary text-white shadow-lg shadow-primary/30 scale-[1.02]"
                     : "text-gray-600 hover:bg-gray-50 hover:text-primary"
                 }`}
               >
-                <Icon className="w-5 h-5" />
-                {link.label}
+                <div className="flex items-center gap-3">
+                  <Icon className="w-5 h-5" />
+                  <span>{link.label}</span>
+                </div>
+                {isNotif && unreadCount > 0 && (
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                    isActive ? "bg-white text-emerald-700" : "bg-rose-500 text-white"
+                  }`}>
+                    {unreadCount}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -121,12 +194,114 @@ export default function AdminLayout({ children }) {
 
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-8 sticky top-0 z-10">
+        <header className="h-16 bg-white border-b border-gray-100 flex items-center justify-between px-8 sticky top-0 z-30">
           <h2 className="text-lg font-normal text-black tracking-tight capitalize">
             {sidebarLinks.find((l) => l.href === pathname)?.label ||
               "Dashboard"}
           </h2>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 relative">
+            {/* Browser push permission helper if not granted */}
+            {!hasPermission && (
+              <button
+                onClick={requestNotificationPermission}
+                className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors"
+                title="Enable desktop notifications for new bookings"
+              >
+                <Bell className="w-3.5 h-3.5 animate-pulse" />
+                Enable Push Alerts
+              </button>
+            )}
+
+            {/* Notification Bell with Badge & Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setNotifDropdownOpen(prev => !prev)}
+                className="p-2 text-gray-500 hover:text-emerald-600 hover:bg-gray-100 rounded-xl transition-colors relative"
+                aria-label="Notifications"
+              >
+                <Bell className="w-5 h-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-rose-500 text-white rounded-full text-[10px] font-bold flex items-center justify-center animate-pulse">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {/* Notification Quick Dropdown */}
+              {notifDropdownOpen && (
+                <div
+                  className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-gray-100 py-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+                  onClick={() => setNotifDropdownOpen(false)}
+                >
+                  <div className="flex items-center justify-between px-4 pb-2 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-gray-900 text-sm">Notifications</span>
+                      {unreadCount > 0 && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700">
+                          {unreadCount} unread
+                        </span>
+                      )}
+                    </div>
+                    <Link
+                      href="/admin/notifications"
+                      className="text-xs text-emerald-600 hover:text-emerald-700 font-semibold"
+                    >
+                      View All
+                    </Link>
+                  </div>
+
+                  <div className="divide-y divide-gray-50 max-h-80 overflow-y-auto">
+                    {recentNotifs.length === 0 ? (
+                      <div className="py-6 text-center text-xs text-gray-400">
+                        No recent notifications
+                      </div>
+                    ) : (
+                      recentNotifs.map((n) => (
+                        <Link
+                          key={n._id}
+                          href="/admin/notifications"
+                          className={`block p-3 hover:bg-gray-50 transition-colors ${
+                            !n.isRead ? "bg-emerald-50/30" : ""
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-semibold text-xs text-gray-900 line-clamp-1">
+                              {n.title || "New Booking Lead"}
+                            </span>
+                            <span className="text-[10px] text-gray-400 whitespace-nowrap">
+                              {n.bookingId}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-600 mt-0.5">
+                            {n.patientName} • {n.service}
+                          </p>
+                          <div className="flex items-center justify-between mt-1.5 text-[11px]">
+                            <span className="text-gray-400">{n.preferredDate || "Today"}</span>
+                            <span className={`px-2 py-0.2 rounded font-semibold text-[10px] ${
+                              n.paymentStatus === 'Paid' ? 'bg-emerald-100 text-emerald-800' :
+                              n.paymentStatus === 'Failed' ? 'bg-rose-100 text-rose-800' :
+                              'bg-amber-100 text-amber-800'
+                            }`}>
+                              {n.paymentStatus || 'Pending'}
+                            </span>
+                          </div>
+                        </Link>
+                      ))
+                    )}
+                  </div>
+
+                  <div className="pt-2 px-3 border-t border-gray-100 text-center">
+                    <Link
+                      href="/admin/notifications"
+                      className="block w-full py-1.5 rounded-lg text-xs font-semibold text-emerald-600 hover:bg-emerald-50 transition-colors"
+                    >
+                      Open Full Notification Center &rarr;
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <button className="p-2 text-gray-400 hover:text-black transition-colors">
               <Settings className="w-5 h-5" />
             </button>
