@@ -4,7 +4,6 @@ import Doctor from '@/lib/models/Doctor';
 
 export default async function sitemap() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.drjhatka.com';
-
   // Core Static Pages
   const staticRoutes = [
     '',
