@@ -336,7 +336,7 @@ function PaymentContent() {
             <div className="space-y-3 pt-2">
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400 font-medium">Patient Name</span>
-                <span className="text-gray-900 font-bold">{booking?.patientName}</span>
+                <span className="text-gray-900 font-bold">{booking?.patientName || booking?.patientId?.name || booking?.name}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400 font-medium">Booking ID</span>
@@ -344,12 +344,12 @@ function PaymentContent() {
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400 font-medium">Service Requested</span>
-                <span className="text-gray-900 font-bold">{booking?.category || booking?.service}</span>
+                <span className="text-gray-900 font-bold">{booking?.category || booking?.service || booking?.departmentId?.name || "Physiotherapy"}</span>
               </div>
-              {booking?.package && (
+              {(booking?.package || booking?.packageId?.title) && (
                 <div className="flex justify-between text-xs">
                   <span className="text-gray-400 font-medium">Package</span>
-                  <span className="text-gray-900 font-bold">{booking?.package}</span>
+                  <span className="text-gray-900 font-bold">{booking?.package || booking?.packageId?.title}</span>
                 </div>
               )}
               {booking?.doctor && booking.doctor !== "Any Available" && (
@@ -360,7 +360,9 @@ function PaymentContent() {
               )}
               <div className="flex justify-between text-xs">
                 <span className="text-gray-400 font-medium">Date & Time</span>
-                <span className="text-gray-900 font-bold">{booking?.appointmentDate} @ {booking?.appointmentTime}</span>
+                <span className="text-gray-900 font-bold">
+                  {(booking?.appointmentDate || booking?.preferredDate) ? `${booking?.appointmentDate || booking?.preferredDate} ${booking?.appointmentTime || booking?.preferredTime ? `@ ${booking?.appointmentTime || booking?.preferredTime}` : ''}` : 'Scheduled on Confirmation'}
+                </span>
               </div>
             </div>
 

@@ -18,6 +18,14 @@ import { useRouter } from "next/navigation";
 import { useBookingModal } from '@/context/BookingModalContext';
 import { usePatientAuth } from '@/context/PatientAuthContext';
 
+export const getEffectivePrice = (pkg) => {
+  if (!pkg) return 0;
+  if (pkg.offerPrice && pkg.basePrice && pkg.offerPrice < pkg.basePrice) {
+    return pkg.offerPrice;
+  }
+  return pkg.offerPrice || pkg.basePrice || 0;
+};
+
 export default function PhysiotherapyBooking() {
   const router = useRouter();
   const { closeModal } = useBookingModal();
@@ -199,9 +207,7 @@ export default function PhysiotherapyBooking() {
     e.preventDefault();
     setLoading(true);
     try {
-      const effectivePrice = (selection.pkg.offerPrice && selection.pkg.offerPrice < selection.pkg.basePrice)
-        ? selection.pkg.offerPrice
-        : (selection.pkg.offerPrice || selection.pkg.basePrice);
+      const effectivePrice = getEffectivePrice(selection.pkg);
 
       const payload = {
         name: selection.patientName,
@@ -444,7 +450,7 @@ export default function PhysiotherapyBooking() {
                       <div className="mt-auto mb-6">
                         <div className="flex items-baseline gap-2">
                           <span className="text-3xl font-black text-gray-900">
-                            ₹{pkg.offerPrice && pkg.offerPrice < pkg.basePrice ? pkg.offerPrice : (pkg.offerPrice || pkg.basePrice)}
+                            ₹{getEffectivePrice(pkg)}
                           </span>
                           {pkg.offerPrice && pkg.basePrice && pkg.offerPrice < pkg.basePrice && (
                             <span className="text-sm text-gray-400 line-through">
@@ -569,9 +575,25 @@ export default function PhysiotherapyBooking() {
                       </div>
                     </div>
                     
-                    <div className="flex justify-between items-center mb-8">
+                    <div className="flex justify-between items-baseline mb-8">
                       <span className="font-bold text-gray-900">Total Payable</span>
-                      <span className="text-2xl font-black text-primary">₹{selection.pkg?.basePrice}</span>
+                      <div className="text-right">
+                        <div className="flex items-baseline gap-2 justify-end">
+                          <span className="text-2xl font-black text-primary">
+                            ₹{getEffectivePrice(selection.pkg)}
+                          </span>
+                          {selection.pkg?.offerPrice && selection.pkg?.basePrice && selection.pkg.offerPrice < selection.pkg.basePrice && (
+                            <span className="text-sm text-gray-400 line-through">
+                              ₹{selection.pkg.basePrice}
+                            </span>
+                          )}
+                        </div>
+                        {selection.pkg?.offerPrice && selection.pkg?.basePrice && selection.pkg.offerPrice < selection.pkg.basePrice && (
+                          <span className="text-xs text-green-600 font-semibold block">
+                            Save ₹{selection.pkg.basePrice - selection.pkg.offerPrice}
+                          </span>
+                        )}
+                      </div>
                     </div>
                     
                     <button 

@@ -65,6 +65,16 @@ export async function POST(req) {
     const count = await PhysioBooking.countDocuments();
     body.bookingId = `DJM-PTB-${(count + 1).toString().padStart(6, '0')}`;
     
+    // Ensure accurate total amount if not explicitly provided
+    if ((!body.totalAmount || body.totalAmount <= 0) && body.packageId) {
+      const physioPackage = await PhysioPackage.findById(body.packageId);
+      if (physioPackage) {
+        body.totalAmount = (physioPackage.offerPrice && physioPackage.basePrice && physioPackage.offerPrice < physioPackage.basePrice)
+          ? physioPackage.offerPrice
+          : (physioPackage.offerPrice || physioPackage.basePrice || 0);
+      }
+    }
+
     // 3. Create Booking
     const booking = await PhysioBooking.create(body);
     
