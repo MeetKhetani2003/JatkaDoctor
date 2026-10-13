@@ -26,26 +26,13 @@ export const getEffectivePrice = (pkg) => {
   return pkg.offerPrice || pkg.basePrice || 0;
 };
 
-export default function PhysiotherapyBooking() {
+export default function PhysiotherapyBooking({ initialPackage = null, onClose = null }) {
   const router = useRouter();
   const { closeModal } = useBookingModal();
-  const { patient, loggedIn, profileComplete, loading: authLoading } = usePatientAuth();
+  const { patient, loggedIn, loading: authLoading } = usePatientAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // Redirect if not logged in or profile is incomplete
-  useEffect(() => {
-    if (authLoading) return;
-    if (!loggedIn) {
-      closeModal();
-      router.push("/patient/login");
-    } else if (!profileComplete) {
-      closeModal();
-      router.push("/patient/complete-profile");
-    }
-  }, [loggedIn, profileComplete, authLoading, router, closeModal]);
-
-  
   const [data, setData] = useState({
     departments: [],
     groups: [],
@@ -57,9 +44,11 @@ export default function PhysiotherapyBooking() {
     department: null,
     group: null,
     condition: null,
+    conditionNotes: "",
     pkg: null,
     date: "",
     time: "",
+    address: "",
     patientName: patient?.name || "",
     mobile: patient?.mobile && !patient.mobile.startsWith('google_') ? patient.mobile : "",
   });
@@ -71,15 +60,30 @@ export default function PhysiotherapyBooking() {
         ...prev,
         patientName: prev.patientName || patient.name || "",
         mobile: prev.mobile || (patient.mobile && !patient.mobile.startsWith('google_') ? patient.mobile : ""),
+        address: prev.address || patient.address || "",
       }));
     }
   }, [patient]);
 
-  // Fetch initial departments
+  // Fetch initial departments & packages
   useEffect(() => {
     fetch('/api/admin/physio-departments')
       .then(res => res.json())
-      .then(res => setData(d => ({ ...d, departments: res.data || [] })));
+      .then(res => setData(d => ({ ...d, departments: res.data || [] })))
+      .catch(() => {});
+
+    fetch('/api/admin/physio-packages')
+      .then(res => res.json())
+      .then(res => {
+        if (res.data && res.data.length > 0) {
+          setData(d => ({ ...d, packages: res.data }));
+        } else {
+          setData(d => ({ ...d, packages: defaultFallbackPackages }));
+        }
+      })
+      .catch(() => {
+        setData(d => ({ ...d, packages: defaultFallbackPackages }));
+      });
   }, []);
 
   const handleDepartmentSelect = async (dept) => {
@@ -107,6 +111,15 @@ export default function PhysiotherapyBooking() {
       setLoading(false);
     }
   };
+
+  const defaultFallbackDepartments = [
+    { _id: "6ab4f00115c3070c8dd00301", name: "Orthopedic", description: "Joint, bone, spine, fracture & post-surgery recovery." },
+    { _id: "6ab4f00215c3070c8dd00302", name: "Neurological", description: "Stroke, paralysis, nerve weakness & brain injury rehabilitation." },
+    { _id: "6ab4f00315c3070c8dd00303", name: "Geriatric / Elderly", description: "Balance, walking mobility & age-related pain." },
+    { _id: "6ab4f00415c3070c8dd00304", name: "Sports Rehabilitation", description: "Ligament tears, athletic injuries, muscle pulls & sprains." },
+    { _id: "6ab4f00515c3070c8dd00305", name: "Cardiopulmonary", description: "Post-COVID recovery, breathing therapy & cardiac wellness." },
+    { _id: "6ab4f00615c3070c8dd00306", name: "General Home Rehab", description: "Daily pain management & full-body physical therapy." },
+  ];
 
   const defaultFallbackPackages = [
     {
@@ -181,6 +194,50 @@ export default function PhysiotherapyBooking() {
     }
   ];
 
+  // Auto-resolve initialPackage if provided
+  useEffect(() => {
+    if (initialPackage) {
+      let matched = null;
+      if (typeof initialPackage === 'object' && initialPackage?.title) {
+        matched = initialPackage;
+      } else if (typeof initialPackage === 'string') {
+        const pool = (data.packages && data.packages.length > 0) ? data.packages : defaultFallbackPackages;
+        const found = pool.find(
+          p => p.title.toLowerCase() === initialPackage.toLowerCase() || 
+               p.title.toLowerCase().includes(initialPackage.toLowerCase()) ||
+               initialPackage.toLowerCase().includes(p.title.toLowerCase()) ||
+               p._id === initialPackage
+        );
+        matched = found || {
+          title: initialPackage,
+          basePrice: 499,
+          offerPrice: 499,
+          sessionsCount: initialPackage.toLowerCase().includes("1 session") ? 1 : 
+                        initialPackage.includes("3") ? 3 :
+                        initialPackage.includes("5") ? 5 :
+                        initialPackage.includes("7") ? 7 :
+                        initialPackage.includes("10") ? 10 :
+                        initialPackage.includes("15") ? 15 :
+                        initialPackage.includes("30") ? 30 : 1,
+          validityDays: initialPackage.toLowerCase().includes("1 session") ? 1 : 
+                        initialPackage.includes("3") ? 3 :
+                        initialPackage.includes("5") ? 5 :
+                        initialPackage.includes("7") ? 7 :
+                        initialPackage.includes("10") ? 10 :
+                        initialPackage.includes("15") ? 15 :
+                        initialPackage.includes("30") ? 30 : 1,
+        };
+      }
+      if (matched) {
+        setSelection(prev => ({
+          ...prev,
+          pkg: matched
+        }));
+        // Booking starts from Step 1
+      }
+    }
+  }, [initialPackage, data.packages]);
+
   const handleConditionSelect = async (condition) => {
     setSelection({ ...selection, condition });
     setLoading(true);
@@ -215,10 +272,12 @@ export default function PhysiotherapyBooking() {
         totalAmount: effectivePrice,
         preferredDate: selection.date,
         preferredTime: selection.time,
+        address: selection.address || 'Lucknow',
+        notes: selection.conditionNotes || '',
       };
       
       // Only send valid MongoDB ObjectIds (24 hex characters) to avoid CastError 400s
-      const isValidObjectId = (id) => /^[0-9a-fA-F]{24}$/.test(id);
+      const isValidObjectId = (id) => typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
       
       if (isValidObjectId(selection.department?._id)) payload.departmentId = selection.department._id;
       if (isValidObjectId(selection.group?._id)) payload.groupId = selection.group._id;
@@ -228,19 +287,30 @@ export default function PhysiotherapyBooking() {
       // 1. Link to existing patient or create new
       let finalPatientId = null;
       
-      if (loggedIn && patient?.patientId) {
-        finalPatientId = patient.patientId;
+      if (loggedIn && (patient?._id || patient?.id)) {
+        finalPatientId = patient._id || patient.id;
       } else {
         const patientRes = await fetch('/api/admin/physio-patients', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: selection.patientName, mobile: selection.mobile })
+          body: JSON.stringify({ 
+            name: selection.patientName, 
+            mobile: selection.mobile,
+            address: selection.address || ''
+          })
         });
         const patientData = await patientRes.json();
-        if (patientData.success) {
+        if (patientData.success && patientData.data?._id) {
           finalPatientId = patientData.data._id;
         } else {
-          throw new Error("Failed to create patient");
+          // If already exists (409), look up existing patient by mobile
+          const searchRes = await fetch(`/api/admin/physio-patients?search=${selection.mobile}`);
+          const searchData = await searchRes.json();
+          if (searchData.success && searchData.data?.[0]?._id) {
+            finalPatientId = searchData.data[0]._id;
+          } else {
+            throw new Error(patientData.message || "Failed to create patient");
+          }
         }
       }
       
@@ -254,9 +324,10 @@ export default function PhysiotherapyBooking() {
          });
          const bookData = await bookRes.json();
          
-         if(bookData.success) {
+         if (bookData.success) {
             // Close the modal and redirect to payment
-            closeModal();
+            if (onClose) onClose();
+            else if (closeModal) closeModal();
             const paymentUrl = `/payment?bookingId=${bookData.data.bookingId}&amount=${bookData.data.totalAmount}&type=physio`;
             router.push(paymentUrl);
          } else {
@@ -321,7 +392,7 @@ export default function PhysiotherapyBooking() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {data.departments.map(dept => (
+                {((data.departments && data.departments.length > 0) ? data.departments : defaultFallbackDepartments).map(dept => (
                   <button
                     key={dept._id}
                     onClick={() => handleDepartmentSelect(dept)}
@@ -428,7 +499,7 @@ export default function PhysiotherapyBooking() {
           {/* STEP 4: PACKAGES */}
           {step === 4 && (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="p-8 bg-gray-50">
-              <BackButton onClick={() => setStep(3)} />
+              <BackButton onClick={() => setStep(selection.condition ? 3 : (selection.group ? 2 : 1))} />
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Select a Treatment Package</h2>
                 <p className="text-gray-500">For optimal recovery, consistency is key.</p>
@@ -436,44 +507,68 @@ export default function PhysiotherapyBooking() {
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {data.packages.length > 0 ? (
-                  data.packages.map((pkg, i) => (
-                    <div key={pkg._id} className={`bg-white rounded-2xl border-2 ${pkg.isRecommended ? 'border-primary shadow-lg relative transform md:-translate-y-4' : 'border-gray-100 hover:border-gray-300'} p-6 flex flex-col`}>
-                      {pkg.isRecommended && (
-                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-                          Recommended
-                        </div>
-                      )}
-                      
-                      <h3 className="text-xl font-bold text-gray-900 mb-1">{pkg.title}</h3>
-                      <p className="text-sm text-gray-500 mb-6">{pkg.sessionsCount} Sessions included</p>
-                      
-                      <div className="mt-auto mb-6">
-                        <div className="flex items-baseline gap-2">
-                          <span className="text-3xl font-black text-gray-900">
-                            ₹{getEffectivePrice(pkg)}
-                          </span>
+                  data.packages.map((pkg, i) => {
+                    const isSelected = selection.pkg && (
+                      selection.pkg._id === pkg._id || 
+                      selection.pkg.title?.toLowerCase() === pkg.title?.toLowerCase()
+                    );
+
+                    return (
+                      <div 
+                        key={pkg._id} 
+                        className={`bg-white rounded-2xl border-2 transition-all ${
+                          isSelected 
+                            ? 'border-primary ring-2 ring-primary/30 shadow-lg relative transform md:-translate-y-2' 
+                            : pkg.isRecommended 
+                              ? 'border-primary shadow-lg relative transform md:-translate-y-4' 
+                              : 'border-gray-100 hover:border-gray-300'
+                        } p-6 flex flex-col`}
+                      >
+                        {isSelected ? (
+                          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                            <CheckCircle size={12} /> Selected Plan
+                          </div>
+                        ) : pkg.isRecommended ? (
+                          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+                            Recommended
+                          </div>
+                        ) : null}
+                        
+                        <h3 className="text-xl font-bold text-gray-900 mb-1">{pkg.title}</h3>
+                        <p className="text-sm text-gray-500 mb-6">{pkg.sessionsCount} Sessions included</p>
+                        
+                        <div className="mt-auto mb-6">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-3xl font-black text-gray-900">
+                              ₹{getEffectivePrice(pkg)}
+                            </span>
+                            {pkg.offerPrice && pkg.basePrice && pkg.offerPrice < pkg.basePrice && (
+                              <span className="text-sm text-gray-400 line-through">
+                                ₹{pkg.basePrice}
+                              </span>
+                            )}
+                          </div>
                           {pkg.offerPrice && pkg.basePrice && pkg.offerPrice < pkg.basePrice && (
-                            <span className="text-sm text-gray-400 line-through">
-                              ₹{pkg.basePrice}
+                            <span className="inline-block bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded mt-1">
+                              Save ₹{pkg.basePrice - pkg.offerPrice}
                             </span>
                           )}
+                          <p className="text-xs text-green-600 font-medium mt-1">Valid for {pkg.validityDays} Days</p>
                         </div>
-                        {pkg.offerPrice && pkg.basePrice && pkg.offerPrice < pkg.basePrice && (
-                          <span className="inline-block bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded mt-1">
-                            Save ₹{pkg.basePrice - pkg.offerPrice}
-                          </span>
-                        )}
-                        <p className="text-xs text-green-600 font-medium mt-1">Valid for {pkg.validityDays} Days</p>
+                        
+                        <button 
+                          onClick={() => handlePackageSelect(pkg)}
+                          className={`w-full py-3 rounded-xl font-bold transition-colors ${
+                            isSelected || pkg.isRecommended 
+                              ? 'bg-primary text-white hover:bg-primary-dark shadow-sm' 
+                              : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
+                          }`}
+                        >
+                          {isSelected ? 'Continue with this Plan' : 'Select Package'}
+                        </button>
                       </div>
-                      
-                      <button 
-                        onClick={() => handlePackageSelect(pkg)}
-                        className={`w-full py-3 rounded-xl font-bold transition-colors ${pkg.isRecommended ? 'bg-primary text-white hover:bg-primary-dark' : 'bg-gray-100 text-gray-900 hover:bg-gray-200'}`}
-                      >
-                        Select Package
-                      </button>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="col-span-full text-center py-8">
                     <p className="text-gray-500 text-sm mb-2">No specific packages listed yet.</p>
@@ -512,17 +607,17 @@ export default function PhysiotherapyBooking() {
                   <h2 className="text-2xl font-bold text-gray-900 mb-6">Patient Details</h2>
                   <form id="booking-form" onSubmit={handleBookingSubmit} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
                       <input 
                         type="text" required
                         value={selection.patientName}
                         onChange={e => setSelection({...selection, patientName: e.target.value})}
                         className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary outline-none" 
-                        placeholder="John Doe" 
+                        placeholder="Patient Full Name" 
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number *</label>
                       <input 
                         type="tel" required
                         value={selection.mobile}
@@ -531,10 +626,32 @@ export default function PhysiotherapyBooking() {
                         placeholder="10-digit mobile number" 
                       />
                     </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Home Visit Address (Lucknow) *</label>
+                      <input 
+                        type="text" required
+                        value={selection.address}
+                        onChange={e => setSelection({...selection, address: e.target.value})}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary outline-none" 
+                        placeholder="House/Flat No., Area (e.g. Gomti Nagar, Indira Nagar, Aliganj)..." 
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Problem / Pain Area (Optional)</label>
+                      <input 
+                        type="text"
+                        value={selection.conditionNotes || (selection.condition?.name || "")}
+                        onChange={e => setSelection({...selection, conditionNotes: e.target.value})}
+                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary outline-none" 
+                        placeholder="e.g. Back Pain, Knee Rehab, Cervical, Stroke Recovery..." 
+                      />
+                    </div>
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Date *</label>
                         <input 
                           type="date" required
                           value={selection.date}
@@ -543,13 +660,21 @@ export default function PhysiotherapyBooking() {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Time</label>
-                        <input 
-                          type="time" required
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Time *</label>
+                        <select
+                          required
                           value={selection.time}
                           onChange={e => setSelection({...selection, time: e.target.value})}
-                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary outline-none" 
-                        />
+                          className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                        >
+                          <option value="">Select Slot</option>
+                          <option value="08:00 AM - 10:00 AM">08:00 AM - 10:00 AM</option>
+                          <option value="10:00 AM - 12:00 PM">10:00 AM - 12:00 PM</option>
+                          <option value="12:00 PM - 02:00 PM">12:00 PM - 02:00 PM</option>
+                          <option value="02:00 PM - 04:00 PM">02:00 PM - 04:00 PM</option>
+                          <option value="04:00 PM - 06:00 PM">04:00 PM - 06:00 PM</option>
+                          <option value="06:00 PM - 08:00 PM">06:00 PM - 08:00 PM</option>
+                        </select>
                       </div>
                     </div>
                   </form>
@@ -563,15 +688,39 @@ export default function PhysiotherapyBooking() {
                     <div className="space-y-3 mb-6 text-sm">
                       <div className="flex justify-between border-b border-gray-200 pb-2">
                         <span className="text-gray-500">Service</span>
-                        <span className="font-medium text-gray-900 text-right">{selection.department?.name} <br/> {selection.condition?.name}</span>
+                        <span className="font-medium text-gray-900 text-right">
+                          {selection.department?.name || 'Physiotherapy at Home'}<br/>
+                          <span className="text-xs text-gray-500 font-normal">
+                            {selection.condition?.name || selection.conditionNotes || 'Home Rehabilitation'}
+                          </span>
+                        </span>
                       </div>
                       <div className="flex justify-between border-b border-gray-200 pb-2">
-                        <span className="text-gray-500">Package</span>
-                        <span className="font-medium text-gray-900">{selection.pkg?.title}</span>
+                        <span className="text-gray-500">Selected Plan</span>
+                        <div className="text-right">
+                          <span className="font-bold text-gray-900 block">{selection.pkg?.title || 'Home Visit Plan'}</span>
+                          {selection.pkg?.sessionsCount && (
+                            <span className="text-xs text-primary font-medium block">
+                              {selection.pkg?.sessionsCount} Sessions ({selection.pkg?.validityDays} Days)
+                            </span>
+                          )}
+                          <button 
+                            type="button" 
+                            onClick={() => {
+                              if (data.packages.length === 0) {
+                                setData(d => ({ ...d, packages: defaultFallbackPackages }));
+                              }
+                              setStep(4);
+                            }}
+                            className="text-[11px] text-primary hover:underline font-semibold mt-0.5 inline-block"
+                          >
+                            Change Plan →
+                          </button>
+                        </div>
                       </div>
                       <div className="flex justify-between border-b border-gray-200 pb-2">
                         <span className="text-gray-500">Location</span>
-                        <span className="font-medium text-gray-900 flex items-center gap-1"><MapPin size={14}/> Home Service</span>
+                        <span className="font-medium text-gray-900 flex items-center gap-1"><MapPin size={14}/> Home Service (Lucknow)</span>
                       </div>
                     </div>
                     

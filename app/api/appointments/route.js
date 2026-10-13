@@ -372,17 +372,14 @@ export async function POST(req) {
       }
     }
 
-    if (!calculatedTotalAmount && !body.totalAmount) {
-      const s = (body.service || body.category || '').toLowerCase();
-      if (s.includes("ambulance")) calculatedTotalAmount = 1199;
-      else if (s.includes("physio")) calculatedTotalAmount = 499;
-      else if (s.includes("doctor")) calculatedTotalAmount = 999;
-      else if (s.includes("icu")) calculatedTotalAmount = 2999;
-      else if (s.includes("nurse") || s.includes("nursing")) calculatedTotalAmount = 800;
-      else if (s.includes("lab")) calculatedTotalAmount = 299;
-      else if (s.includes("equipment")) calculatedTotalAmount = 500;
-      else if (s.includes("elderly") || s.includes("home care")) calculatedTotalAmount = 800;
-      else calculatedTotalAmount = 499;
+    // If totalAmount is provided explicitly (e.g., 0 for standard booking requests), respect it
+    let finalTotalAmount = 0;
+    if (body.totalAmount !== undefined && body.totalAmount !== null) {
+      finalTotalAmount = Number(body.totalAmount);
+    } else if (body.package && calculatedTotalAmount) {
+      finalTotalAmount = calculatedTotalAmount;
+    } else {
+      finalTotalAmount = 0; // Standard appointment booking form is 0 rs (Free)
     }
 
     // Create appointment and explicitly set bookingId to ensure it's saved
@@ -394,9 +391,9 @@ export async function POST(req) {
       appointmentDate: body.appointmentDate || new Date().toISOString().split('T')[0],
       appointmentTime: body.appointmentTime || '09:00',
       bookingStatus: body.bookingStatus || 'New',
-      paymentStatus: body.paymentStatus || 'Pending',
+      paymentStatus: body.paymentStatus || (finalTotalAmount === 0 ? 'Free' : 'Pending'),
       status: body.status || 'Pending',
-      totalAmount: body.totalAmount || calculatedTotalAmount
+      totalAmount: finalTotalAmount
     });
     
     await appointment.save();

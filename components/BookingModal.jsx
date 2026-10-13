@@ -3,15 +3,34 @@ import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import BookingForm from './BookingForm';
+import PhysiotherapyBooking from './PhysiotherapyBooking';
 import { useBookingModal } from '@/context/BookingModalContext';
 
 export default function BookingModal() {
   const { isOpen, closeModal, bookingData } = useBookingModal();
 
+  const isPhysio = 
+    bookingData.service === 'Physiotherapy' || 
+    bookingData.service?.toLowerCase().includes('physio') ||
+    bookingData.type === 'physio' ||
+    (typeof bookingData.package === 'string' && (
+      bookingData.package.toLowerCase().includes('physio') || 
+      bookingData.package.toLowerCase().includes('session') ||
+      bookingData.package.toLowerCase().includes('days home')
+    )) ||
+    (typeof bookingData.package === 'object' && bookingData.package !== null && (
+      bookingData.service === 'Physiotherapy' ||
+      bookingData.service?.toLowerCase().includes('physio') ||
+      bookingData.package.title?.toLowerCase().includes('physio') ||
+      bookingData.package.title?.toLowerCase().includes('session') ||
+      bookingData.package.title?.toLowerCase().includes('days home') ||
+      !bookingData.service
+    ));
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -23,29 +42,39 @@ export default function BookingModal() {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-lg bg-white rounded-3xl overflow-hidden shadow-2xl"
+            className={`relative w-full ${isPhysio ? 'max-w-4xl' : 'max-w-lg'} bg-white rounded-3xl overflow-hidden shadow-2xl`}
           >
             <button
               onClick={closeModal}
-              className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors z-20"
+              className="absolute top-4 right-4 p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors z-30"
+              aria-label="Close"
             >
               <X className="w-5 h-5" />
             </button>
             <div className="max-h-[90vh] overflow-y-auto custom-scrollbar">
-              <BookingForm 
-                defaultService={bookingData.service}
-                defaultDoctor={bookingData.doctor}
-                defaultPackage={bookingData.test || bookingData.package}
-                fixedPackage={!!(bookingData.test || bookingData.package)}
-                prefilledMessage={
-                  bookingData.test ? `I want to book the ${bookingData.test} test.` : 
-                  bookingData.package ? `I am interested in the ${bookingData.package} package.` : 
-                  ""
-                }
-                onSuccess={() => {
-                  setTimeout(closeModal, 3000);
-                }}
-              />
+              {isPhysio ? (
+                <div className="p-1 sm:p-2">
+                  <PhysiotherapyBooking 
+                    initialPackage={bookingData.package}
+                    onClose={closeModal}
+                  />
+                </div>
+              ) : (
+                <BookingForm 
+                  defaultService={bookingData.service}
+                  defaultDoctor={bookingData.doctor}
+                  defaultPackage={bookingData.test || bookingData.package}
+                  fixedPackage={!!(bookingData.test || bookingData.package)}
+                  prefilledMessage={
+                    bookingData.test ? `I want to book the ${bookingData.test} test.` : 
+                    bookingData.package ? `I am interested in the ${bookingData.package} package.` : 
+                    ""
+                  }
+                  onSuccess={() => {
+                    setTimeout(closeModal, 3000);
+                  }}
+                />
+              )}
             </div>
           </motion.div>
         </div>

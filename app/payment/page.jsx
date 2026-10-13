@@ -8,7 +8,8 @@ import {
   Loader2, 
   PhoneCall, 
   ShieldCheck, 
-  AlertTriangle 
+  AlertTriangle,
+  CheckCircle2 
 } from "lucide-react";
 
 function PaymentContent() {
@@ -62,41 +63,34 @@ function PaymentContent() {
         if (appt) {
           setBooking(appt);
           
-          // Determine price: URL param takes priority, then booking's totalAmount, then package lookup, then category fallback
-          let calculatedPrice = amountParam ? parseInt(amountParam, 10) : 500;
-          
-          if (!amountParam) {
-            if (appt.totalAmount && appt.totalAmount > 0) {
-              calculatedPrice = appt.totalAmount;
-            } else if (appt.package) {
-              try {
-                const packRes = await fetch("/api/service-packages");
-                const packages = await packRes.json();
-                const matchedPack = packages.find(p => 
-                  (p.title && p.title.toLowerCase() === (appt.package || "").toLowerCase()) || 
-                  (p.name && p.name.toLowerCase() === (appt.package || "").toLowerCase())
-                );
-                if (matchedPack && matchedPack.price) {
-                  calculatedPrice = matchedPack.price;
-                }
-              } catch (e) {
-                console.error("Failed to fetch package price:", e);
+          // Determine price: URL param takes priority, then booking's totalAmount, then package lookup, then default to 0 for standard booking requests
+          let calculatedPrice = null;
+          if (amountParam !== null && amountParam !== undefined && amountParam !== "" && !isNaN(parseInt(amountParam, 10))) {
+            calculatedPrice = parseInt(amountParam, 10);
+          } else if (appt.totalAmount !== undefined && appt.totalAmount !== null) {
+            calculatedPrice = Number(appt.totalAmount);
+          } else if (appt.package) {
+            try {
+              const packRes = await fetch("/api/service-packages");
+              const packages = await packRes.json();
+              const matchedPack = packages.find(p => 
+                (p.title && p.title.toLowerCase() === (appt.package || "").toLowerCase()) || 
+                (p.name && p.name.toLowerCase() === (appt.package || "").toLowerCase())
+              );
+              if (matchedPack && matchedPack.price) {
+                calculatedPrice = matchedPack.price;
+              } else {
+                calculatedPrice = 0;
               }
-            } else {
-              // Accurate service category fallbacks
-              const service = (appt.category || appt.service || "").toLowerCase();
-              if (service.includes("ambulance")) calculatedPrice = 1199;
-              else if (service.includes("physio")) calculatedPrice = 499;
-              else if (service.includes("doctor")) calculatedPrice = 999;
-              else if (service.includes("icu")) calculatedPrice = 2999;
-              else if (service.includes("nurse") || service.includes("nursing")) calculatedPrice = 800;
-              else if (service.includes("lab")) calculatedPrice = 299;
-              else if (service.includes("equipment")) calculatedPrice = 500;
-              else if (service.includes("elderly") || service.includes("home care")) calculatedPrice = 800;
-              else calculatedPrice = 499;
+            } catch (e) {
+              console.error("Failed to fetch package price:", e);
+              calculatedPrice = 0;
             }
+          } else {
+            // Standard booking form requests are free (0 rs)
+            calculatedPrice = 0;
           }
-          setAmount(calculatedPrice);
+          setAmount(calculatedPrice || 0);
         } else {
           setError(`No booking found matching ID: ${bookingId}`);
         }
@@ -281,9 +275,13 @@ function PaymentContent() {
 
           <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-sm space-y-6">
             <div className="space-y-2">
-              <h2 className="text-2xl font-black text-gray-900 tracking-tight">Secure Payment Gateway</h2>
+              <h2 className="text-2xl font-black text-gray-900 tracking-tight">
+                {amount === 0 ? "Booking Details & Confirmation" : "Secure Payment Gateway"}
+              </h2>
               <p className="text-sm text-gray-500">
-                You will be redirected to the secure Razorpay popup to pay via UPI, Card, Net Banking, or Wallet.
+                {amount === 0 
+                  ? "Your booking request is completely free. No advance payment is needed." 
+                  : "You will be redirected to the secure Razorpay popup to pay via UPI, Card, Net Banking, or Wallet."}
               </p>
             </div>
 
@@ -302,23 +300,45 @@ function PaymentContent() {
               </div>
             </div>
 
-            <button
-              onClick={handleRazorpayPayment}
-              disabled={processing}
-              className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-primary-dark transition active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 text-base shadow-lg shadow-primary/20"
-            >
-              {processing ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Connecting to Razorpay...
-                </>
-              ) : (
-                <>
-                  <CreditCard className="w-5 h-5" />
-                  Pay ₹{amount.toLocaleString("en-IN")} via Razorpay
-                </>
-              )}
-            </button>
+            {amount === 0 ? (
+              <div className="space-y-4 pt-2">
+                <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 text-emerald-900 flex items-start gap-3">
+                  <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="font-bold text-sm">Free Booking Request (₹0)</h4>
+                    <p className="text-xs text-emerald-700 mt-1">
+                      No advance payment is required for this appointment request. Our care coordinator will contact you to coordinate and confirm your visit.
+                    </p>
+                  </div>
+                </div>
+
+                <Link
+                  href="/"
+                  className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-primary-dark transition active:scale-95 flex items-center justify-center gap-2 text-base shadow-lg shadow-primary/20 text-center"
+                >
+                  <CheckCircle2 className="w-5 h-5" />
+                  Booking Confirmed (₹0)
+                </Link>
+              </div>
+            ) : (
+              <button
+                onClick={handleRazorpayPayment}
+                disabled={processing}
+                className="w-full py-4 bg-primary text-white font-bold rounded-2xl hover:bg-primary-dark transition active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 text-base shadow-lg shadow-primary/20"
+              >
+                {processing ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Connecting to Razorpay...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="w-5 h-5" />
+                    Pay ₹{amount.toLocaleString("en-IN")} via Razorpay
+                  </>
+                )}
+              </button>
+            )}
           </div>
 
           <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
@@ -369,7 +389,7 @@ function PaymentContent() {
             <div className="border-t border-gray-100 pt-4 space-y-3">
               <div className="flex justify-between text-xs">
                 <span className="text-gray-500">Consultation / Service Charge</span>
-                <span className="text-gray-900 font-medium">₹{amount.toLocaleString("en-IN")}</span>
+                <span className="text-gray-900 font-medium">{amount === 0 ? "₹0 (FREE)" : `₹${amount.toLocaleString("en-IN")}`}</span>
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-gray-500">Tax & Surcharge</span>
@@ -378,7 +398,7 @@ function PaymentContent() {
               
               <div className="border-t border-dashed border-gray-200 pt-3 flex justify-between items-baseline">
                 <span className="text-sm font-bold text-gray-900">Total Payable</span>
-                <span className="text-xl font-black text-primary">₹{amount.toLocaleString("en-IN")}</span>
+                <span className="text-xl font-black text-primary">{amount === 0 ? "₹0" : `₹${amount.toLocaleString("en-IN")}`}</span>
               </div>
             </div>
 

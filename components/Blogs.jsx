@@ -82,6 +82,8 @@ export default function BlogSection() {
     });
   };
 
+  if (!loading && blogs.length === 0) return null;
+
   return (
     <section className="px-4 pt-12 pb-8 bg-gradient-to-b from-white to-gray-50">
       {/* HEADER */}

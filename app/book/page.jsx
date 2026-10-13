@@ -6,11 +6,26 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import BookingForm from '@/components/BookingForm';
+import PhysiotherapyBooking from '@/components/PhysiotherapyBooking';
 
 const PRIMARY = "#0F9D58";
 
 function BookingFormContent() {
+  const searchParams = useSearchParams();
+  const service = searchParams.get('service') || searchParams.get('category') || '';
+  const pkg = searchParams.get('package');
+  const isPhysio = service.toLowerCase().includes('physio') || (typeof pkg === 'string' && pkg.toLowerCase().includes('physio'));
+
+  if (isPhysio) {
+    return (
+      <div className="py-2">
+        <PhysiotherapyBooking initialPackage={pkg} />
+      </div>
+    );
+  }
+
   return (
     <div className="py-2">
       <BookingForm title="Book Appointment" subtitle="Trusted Healthcare at Home" />

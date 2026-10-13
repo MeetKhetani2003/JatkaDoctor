@@ -325,29 +325,12 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
 
               {/* Top Bar: Brand Logo + "FREE HEALTH CARD" */}
               <div className="relative z-10 flex items-center justify-between px-4 sm:px-6 pt-3 sm:pt-3.5 pb-1 sm:pb-2">
-                <div className="flex items-center gap-2 sm:gap-2.5">
-                  {/* Logo Icon - Crisp DJM Monogram Emblem */}
-                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden bg-white shadow-sm border border-emerald-100 p-0.5 flex items-center justify-center shrink-0">
-                    <img
-                      src="/djm-monogram.png"
-                      alt="DJM Monogram"
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        e.target.src = "/icon.png";
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <h2 className="text-xs sm:text-base font-extrabold tracking-tight text-[#006837] leading-none">
-                      Dr Jhatka
-                    </h2>
-                    <p className="text-[9px] sm:text-[11px] font-bold text-gray-800 tracking-wider uppercase leading-tight">
-                      MEDICARE
-                    </p>
-                    <p className="text-[7px] sm:text-[8.5px] text-gray-500 font-medium leading-none">
-                      Speed, Care & Trust — All in One
-                    </p>
-                  </div>
+                <div className="flex items-center shrink-0">
+                  <img
+                    src="/Dr.Jhatka.png"
+                    alt="Dr Jhatka Medicare"
+                    className="h-8 sm:h-11 w-auto object-contain max-w-[140px] sm:max-w-[190px]"
+                  />
                 </div>
 
                 {/* Top-Right Badge: FREE HEALTH CARD */}
@@ -551,25 +534,12 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
 
               {/* Top Bar: Brand Logo + "Your Health Our Priority" */}
               <div className="relative z-10 flex items-center justify-between px-4 sm:px-6 pt-3.5 pb-2 border-b border-emerald-100/60">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden bg-white border border-emerald-100 p-0.5 flex items-center justify-center shadow-xs shrink-0">
-                    <img
-                      src="/djm-monogram.png"
-                      alt="DJM Monogram"
-                      className="w-full h-full object-contain"
-                      onError={(e) => {
-                        e.target.src = "/icon.png";
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <h3 className="text-sm sm:text-base font-extrabold tracking-tight text-[#006837] leading-none">
-                      Dr Jhatka
-                    </h3>
-                    <p className="text-[10px] font-bold text-gray-800 tracking-wider uppercase leading-none">
-                      MEDICARE
-                    </p>
-                  </div>
+                <div className="flex items-center shrink-0">
+                  <img
+                    src="/Dr.Jhatka.png"
+                    alt="Dr Jhatka Medicare"
+                    className="h-7 sm:h-9 w-auto object-contain max-w-[130px] sm:max-w-[170px]"
+                  />
                 </div>
 
                 <div className="flex items-center gap-1.5 bg-emerald-50 text-[#006837] border border-emerald-200 px-2.5 py-1 rounded-full">

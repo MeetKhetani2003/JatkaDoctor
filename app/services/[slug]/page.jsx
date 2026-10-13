@@ -61,6 +61,7 @@ import Navbar from "@/components/Header";
 import FAQSection from "@/components/FAQSection";
 import AmbulanceNetwork from "@/components/AmbulanceNetwork";
 import PhysiotherapyCenters from "@/components/PhysiotherapyCenters";
+import PhysiotherapyBooking from "@/components/PhysiotherapyBooking";
 import { useBookingModal } from "@/context/BookingModalContext";
 
 
@@ -2573,7 +2574,7 @@ function PhysiotherapyPage() {
                 )}
 
                 <button
-                  onClick={() => openModal({ service: 'Physiotherapy', package: pkg.title })}
+                  onClick={() => openModal({ service: 'Physiotherapy', package: pkg })}
                   className={`mt-5 w-full py-3 rounded-xl text-sm font-normal flex items-center justify-center transition active:scale-95 ${pkg.isRecommended ? "bg-primary text-white hover:bg-primary-dark shadow-sm py-3.5" : "bg-gray-50 text-gray-700 hover:bg-gray-100"}`}
                 >
                   {pkg.isRecommended ? `Book ${pkg.title} Now` : `Book ${pkg.title}`}
@@ -2728,12 +2729,9 @@ function PhysiotherapyPage() {
 
       <MeetOurExperts slug="physiotherapy" />
 
-      <div className="bg-gray-50 py-16 px-4">
+      <div id="book-physiotherapy" className="bg-gray-50 py-16 px-4">
         <div className="max-w-4xl mx-auto">
-          <BookingForm
-            defaultService={SERVICES_CONFIG.physiotherapy.banner?.title || "Physiotherapy"}
-            title={`Book ${SERVICES_CONFIG.physiotherapy.banner?.title || "Physiotherapy"}`}
-          />
+          <PhysiotherapyBooking />
         </div>
       </div>
 

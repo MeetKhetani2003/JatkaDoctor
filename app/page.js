@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import BlogSection from "@/components/Blogs";
+
 import MedicalTeamSection from "@/components/MedicalTeamSection";
 import EmergencyCTA from "@/components/EmergencyCTA";
 import Footer from "@/components/Footer";
@@ -23,7 +23,7 @@ import FAQSection from "@/components/FAQSection";
 import BookingForm from "@/components/BookingForm";
 import GalleryCarousel from "@/components/GalleryCarousel";
 import UpcomingCampBanner from "@/components/UpcomingCampBanner";
-import PopularHomeCareSection from "@/components/PopularHomeCareSection";
+import PopularServices from "@/components/PopularServices";
 
 const homeFaqs = [
   { q: "Q1. Kya sach me doctor ghar par available hai 24/7?", a: "Haan, Dr Jhatka Medicare me 24/7 doctor support available hai. Emergency aur urgent cases me nearest available doctor ko turant assign kiya jata hai." },
@@ -47,7 +47,7 @@ export default function Home() {
       {/* 3. Quick Actions Section featuring Upload Prescription */}
       <QuickActions onOpenPrescriptionModal={() => setIsPrescriptionModalOpen(true)} />
       <ServicesGrid />
-      <PopularHomeCareSection />
+      <PopularServices />
       <StatsStrip />
       <WhyChooseUs />
       <HowItWorks />
@@ -55,7 +55,7 @@ export default function Home() {
       <PartnersSection />
       <Testimonials />
       <TrustBadges />
-      <BlogSection />
+
       <FounderSection />
       <GalleryCarousel />
       <EmergencyCTA />

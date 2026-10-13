@@ -232,7 +232,7 @@ function BookingFormInner({
 
       const detectedZone = detectZone(formData.patientAddress);
 
-      // Calculate accurate booking charge based on selected package or official service rate
+      // Standard appointment requests from this form are free (0 rs) unless an explicit package is selected
       let amountToCharge = 0;
       if (formData.package) {
         const foundPkg = allPackages.find(p => 
@@ -242,9 +242,6 @@ function BookingFormInner({
         if (foundPkg && foundPkg.price) {
           amountToCharge = parseInt(foundPkg.price.toString().replace(/[^\d]/g, ''), 10) || 0;
         }
-      }
-      if (!amountToCharge) {
-        amountToCharge = getStandardServicePrice(formData.service);
       }
 
       const res = await fetch('/api/appointments', {

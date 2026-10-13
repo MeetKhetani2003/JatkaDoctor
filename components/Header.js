@@ -23,6 +23,9 @@ import {
   CreditCard,
   Sparkles,
   MapPin,
+  Users,
+  ShieldCheck,
+  Image as ImageIcon,
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useBookingModal } from "@/context/BookingModalContext";
@@ -85,13 +88,39 @@ const services = [
   },
 ];
 
+const aboutLinks = [
+  {
+    title: "Our Medical Team",
+    icon: Users,
+    link: "/our-medical-team",
+    desc: "Qualified doctors, physiotherapists & specialists",
+    badge: "Specialists",
+  },
+  {
+    title: "About Dr. Jhatka",
+    icon: ShieldCheck,
+    link: "/about",
+    desc: "Our mission, journey & hospital-grade home care",
+  },
+  {
+    title: "Infrastructure & Gallery",
+    icon: ImageIcon,
+    link: "/gallery",
+    desc: "Real care photos, clinic setups & ambulances",
+  },
+  {
+    title: "Join Our Network",
+    icon: UserPlus,
+    link: "/join-us",
+    desc: "Opportunities for doctors, nurses & partners",
+  },
+];
+
 const navLinks = [
   { label: "Home", href: "/" },
-  { label: "Services", href: "/services", hasSubmenu: true },
-  { label: "Free Health Card", href: "/health-card" },
-  { label: "Our Team", href: "/our-medical-team" },
+  { label: "Services", href: "/services", hasSubmenu: true, submenuType: "services" },
+  { label: "About", href: "/about", hasSubmenu: true, submenuType: "about" },
   { label: "Lab Tests", href: "/services/lab-test" },
-  { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
 
@@ -224,6 +253,142 @@ function ServicesMegaMenu({ open }) {
   );
 }
 
+/* ─── Desktop About Megamenu ───────────────────────────── */
+function AboutMegaMenu({ open }) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          initial={{ opacity: 0, y: 8, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 6, scale: 0.97 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+          className="absolute top-full left-1/2 -translate-x-1/2 mt-3 z-50"
+          style={{ width: 540 }}
+        >
+          {/* Arrow */}
+          <div className="flex justify-center -mb-px">
+            <div
+              className="w-3 h-3 rotate-45 bg-white border-l border-t border-gray-100 z-10"
+              style={{ boxShadow: "-2px -2px 5px rgba(0,0,0,0.04)" }}
+            />
+          </div>
+
+          {/* Panel */}
+          <div
+            className="bg-white rounded-2xl border border-gray-100 overflow-hidden"
+            style={{ boxShadow: `0 24px 64px rgba(15,157,88,0.13)` }}
+          >
+            {/* Header */}
+            <div
+              className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between"
+              style={{
+                background: `linear-gradient(to right, ${PRIMARY_LIGHT}, #ffffff)`,
+              }}
+            >
+              <div>
+                <p
+                  className="text-[13px] font-normal tracking-tight"
+                  style={{ color: TEXT }}
+                >
+                  About Dr. Jhatka Medicare
+                </p>
+                <p className="text-[11px] text-gray-400 mt-0.5 font-medium">
+                  Trusted healthcare brand serving 5000+ Lucknow families
+                </p>
+              </div>
+              <Link
+                href="/about"
+                className="flex items-center gap-1 text-[11px] font-normal px-3 py-1.5 rounded-xl transition-colors"
+                style={{ color: PRIMARY, background: PRIMARY_LIGHT }}
+              >
+                Learn more <ChevronRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            {/* Grid */}
+            <div className="grid grid-cols-2 gap-px bg-gray-100/70">
+              {aboutLinks.map((item, i) => {
+                const Icon = item.icon;
+                return (
+                  <motion.div
+                    key={item.title}
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                  >
+                    <Link
+                      href={item.link}
+                      className="flex items-center gap-3 px-4 py-3.5 bg-white group transition-colors duration-150"
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.background = "#F5FDF9")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.background = "white")
+                      }
+                    >
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-110"
+                        style={{ background: PRIMARY_LIGHT }}
+                      >
+                        <Icon
+                          style={{ color: PRIMARY, width: 18, height: 18 }}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <p
+                            className="text-[12.5px] font-normal leading-tight transition-colors group-hover:text-[#0F9D58]"
+                            style={{ color: TEXT }}
+                          >
+                            {item.title}
+                          </p>
+                          {item.badge && (
+                            <span className="text-[9px] font-semibold bg-emerald-100 text-emerald-800 px-1.5 py-0.2 rounded-full">
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10.5px] text-gray-400 mt-0.5 font-medium line-clamp-1">
+                          {item.desc}
+                        </p>
+                      </div>
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Footer */}
+            <div
+              className="px-5 py-3 flex items-center justify-between"
+              style={{
+                background: `linear-gradient(135deg, ${PRIMARY}, ${PRIMARY_DARK})`,
+              }}
+            >
+              <div>
+                <p className="text-[12px] font-normal text-white">
+                  Meet our doctors & specialists
+                </p>
+                <p className="text-[10px] mt-0.5" style={{ color: "#a7f3d0" }}>
+                  Verified hospital-grade professionals in Lucknow
+                </p>
+              </div>
+              <Link
+                href="/our-medical-team"
+                className="flex items-center gap-1.5 bg-white text-[11px] font-normal px-3.5 py-2 rounded-xl hover:bg-green-50 transition-colors"
+                style={{ color: PRIMARY }}
+              >
+                <Users className="w-3.5 h-3.5" /> View Doctors
+              </Link>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 /* ─── Patient Avatar Dropdown (Desktop) ────────────────── */
 function PatientDropdown({ patient, logout, profileComplete }) {
   const [open, setOpen] = useState(false);
@@ -335,6 +500,7 @@ function PatientDropdown({ patient, logout, profileComplete }) {
 /* ─── Mobile Drawer ────────────────────────────────────── */
 function MobileDrawer({ open, onClose }) {
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const { patient, loggedIn, logout } = usePatientAuth();
   const { currentLocation, openLocationModal } = useLocation();
   const displayLocation = currentLocation?.area || currentLocation?.city || "Lucknow";
@@ -416,128 +582,256 @@ function MobileDrawer({ open, onClose }) {
             {/* Nav list */}
             <div className="flex-1 overflow-y-auto">
               <div className="py-1.5">
-                {navLinks.map((link) =>
-                  link.hasSubmenu ? (
-                    <div key={link.label}>
-                      {/* Accordion trigger */}
-                      <button
-                        onClick={() => setServicesOpen((v) => !v)}
-                        className="w-full flex items-center justify-between px-5 py-4 border-b border-gray-100 text-left"
-                        style={{
-                          background: servicesOpen ? PRIMARY_LIGHT : "white",
-                        }}
-                      >
-                        <span
-                          className="text-[14px] font-normal tracking-tight"
-                          style={{ color: servicesOpen ? PRIMARY : TEXT }}
+                {navLinks.map((link) => {
+                  if (link.submenuType === "services") {
+                    return (
+                      <div key={link.label}>
+                        {/* Accordion trigger */}
+                        <button
+                          onClick={() => setServicesOpen((v) => !v)}
+                          className="w-full flex items-center justify-between px-5 py-4 border-b border-gray-100 text-left"
+                          style={{
+                            background: servicesOpen ? PRIMARY_LIGHT : "white",
+                          }}
                         >
-                          Services
-                        </span>
-                        <div className="flex items-center gap-2">
                           <span
-                            className="text-[10px] font-normal px-2 py-0.5 rounded-full"
-                            style={{
-                              background: PRIMARY_LIGHT,
-                              color: PRIMARY,
-                            }}
+                            className="text-[14px] font-normal tracking-tight"
+                            style={{ color: servicesOpen ? PRIMARY : TEXT }}
                           >
-                            8
+                            Services
                           </span>
-                          <motion.div
-                            animate={{ rotate: servicesOpen ? 180 : 0 }}
-                            transition={{ duration: 0.22 }}
-                          >
-                            <ChevronDown
-                              className="w-4 h-4"
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="text-[10px] font-normal px-2 py-0.5 rounded-full"
                               style={{
-                                color: servicesOpen ? PRIMARY : "#9CA3AF",
+                                background: PRIMARY_LIGHT,
+                                color: PRIMARY,
                               }}
-                            />
-                          </motion.div>
-                        </div>
-                      </button>
+                            >
+                              8
+                            </span>
+                            <motion.div
+                              animate={{ rotate: servicesOpen ? 180 : 0 }}
+                              transition={{ duration: 0.22 }}
+                            >
+                              <ChevronDown
+                                className="w-4 h-4"
+                                style={{
+                                  color: servicesOpen ? PRIMARY : "#9CA3AF",
+                                }}
+                              />
+                            </motion.div>
+                          </div>
+                        </button>
 
-                      <AnimatePresence>
-                        {servicesOpen && (
-                          <motion.div
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.22, ease: "easeInOut" }}
-                            className="overflow-hidden"
-                            style={{ background: "#FAFAFA" }}
-                          >
-                            {/* Sub-header */}
-                            <div className="px-5 pt-3 pb-1.5 flex items-center justify-between">
-                              <p className="text-[10px] font-normal text-gray-400 uppercase tracking-widest">
-                                All Services
-                              </p>
-                              <Link
-                                href="/services"
-                                onClick={onClose}
-                                className="text-[11px] font-normal flex items-center gap-0.5"
-                                style={{ color: PRIMARY }}
-                              >
-                                View all <ChevronRight className="w-3 h-3" />
-                              </Link>
-                            </div>
+                        <AnimatePresence>
+                          {servicesOpen && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.22, ease: "easeInOut" }}
+                              className="overflow-hidden"
+                              style={{ background: "#FAFAFA" }}
+                            >
+                              {/* Sub-header */}
+                              <div className="px-5 pt-3 pb-1.5 flex items-center justify-between">
+                                <p className="text-[10px] font-normal text-gray-400 uppercase tracking-widest">
+                                  All Services
+                                </p>
+                                <Link
+                                  href="/services"
+                                  onClick={onClose}
+                                  className="text-[11px] font-normal flex items-center gap-0.5"
+                                  style={{ color: PRIMARY }}
+                                >
+                                  View all <ChevronRight className="w-3 h-3" />
+                                </Link>
+                              </div>
 
-                            {/* Service cards */}
-                            <div className="px-3 pb-3 space-y-1.5">
-                              {services.map((s, i) => {
-                                const Icon = s.icon;
-                                return (
-                                  <motion.div
-                                    key={s.title}
-                                    initial={{ opacity: 0, x: 10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: i * 0.035 }}
-                                  >
-                                    <Link
-                                      href={s.link}
-                                      onClick={onClose}
-                                      className="flex items-center gap-3 px-3 py-3 rounded-xl bg-white border border-gray-100 active:scale-[0.97] transition-transform group"
-                                      style={{
-                                        boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-                                      }}
+                              {/* Service cards */}
+                              <div className="px-3 pb-3 space-y-1.5">
+                                {services.map((s, i) => {
+                                  const Icon = s.icon;
+                                  return (
+                                    <motion.div
+                                      key={s.title}
+                                      initial={{ opacity: 0, x: 10 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                      transition={{ delay: i * 0.035 }}
                                     >
-                                      <div
-                                        className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                                        style={{ background: PRIMARY_LIGHT }}
+                                      <Link
+                                        href={s.link}
+                                        onClick={onClose}
+                                        className="flex items-center gap-3 px-3 py-3 rounded-xl bg-white border border-gray-100 active:scale-[0.97] transition-transform group"
+                                        style={{
+                                          boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                                        }}
                                       >
-                                        <Icon
-                                          style={{
-                                            color: PRIMARY,
-                                            width: 20,
-                                            height: 20,
-                                          }}
-                                        />
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <p
-                                          className="text-[13px] font-normal leading-tight"
-                                          style={{ color: TEXT }}
+                                        <div
+                                          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                                          style={{ background: PRIMARY_LIGHT }}
                                         >
-                                          {s.title}
-                                        </p>
-                                        <p className="text-[11px] text-gray-400 mt-0.5">
-                                          {s.desc}
-                                        </p>
-                                      </div>
-                                      <ChevronRight
-                                        className="w-4 h-4 shrink-0"
-                                        style={{ color: PRIMARY }}
-                                      />
-                                    </Link>
-                                  </motion.div>
-                                );
-                              })}
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  ) : (
+                                          <Icon
+                                            style={{
+                                              color: PRIMARY,
+                                              width: 20,
+                                              height: 20,
+                                            }}
+                                          />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p
+                                            className="text-[13px] font-normal leading-tight"
+                                            style={{ color: TEXT }}
+                                          >
+                                            {s.title}
+                                          </p>
+                                          <p className="text-[11px] text-gray-400 mt-0.5">
+                                            {s.desc}
+                                          </p>
+                                        </div>
+                                        <ChevronRight
+                                          className="w-4 h-4 shrink-0"
+                                          style={{ color: PRIMARY }}
+                                        />
+                                      </Link>
+                                    </motion.div>
+                                  );
+                                })}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  }
+
+                  if (link.submenuType === "about") {
+                    return (
+                      <div key={link.label}>
+                        {/* Accordion trigger */}
+                        <button
+                          onClick={() => setAboutOpen((v) => !v)}
+                          className="w-full flex items-center justify-between px-5 py-4 border-b border-gray-100 text-left"
+                          style={{
+                            background: aboutOpen ? PRIMARY_LIGHT : "white",
+                          }}
+                        >
+                          <span
+                            className="text-[14px] font-normal tracking-tight"
+                            style={{ color: aboutOpen ? PRIMARY : TEXT }}
+                          >
+                            About & Team
+                          </span>
+                          <div className="flex items-center gap-2">
+                            <span
+                              className="text-[10px] font-normal px-2 py-0.5 rounded-full"
+                              style={{
+                                background: PRIMARY_LIGHT,
+                                color: PRIMARY,
+                              }}
+                            >
+                              4
+                            </span>
+                            <motion.div
+                              animate={{ rotate: aboutOpen ? 180 : 0 }}
+                              transition={{ duration: 0.22 }}
+                            >
+                              <ChevronDown
+                                className="w-4 h-4"
+                                style={{
+                                  color: aboutOpen ? PRIMARY : "#9CA3AF",
+                                }}
+                              />
+                            </motion.div>
+                          </div>
+                        </button>
+
+                        <AnimatePresence>
+                          {aboutOpen && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.22, ease: "easeInOut" }}
+                              className="overflow-hidden"
+                              style={{ background: "#FAFAFA" }}
+                            >
+                              {/* Sub-header */}
+                              <div className="px-5 pt-3 pb-1.5 flex items-center justify-between">
+                                <p className="text-[10px] font-normal text-gray-400 uppercase tracking-widest">
+                                  About & Medical Team
+                                </p>
+                                <Link
+                                  href="/about"
+                                  onClick={onClose}
+                                  className="text-[11px] font-normal flex items-center gap-0.5"
+                                  style={{ color: PRIMARY }}
+                                >
+                                  About Us <ChevronRight className="w-3 h-3" />
+                                </Link>
+                              </div>
+
+                              {/* About items */}
+                              <div className="px-3 pb-3 space-y-1.5">
+                                {aboutLinks.map((item, i) => {
+                                  const Icon = item.icon;
+                                  return (
+                                    <motion.div
+                                      key={item.title}
+                                      initial={{ opacity: 0, x: 10 }}
+                                      animate={{ opacity: 1, x: 0 }}
+                                      transition={{ delay: i * 0.035 }}
+                                    >
+                                      <Link
+                                        href={item.link}
+                                        onClick={onClose}
+                                        className="flex items-center gap-3 px-3 py-3 rounded-xl bg-white border border-gray-100 active:scale-[0.97] transition-transform group"
+                                        style={{
+                                          boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+                                        }}
+                                      >
+                                        <div
+                                          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                                          style={{ background: PRIMARY_LIGHT }}
+                                        >
+                                          <Icon
+                                            style={{
+                                              color: PRIMARY,
+                                              width: 20,
+                                              height: 20,
+                                            }}
+                                          />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                          <p
+                                            className="text-[13px] font-normal leading-tight"
+                                            style={{ color: TEXT }}
+                                          >
+                                            {item.title}
+                                          </p>
+                                          <p className="text-[11px] text-gray-400 mt-0.5 line-clamp-1">
+                                            {item.desc}
+                                          </p>
+                                        </div>
+                                        <ChevronRight
+                                          className="w-4 h-4 shrink-0"
+                                          style={{ color: PRIMARY }}
+                                        />
+                                      </Link>
+                                    </motion.div>
+                                  );
+                                })}
+                              </div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  }
+
+                  return (
                     <Link
                       key={link.label}
                       href={link.href}
@@ -554,8 +848,8 @@ function MobileDrawer({ open, onClose }) {
                       {link.label}
                       <ChevronRight className="w-4 h-4 text-gray-300" />
                     </Link>
-                  ),
-                )}
+                  );
+                })}
               </div>
 
               {/* Patient section */}
@@ -658,7 +952,7 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [servicesHover, setServicesHover] = useState(false);
+  const [activeMegaMenu, setActiveMegaMenu] = useState(null); // 'services' | 'about' | null
   const [scrolled, setScrolled] = useState(false);
   const closeTimer = useRef(null);
 
@@ -675,12 +969,12 @@ export default function Navbar() {
     };
   }, []);
 
-  const handleServicesEnter = () => {
+  const handleMenuEnter = (type) => {
     clearTimeout(closeTimer.current);
-    setServicesHover(true);
+    setActiveMegaMenu(type);
   };
-  const handleServicesLeave = () => {
-    closeTimer.current = setTimeout(() => setServicesHover(false), 160);
+  const handleMenuLeave = () => {
+    closeTimer.current = setTimeout(() => setActiveMegaMenu(null), 160);
   };
 
   if (pathname?.startsWith("/admin")) return null;
@@ -732,33 +1026,38 @@ export default function Navbar() {
                   <div
                     key={link.label}
                     className="relative"
-                    onMouseEnter={handleServicesEnter}
-                    onMouseLeave={handleServicesLeave}
+                    onMouseEnter={() => handleMenuEnter(link.submenuType)}
+                    onMouseLeave={handleMenuLeave}
                   >
                     <button
-                      className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13.5px] font-normal transition-all duration-200"
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[13.5px] font-normal transition-all duration-200"
                       style={{
-                        color: servicesHover ? PRIMARY : TEXT,
-                        background: servicesHover
+                        color: activeMegaMenu === link.submenuType ? PRIMARY : TEXT,
+                        background: activeMegaMenu === link.submenuType
                           ? PRIMARY_LIGHT
                           : "transparent",
                       }}
                     >
-                      {link.label}
+                      <span>{link.label}</span>
                       <motion.div
-                        animate={{ rotate: servicesHover ? 180 : 0 }}
+                        animate={{ rotate: activeMegaMenu === link.submenuType ? 180 : 0 }}
                         transition={{ duration: 0.2 }}
                       >
                         <ChevronDown className="w-3.5 h-3.5" />
                       </motion.div>
                     </button>
-                    <ServicesMegaMenu open={servicesHover} />
+                    {link.submenuType === "services" && (
+                      <ServicesMegaMenu open={activeMegaMenu === "services"} />
+                    )}
+                    {link.submenuType === "about" && (
+                      <AboutMegaMenu open={activeMegaMenu === "about"} />
+                    )}
                   </div>
                 ) : (
                   <Link
                     key={link.label}
                     href={link.href}
-                    className="px-4 py-2 rounded-xl text-[13.5px] font-normal transition-all duration-200"
+                    className="px-3.5 py-2 rounded-xl text-[13.5px] font-normal transition-all duration-200 whitespace-nowrap"
                     style={{ color: TEXT }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.color = PRIMARY;
@@ -822,7 +1121,7 @@ export default function Navbar() {
               <Link
                 href="/health-card"
                 id="header-free-health-card-btn"
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-bold text-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] shadow-md shadow-emerald-800/20"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[13px] font-bold text-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] shadow-md shadow-emerald-800/20 whitespace-nowrap"
                 style={{
                   background: "linear-gradient(135deg, #006837, #004d26)",
                   border: "1px solid #00843D"
