@@ -156,6 +156,11 @@ function HealthCardRegistrationContent() {
       setFormError("Full Name is required");
       return;
     }
+    const cleanMobile = (formData.mobile || "").replace(/[^0-9]/g, "");
+    if (!cleanMobile || cleanMobile.length < 10) {
+      setFormError("Please enter a valid 10-digit Mobile Number");
+      return;
+    }
     if (!formData.termsAccepted || !formData.healthDataConsent) {
       setFormError("Please accept the terms and healthcare consent to continue");
       return;
@@ -190,10 +195,13 @@ function HealthCardRegistrationContent() {
         }
         setStep(3);
       } else {
-        setFormError(data.message || "Failed to create Health Card");
+        const errorMsg = data.message && !data.message.includes("is not a function")
+          ? data.message
+          : "Failed to create Health Card. Please check your information and try again.";
+        setFormError(errorMsg);
       }
     } catch (err) {
-      setFormError("Submission failed. Please try again.");
+      setFormError("Submission failed. Please check your internet connection and try again.");
     } finally {
       setFormLoading(false);
     }

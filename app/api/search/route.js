@@ -6,12 +6,16 @@ import PhysioProblemGroup from '@/lib/models/physio/PhysioProblemGroup';
 import Category from '@/lib/models/Category';
 import ServicePackage from '@/lib/models/ServicePackage';
 
-// Predefined core services for fast matching & fallback
+// Predefined core services with comprehensive patient language / Hindi aliases
 const CORE_SERVICES = [
   {
     title: "Ambulance Service",
-    aliases: ["ambulance", "emergency", "oxygen ambulance", "icu ambulance", "dead body ambulance", "mortuary"],
-    subtitle: "24/7 Emergency & ICU Road Transfer",
+    aliases: [
+      "ambulance", "emergency", "oxygen ambulance", "icu ambulance", "dead body ambulance", "mortuary",
+      "shav vahan", "freezer box", "hospital le jana", "serious", "critical patient", "ambulance no",
+      "ambulance number", "accident", "turant ambulance", "road transfer", "ventilator ambulance"
+    ],
+    subtitle: "24/7 Emergency & ICU Road Transfer in Lucknow",
     category: "Emergency Service",
     url: "/services/ambulance",
     type: "service",
@@ -19,7 +23,13 @@ const CORE_SERVICES = [
   },
   {
     title: "Physiotherapy at Home",
-    aliases: ["physiotherapy", "physio", "physical therapy", "exercise", "rehabilitation", "rehab"],
+    aliases: [
+      "physiotherapy", "physio", "physical therapy", "exercise", "rehabilitation", "rehab",
+      "kamar dard", "kamar me dard", "ghutna dard", "ghutne me dard", "knee pain", "back pain",
+      "cervical", "gardan dard", "gardan me dard", "lakwa", "falij", "paralysis", "stroke",
+      "slip disc", "sciatica", "frozen shoulder", "sandhiwat", "jod dard", "pain relief",
+      "chalne me dikkat", "hath pair me dard", "reedh ki haddi", "shoulder pain"
+    ],
     subtitle: "Doctor-Certified Expert Physiotherapists at Home",
     category: "Home Care",
     url: "/services/physiotherapy",
@@ -28,7 +38,11 @@ const CORE_SERVICES = [
   },
   {
     title: "Doctor Visit at Home",
-    aliases: ["doctor", "physician", "home doctor", "consultation", "mbbs", "general physician", "clinic"],
+    aliases: [
+      "doctor", "physician", "home doctor", "consultation", "mbbs", "general physician", "clinic",
+      "bukhar", "fever", "sardi", "jukham", "khansi", "cough", "cold", "doctor ghar par", "doctor call",
+      "dawai", "prescription", "sugar doctor", "bp doctor", "blood pressure", "headache", "sar dard"
+    ],
     subtitle: "Qualified MD / MBBS Doctors at Your Doorstep",
     category: "Clinical Care",
     url: "/services/doctor",
@@ -37,7 +51,11 @@ const CORE_SERVICES = [
   },
   {
     title: "ICU at Home",
-    aliases: ["icu", "ventilator", "critical care", "cardiac monitor", "oxygen setup", "hospital setup"],
+    aliases: [
+      "icu", "ventilator", "critical care", "cardiac monitor", "oxygen setup", "hospital setup",
+      "icu at home", "ventilator bed", "suction", "infusion pump", "bipap", "cpap", "bed par mareez",
+      "serious care", "tracheostomy", "coma", "oxygen ki kami", "saas lene me takleef"
+    ],
     subtitle: "Full Hospital ICU Setup & 24/7 Critical Nursing",
     category: "Critical Care",
     url: "/icu-at-home",
@@ -46,7 +64,11 @@ const CORE_SERVICES = [
   },
   {
     title: "Nursing Care at Home",
-    aliases: ["nurse", "nursing", "injection", "dressing", "attendant", "home nurse"],
+    aliases: [
+      "nurse", "nursing", "injection", "dressing", "attendant", "home nurse", "patti", "drip",
+      "glucose", "saline", "catheter", "ryles tube", "wound care", "injection lagwana", "female nurse",
+      "male nurse", "dawa pilana", "bed bath", "wound dressing", "bandage"
+    ],
     subtitle: "Trained 12h & 24h Certified Nursing Staff",
     category: "Home Care",
     url: "/services/nursing",
@@ -55,7 +77,12 @@ const CORE_SERVICES = [
   },
   {
     title: "Lab Test at Home",
-    aliases: ["lab test", "blood test", "blood checkup", "sample collection", "thyroid", "cbct", "cbc"],
+    aliases: [
+      "lab test", "blood test", "blood checkup", "sample collection", "thyroid", "cbct", "cbc",
+      "sugar check", "diabetes", "khoon ki janch", "peshab janch", "urine test", "kft", "lft",
+      "lipid", "dengue test", "malaria test", "widal", "typhoid test", "vitamin d", "vitamin b12",
+      "hba1c", "blood sample", "test ghar par"
+    ],
     subtitle: "NABL Certified Home Sample Collection (60 Mins)",
     category: "Diagnostics",
     url: "/services/lab-test",
@@ -64,7 +91,11 @@ const CORE_SERVICES = [
   },
   {
     title: "Equipment Rental",
-    aliases: ["equipment", "wheelchair", "oxygen concentrator", "hospital bed", "bipap", "cpap", "rent"],
+    aliases: [
+      "equipment", "wheelchair", "oxygen concentrator", "hospital bed", "bipap", "cpap", "rent",
+      "kiraye par", "wheelchair rent", "oxygen cylinder", "air mattress", "air bed", "walker",
+      "baisakhi", "suction machine", "patient bed", "electric bed", "oxygen machine"
+    ],
     subtitle: "Medical Equipment on Affordable Rent in Lucknow",
     category: "Medical Equipment",
     url: "/services/equipment",
@@ -73,12 +104,27 @@ const CORE_SERVICES = [
   },
   {
     title: "Home Care Services",
-    aliases: ["home care", "elderly care", "patient care", "attendant"],
+    aliases: [
+      "home care", "elderly care", "patient care", "attendant", "caregiver", "ayah",
+      "bujurg ki dekhbhal", "paralytic patient care", "old age care", "24 ghante attendant", "12 ghante attendant"
+    ],
     subtitle: "Comprehensive Daily Support & Attendant Care",
     category: "Home Care",
     url: "/services/home-care",
     type: "service",
     icon: "Home"
+  },
+  {
+    title: "Lifetime Free Health Card",
+    aliases: [
+      "health card", "card", "free health card", "discount card", "ayushman", "member card",
+      "digital card", "djm card", "smart card", "free card", "discount"
+    ],
+    subtitle: "Apply for 100% Free Lifetime Healthcare Card & Discounts",
+    category: "Membership & Benefits",
+    url: "/health-card",
+    type: "service",
+    icon: "CreditCard"
   }
 ];
 
@@ -223,7 +269,7 @@ export async function GET(req) {
     });
 
     // Merge and deduplicate results
-    const combined = [
+    let combined = [
       ...formattedConditions,
       ...matchedServices,
       ...formattedDepartments,
@@ -244,9 +290,41 @@ export async function GET(req) {
       return 0;
     });
 
+    // If no direct results found, generate smart "Related Services"
+    let isFallback = false;
+    if (combined.length === 0) {
+      isFallback = true;
+      const q = query.toLowerCase();
+
+      let relatedPick = [];
+      if (q.includes("dard") || q.includes("pain") || q.includes("haddi") || q.includes("joint") || q.includes("bone")) {
+        relatedPick = ["Physiotherapy at Home", "Doctor Visit at Home", "Nursing Care at Home"];
+      } else if (q.includes("saas") || q.includes("breath") || q.includes("oxygen") || q.includes("emergency") || q.includes("serious")) {
+        relatedPick = ["Ambulance Service", "ICU at Home", "Equipment Rental"];
+      } else if (q.includes("blood") || q.includes("janch") || q.includes("check") || q.includes("sugar") || q.includes("test")) {
+        relatedPick = ["Lab Test at Home", "Doctor Visit at Home"];
+      } else if (q.includes("care") || q.includes("nurse") || q.includes("attendant") || q.includes("help") || q.includes("ghar")) {
+        relatedPick = ["Nursing Care at Home", "Home Care Services", "Doctor Visit at Home"];
+      } else {
+        // Universal related recommendation
+        relatedPick = ["Doctor Visit at Home", "Physiotherapy at Home", "Ambulance Service", "Nursing Care at Home", "Lab Test at Home"];
+      }
+
+      combined = CORE_SERVICES.filter(s => relatedPick.includes(s.title)).map(s => ({
+        id: s.url,
+        title: s.title,
+        subtitle: `Related Care: ${s.subtitle}`,
+        category: "Related Recommendation",
+        type: "service",
+        url: s.url,
+        isRelated: true
+      }));
+    }
+
     return NextResponse.json({
       success: true,
       query,
+      isFallback,
       results: combined.slice(0, 12)
     });
 

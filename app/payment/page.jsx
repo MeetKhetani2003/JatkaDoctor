@@ -83,14 +83,17 @@ function PaymentContent() {
                 console.error("Failed to fetch package price:", e);
               }
             } else {
-              // Service category fallbacks
+              // Accurate service category fallbacks
               const service = (appt.category || appt.service || "").toLowerCase();
-              if (service.includes("ambulance")) calculatedPrice = 1500;
-              else if (service.includes("physio")) calculatedPrice = 800;
-              else if (service.includes("doctor")) calculatedPrice = 1000;
-              else if (service.includes("icu")) calculatedPrice = 5000;
-              else if (service.includes("nurse") || service.includes("care")) calculatedPrice = 1200;
-              else if (service.includes("lab")) calculatedPrice = 600;
+              if (service.includes("ambulance")) calculatedPrice = 1199;
+              else if (service.includes("physio")) calculatedPrice = 499;
+              else if (service.includes("doctor")) calculatedPrice = 999;
+              else if (service.includes("icu")) calculatedPrice = 2999;
+              else if (service.includes("nurse") || service.includes("nursing")) calculatedPrice = 800;
+              else if (service.includes("lab")) calculatedPrice = 299;
+              else if (service.includes("equipment")) calculatedPrice = 500;
+              else if (service.includes("elderly") || service.includes("home care")) calculatedPrice = 800;
+              else calculatedPrice = 499;
             }
           }
           setAmount(calculatedPrice);

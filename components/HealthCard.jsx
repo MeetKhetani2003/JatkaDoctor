@@ -326,14 +326,14 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
               {/* Top Bar: Brand Logo + "FREE HEALTH CARD" */}
               <div className="relative z-10 flex items-center justify-between px-4 sm:px-6 pt-3.5 pb-2">
                 <div className="flex items-center gap-2.5">
-                  {/* Logo Icon */}
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white shadow-sm border border-emerald-100 p-1 flex items-center justify-center">
+                  {/* Logo Icon - Crisp DJM Monogram Emblem */}
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white shadow-sm border border-emerald-100 p-1 flex items-center justify-center shrink-0">
                     <img
-                      src="/Dr.Jhatka.png"
-                      alt="Dr Jhatka Medicare"
+                      src="/icon.png"
+                      alt="DJM Monogram"
                       className="w-full h-full object-contain"
                       onError={(e) => {
-                        e.target.style.display = "none";
+                        e.target.src = "/Dr.Jhatka.png";
                       }}
                     />
                   </div>
@@ -556,11 +556,14 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
               {/* Top Bar: Brand Logo + "Your Health Our Priority" */}
               <div className="relative z-10 flex items-center justify-between px-4 sm:px-6 pt-3.5 pb-2 border-b border-emerald-100/60">
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-lg bg-white border border-emerald-100 p-1 flex items-center justify-center shadow-xs">
+                  <div className="w-9 h-9 rounded-lg bg-white border border-emerald-100 p-1 flex items-center justify-center shadow-xs shrink-0">
                     <img
-                      src="/Dr.Jhatka.png"
-                      alt="Dr Jhatka Medicare"
+                      src="/icon.png"
+                      alt="DJM Monogram"
                       className="w-full h-full object-contain"
+                      onError={(e) => {
+                        e.target.src = "/Dr.Jhatka.png";
+                      }}
                     />
                   </div>
                   <div>

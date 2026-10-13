@@ -27,13 +27,17 @@ export async function POST(req) {
     // 1. Process Base64 Photo to GridFS first
     let photoUrl = undefined;
     if (body.photo && body.photo.startsWith('data:image')) {
-      const match = body.photo.match(/^data:(image\/\w+);base64,(.+)$/);
-      if (match) {
-        const contentType = match[1];
-        const base64Data = match[2];
-        const buffer = Buffer.from(base64Data, 'base64');
-        const fileId = await uploadToGridFS(buffer, `passport_${Date.now()}`, contentType);
-        photoUrl = `/api/images/${fileId}`;
+      try {
+        const match = body.photo.match(/^data:(image\/\w+);base64,(.+)$/);
+        if (match) {
+          const contentType = match[1];
+          const base64Data = match[2];
+          const buffer = Buffer.from(base64Data, 'base64');
+          const fileId = await uploadToGridFS(buffer, `passport_${Date.now()}`, contentType);
+          photoUrl = `/api/images/${fileId}`;
+        }
+      } catch (photoErr) {
+        console.error('Photo upload to GridFS failed, continuing without photo:', photoErr);
       }
     }
 
@@ -417,6 +421,9 @@ export async function POST(req) {
     return response;
   } catch (error) {
     console.error('Health card registration error:', error);
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    const friendlyMsg = error?.message && !error.message.includes("is not a function")
+      ? error.message 
+      : "Error creating Health Card. Please ensure details are correct and retry.";
+    return NextResponse.json({ success: false, message: friendlyMsg }, { status: 500 });
   }
 }

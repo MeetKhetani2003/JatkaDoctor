@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Phone, MessageCircle, Send, User, Calendar, Loader2, ChevronDown } from "lucide-react";
+import { Phone, MessageCircle, Send, User, Calendar, Loader2, ChevronDown, MapPin, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
@@ -11,6 +11,20 @@ import { detectZone } from "../lib/zones";
 
 const PRIMARY = "#0F9D58";
 const phone = "8874744756";
+
+// Standard official booking price lookup for services
+export function getStandardServicePrice(serviceName) {
+  const s = (serviceName || "").toLowerCase();
+  if (s.includes("ambulance")) return 1199;
+  if (s.includes("physio")) return 499;
+  if (s.includes("doctor")) return 999;
+  if (s.includes("icu")) return 2999;
+  if (s.includes("nurse") || s.includes("nursing")) return 800;
+  if (s.includes("lab")) return 299;
+  if (s.includes("equipment")) return 500;
+  if (s.includes("home care") || s.includes("elderly")) return 800;
+  return 499;
+}
 
 function BookingFormInner({ 
   defaultService = "", 
@@ -50,6 +64,39 @@ function BookingFormInner({
     googleMapLocation: "",
     patientCondition: prefilledMessage || ""
   });
+
+  const [locating, setLocating] = useState(false);
+  const [locSuccess, setLocSuccess] = useState(false);
+
+  // Auto detect GPS Google Maps Location
+  const handleAutoDetectLocation = () => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+    setLocating(true);
+    setLocSuccess(false);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        const mapUrl = `https://www.google.com/maps?q=${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+        setFormData(prev => ({
+          ...prev,
+          googleMapLocation: mapUrl
+        }));
+        setLocating(false);
+        setLocSuccess(true);
+        setTimeout(() => setLocSuccess(false), 4000);
+      },
+      (err) => {
+        console.error("GPS detection error:", err);
+        setLocating(false);
+        alert("Location permission denied or unavailable. Please paste your Google Maps link manually.");
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  };
 
   // Fetch categories and doctors on mount
   useEffect(() => {
@@ -185,6 +232,21 @@ function BookingFormInner({
 
       const detectedZone = detectZone(formData.patientAddress);
 
+      // Calculate accurate booking charge based on selected package or official service rate
+      let amountToCharge = 0;
+      if (formData.package) {
+        const foundPkg = allPackages.find(p => 
+          (p.title && p.title.toLowerCase() === formData.package.toLowerCase()) || 
+          (p.name && p.name.toLowerCase() === formData.package.toLowerCase())
+        );
+        if (foundPkg && foundPkg.price) {
+          amountToCharge = parseInt(foundPkg.price.toString().replace(/[^\d]/g, ''), 10) || 0;
+        }
+      }
+      if (!amountToCharge) {
+        amountToCharge = getStandardServicePrice(formData.service);
+      }
+
       const res = await fetch('/api/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -204,7 +266,8 @@ function BookingFormInner({
           googleMapLocation: formData.googleMapLocation,
           patientCondition: formData.patientCondition,
           recaptchaToken: token,
-          leadSource: leadSource
+          leadSource: leadSource,
+          totalAmount: amountToCharge
         })
       });
       const data = await res.json();
@@ -214,8 +277,8 @@ function BookingFormInner({
         setAgreed(false);
         onSuccess();
         
-        // Redirect to payment gateway simulator (Phase 4)
-        router.push(`/payment?bookingId=${data.bookingId}`);
+        // Redirect to payment gateway with accurate booking charge
+        router.push(`/payment?bookingId=${data.bookingId}&amount=${amountToCharge}`);
       } else {
         alert(data.error || "Error submitting request. Please try again.");
       }
@@ -344,15 +407,43 @@ function BookingFormInner({
           </motion.div>
         )}
 
-        <div className="relative">
+        <div className="relative flex items-center">
           <input
             name="googleMapLocation"
             value={formData.googleMapLocation}
             onChange={e => setFormData({...formData, googleMapLocation: e.target.value})}
             type="text"
             placeholder="Google Map Location Link (Optional)"
-            className="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
+            className="w-full pl-4 pr-32 py-3 rounded-xl bg-gray-50 border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition"
           />
+          <button
+            type="button"
+            onClick={handleAutoDetectLocation}
+            disabled={locating}
+            className={`absolute right-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all shadow-xs cursor-pointer ${
+              locSuccess
+                ? "bg-emerald-600 text-white"
+                : "bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200/60"
+            }`}
+            title="Auto-detect current GPS location"
+          >
+            {locating ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Locating...</span>
+              </>
+            ) : locSuccess ? (
+              <>
+                <Check className="w-3.5 h-3.5" />
+                <span>Detected!</span>
+              </>
+            ) : (
+              <>
+                <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Auto Detect</span>
+              </>
+            )}
+          </button>
         </div>
 
         {!hideService && (

@@ -372,6 +372,19 @@ export async function POST(req) {
       }
     }
 
+    if (!calculatedTotalAmount && !body.totalAmount) {
+      const s = (body.service || body.category || '').toLowerCase();
+      if (s.includes("ambulance")) calculatedTotalAmount = 1199;
+      else if (s.includes("physio")) calculatedTotalAmount = 499;
+      else if (s.includes("doctor")) calculatedTotalAmount = 999;
+      else if (s.includes("icu")) calculatedTotalAmount = 2999;
+      else if (s.includes("nurse") || s.includes("nursing")) calculatedTotalAmount = 800;
+      else if (s.includes("lab")) calculatedTotalAmount = 299;
+      else if (s.includes("equipment")) calculatedTotalAmount = 500;
+      else if (s.includes("elderly") || s.includes("home care")) calculatedTotalAmount = 800;
+      else calculatedTotalAmount = 499;
+    }
+
     // Create appointment and explicitly set bookingId to ensure it's saved
     const appointment = new Appointment({
       ...body,
