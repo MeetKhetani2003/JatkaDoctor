@@ -6,6 +6,7 @@ import {
   CreditCard,
   User,
   Users,
+  Calendar,
   CalendarCheck,
   Activity,
   Receipt,
