@@ -3,6 +3,7 @@ import connectDB from '@/lib/db';
 import Appointment from '@/lib/models/Appointment';
 import Payment from '@/lib/models/Payment';
 import IcuRequest from '@/lib/models/IcuRequest';
+import HomeCareBooking from '@/lib/models/homeCare/HomeCareBooking';
 import { verifyAdmin } from '@/lib/adminAuth';
 
 export async function GET(req) {
@@ -39,6 +40,15 @@ export async function GET(req) {
     const activeIcuCarePlans = await IcuRequest.countDocuments({
       status: { $in: ['Booking Confirmed', 'Staff Assigned', 'Service Started'] }
     });
+
+    // Home Care & Nursing Care Stats
+    const totalHomeCareBookings = await HomeCareBooking.countDocuments({ category: 'home-care' });
+    const totalNursingBookings = await HomeCareBooking.countDocuments({ category: 'nursing-care' });
+    const pendingHomeCareAssignments = await HomeCareBooking.countDocuments({
+      bookingStatus: { $in: ['New', 'Pending Review', 'Confirmed'] },
+      assignedStaffId: { $exists: false }
+    });
+    const completedHomeCare = await HomeCareBooking.countDocuments({ bookingStatus: 'Completed' });
 
     // 2. Revenue aggregation
     const paidPayments = await Payment.find({ status: 'Paid' });
@@ -112,6 +122,10 @@ export async function GET(req) {
       totalRevenue,
       totalIcuRequests,
       activeIcuCarePlans,
+      totalHomeCareBookings,
+      totalNursingBookings,
+      pendingHomeCareAssignments,
+      completedHomeCare,
       serviceStats,
       monthlyRevenueGraph,
       bookingTrendGraph

@@ -24,7 +24,9 @@ import {
   XOctagon,
   Package,
   Bell,
-  MessageCircle
+  MessageCircle,
+  Home,
+  HeartPulse
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -44,6 +46,10 @@ const sidebarLinks = [
   { label: "Ambulance Services", href: "/admin/service-cards", icon: Activity },
   { label: "Ambulance Partners", href: "/admin/ambulances", icon: Truck },
   { label: "Ambulance Packages", href: "/admin/ambulance-packages", icon: Package },
+  { label: "Home Care Services", href: "/admin/home-care-master", icon: Home },
+  { label: "Home Care Bookings", href: "/admin/home-care-bookings", icon: CalendarCheck },
+  { label: "Nursing Care Services", href: "/admin/nursing-care-master", icon: HeartPulse },
+  { label: "Nursing Care Bookings", href: "/admin/nursing-care-bookings", icon: CalendarCheck },
   { label: "Physio Centers", href: "/admin/physio-centers", icon: MapPin },
   { label: "Physio Master Data", href: "/admin/physio-master", icon: Activity },
   { label: "Physio Bookings", href: "/admin/physio-bookings", icon: CalendarCheck },

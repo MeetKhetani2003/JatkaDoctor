@@ -1,6 +1,7 @@
 import connectDB from '@/lib/db';
 import Blog from '@/lib/models/Blog';
 import Doctor from '@/lib/models/Doctor';
+import HomeCareService from '@/lib/models/homeCare/HomeCareService';
 
 export default async function sitemap() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.drjhatka.com';
@@ -61,9 +62,26 @@ export default async function sitemap() {
       changeFrequency: 'weekly',
       priority: 0.6,
     }));
+
+    // Fetch active Home Care and Nursing Care services
+    let homeCareServices = [];
+    try {
+      homeCareServices = await HomeCareService.find({ status: 'Active', showOnWebsite: true }, { slug: 1, category: 1, updatedAt: 1 });
+    } catch (e) {
+      console.error("Failed to retrieve home care services for sitemap:", e);
+    }
+
+    const homeCareRoutes = homeCareServices.map((svc) => ({
+      url: `${baseUrl}/services/${svc.category === 'nursing-care' ? 'nursing-care' : 'home-care'}/${svc.slug}`,
+      lastModified: svc.updatedAt || new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    }));
+
+    return [...staticRoutes, ...blogRoutes, ...doctorRoutes, ...homeCareRoutes];
   } catch (error) {
     console.warn("Sitemap builder could not connect to MongoDB. Building static routes only.", error.message);
   }
 
-  return [...staticRoutes, ...blogRoutes, ...doctorRoutes];
+  return staticRoutes;
 }

@@ -9,6 +9,7 @@ import Family from '@/lib/models/Family';
 import Notification from '@/lib/models/Notification';
 import Prescription from '@/lib/models/Prescription';
 import IcuRequest from '@/lib/models/IcuRequest';
+import HomeCareBooking from '@/lib/models/homeCare/HomeCareBooking';
 
 export async function GET(req, context) {
   try {
@@ -62,10 +63,20 @@ export async function GET(req, context) {
     .sort({ createdAt: -1 })
     .lean();
 
+    // 3.1 Home Care & Nursing Care Bookings
+    const homeCareBookings = await HomeCareBooking.find({
+      $or: [
+        { patientId: patient._id },
+        { patientPermanentId: patient.patientId },
+        { patientPhone: patient.mobile }
+      ]
+    }).sort({ createdAt: -1 }).lean();
+
     // 4. Payments
     const bookingIds = [
       ...appointments.map(a => a.bookingId).filter(Boolean),
-      ...physioBookings.map(b => b.bookingId).filter(Boolean)
+      ...physioBookings.map(b => b.bookingId).filter(Boolean),
+      ...homeCareBookings.map(h => h.bookingId).filter(Boolean)
     ];
 
     const payments = await Payment.find({
@@ -112,6 +123,7 @@ export async function GET(req, context) {
       campVisits,
       appointments,
       physioBookings,
+      homeCareBookings,
       icuRequests,
       payments,
       prescriptions: formattedPrescriptions,
