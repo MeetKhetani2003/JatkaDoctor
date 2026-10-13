@@ -324,49 +324,49 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
               <div className="absolute bottom-10 left-0 w-80 h-32 bg-gradient-to-tr from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
 
               {/* Top Bar: Brand Logo + "FREE HEALTH CARD" */}
-              <div className="relative z-10 flex items-center justify-between px-4 sm:px-6 pt-3.5 pb-2">
-                <div className="flex items-center gap-2.5">
+              <div className="relative z-10 flex items-center justify-between px-4 sm:px-6 pt-3 sm:pt-3.5 pb-1 sm:pb-2">
+                <div className="flex items-center gap-2 sm:gap-2.5">
                   {/* Logo Icon - Crisp DJM Monogram Emblem */}
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-white shadow-sm border border-emerald-100 p-1 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden bg-white shadow-sm border border-emerald-100 p-0.5 flex items-center justify-center shrink-0">
                     <img
-                      src="/icon.png"
+                      src="/djm-monogram.png"
                       alt="DJM Monogram"
                       className="w-full h-full object-contain"
                       onError={(e) => {
-                        e.target.src = "/Dr.Jhatka.png";
+                        e.target.src = "/icon.png";
                       }}
                     />
                   </div>
                   <div>
-                    <h2 className="text-sm sm:text-base font-extrabold tracking-tight text-[#006837] leading-none">
+                    <h2 className="text-xs sm:text-base font-extrabold tracking-tight text-[#006837] leading-none">
                       Dr Jhatka
                     </h2>
-                    <p className="text-[10px] sm:text-[11px] font-bold text-gray-800 tracking-wider uppercase leading-tight">
+                    <p className="text-[9px] sm:text-[11px] font-bold text-gray-800 tracking-wider uppercase leading-tight">
                       MEDICARE
                     </p>
-                    <p className="text-[7.5px] sm:text-[8.5px] text-gray-500 font-medium leading-none">
+                    <p className="text-[7px] sm:text-[8.5px] text-gray-500 font-medium leading-none">
                       Speed, Care & Trust — All in One
                     </p>
                   </div>
                 </div>
 
                 {/* Top-Right Badge: FREE HEALTH CARD */}
-                <div className="bg-[#006837] text-white px-3 sm:px-4 py-1 sm:py-1.5 rounded-bl-2xl rounded-tr-xl shadow-md flex flex-col items-center justify-center -mr-4 sm:-mr-6 -mt-3.5">
-                  <span className="text-[9px] sm:text-[10px] font-semibold tracking-wider text-emerald-200 uppercase leading-none">
+                <div className="bg-[#006837] text-white px-2.5 sm:px-4 py-1 sm:py-1.5 rounded-bl-2xl rounded-tr-xl shadow-md flex flex-col items-center justify-center -mr-4 sm:-mr-6 -mt-3 sm:-mt-3.5">
+                  <span className="text-[8px] sm:text-[10px] font-semibold tracking-wider text-emerald-200 uppercase leading-none">
                     LIFETIME
                   </span>
-                  <span className="text-xs sm:text-sm font-black tracking-wide uppercase leading-tight">
+                  <span className="text-[10px] sm:text-sm font-black tracking-wide uppercase leading-tight">
                     FREE HEALTH CARD
                   </span>
                 </div>
               </div>
 
               {/* Main Body: Photo + Patient Details + QR Code */}
-              <div className="relative z-10 grid grid-cols-12 gap-2 sm:gap-3 px-4 sm:px-6 pt-1 pb-2">
+              <div className="relative z-10 grid grid-cols-12 gap-2 sm:gap-3 px-3.5 sm:px-6 pt-0.5 sm:pt-1 pb-1 sm:pb-2">
                 
                 {/* Left: Patient Avatar/Photo */}
                 <div className="col-span-3 sm:col-span-3 flex flex-col items-center justify-start">
-                  <div className="w-16 h-18 sm:w-20 sm:h-24 rounded-xl overflow-hidden border-2 border-[#006837] bg-emerald-50 shadow-sm flex items-center justify-center">
+                  <div className="w-14 h-16 sm:w-20 sm:h-22 rounded-xl overflow-hidden border-2 border-[#006837] bg-emerald-50 shadow-sm flex items-center justify-center shrink-0">
                     {cardPhoto ? (
                       <img
                         src={cardPhoto.startsWith('/') ? `${baseUrl}${cardPhoto}` : cardPhoto}
@@ -376,18 +376,18 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
                       />
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center text-emerald-800">
-                        <Users className="w-8 h-8 opacity-70" />
-                        <span className="text-[8px] font-bold uppercase mt-1">DJM ID</span>
+                        <Users className="w-7 h-7 sm:w-8 sm:h-8 opacity-70" />
+                        <span className="text-[7px] sm:text-[8px] font-bold uppercase mt-0.5">DJM ID</span>
                       </div>
                     )}
                   </div>
                 </div>
 
                 {/* Middle: Patient Dynamic Information */}
-                <div className="col-span-5 sm:col-span-5 flex flex-col justify-center text-[9px] sm:text-[10px] space-y-1 sm:space-y-1.5 text-gray-800 font-medium">
+                <div className="col-span-5 sm:col-span-5 flex flex-col justify-center text-[8.5px] sm:text-[10px] space-y-0.5 sm:space-y-1 text-gray-800 font-medium">
                   
                   {/* Grid for Label : Value layout */}
-                  <div className="grid grid-cols-[60px_5px_1fr] sm:grid-cols-[70px_8px_1fr] items-center gap-y-1 sm:gap-y-1.5">
+                  <div className="grid grid-cols-[55px_5px_1fr] sm:grid-cols-[68px_8px_1fr] items-center gap-y-0.5 sm:gap-y-1 leading-tight">
                     
                     {/* Name */}
                     <div className="text-gray-600">Name</div>
@@ -400,7 +400,7 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
                     <div className="text-gray-600">Patient ID</div>
                     <div>:</div>
                     <div>
-                      <span className="inline-block bg-[#dcfce7] text-[#006837] font-black px-1.5 py-0.5 rounded shadow-sm tracking-wide">
+                      <span className="inline-block bg-[#dcfce7] text-[#006837] font-black px-1.5 py-0.5 rounded shadow-xs tracking-wide">
                         {patient.patientId}
                       </span>
                     </div>
@@ -411,7 +411,7 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
                         <div className="text-gray-600">Family ID</div>
                         <div>:</div>
                         <div>
-                          <span className="inline-block bg-[#dcfce7] text-[#006837] font-bold px-1.5 py-0.5 rounded shadow-sm tracking-wide">
+                          <span className="inline-block bg-[#dcfce7] text-[#006837] font-bold px-1.5 py-0.5 rounded shadow-xs tracking-wide">
                             {patient.familyId}
                           </span>
                         </div>
@@ -429,21 +429,17 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
                       </>
                     )}
 
-                    {/* Age */}
-                    {cardAge !== undefined && cardAge !== null && (
+                    {/* Age & Gender combined */}
+                    {(cardAge !== undefined || cardGender) && (
                       <>
-                        <div className="text-gray-600">Age</div>
+                        <div className="text-gray-600">Age / Sex</div>
                         <div>:</div>
-                        <div className="font-bold">{cardAge} {isNaN(Number(cardAge)) ? "" : "Years"}</div>
-                      </>
-                    )}
-
-                    {/* Gender */}
-                    {cardGender && (
-                      <>
-                        <div className="text-gray-600">Gender</div>
-                        <div>:</div>
-                        <div className="font-bold">{cardGender}</div>
+                        <div className="font-bold">
+                          {[
+                            cardAge !== undefined && cardAge !== null ? `${cardAge} Yrs` : null,
+                            cardGender || null
+                          ].filter(Boolean).join(" • ")}
+                        </div>
                       </>
                     )}
 
@@ -452,7 +448,7 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
                       <>
                         <div className="text-gray-600">Blood Group</div>
                         <div>:</div>
-                        <div className="font-bold">{cardBloodGroup}</div>
+                        <div className="font-extrabold text-red-600">{cardBloodGroup}</div>
                       </>
                     )}
                   </div>
@@ -462,34 +458,34 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
                 <div className="col-span-4 sm:col-span-4 flex flex-col items-center justify-center">
                   <div className="bg-white p-1 rounded-xl shadow border border-gray-200 flex flex-col items-center relative">
                     {qrDataUrl ? (
-                      <div className="relative w-18 h-18 sm:w-22 sm:h-22">
+                      <div className="relative w-14 h-14 sm:w-18 sm:h-18">
                         <img
                           src={qrDataUrl}
                           alt="Patient Verification QR"
                           className="w-full h-full object-contain"
                         />
                         {/* Center Emblem on QR */}
-                        <div className="absolute inset-0 m-auto w-5 h-5 bg-white rounded-full p-0.5 shadow flex items-center justify-center border border-emerald-600">
+                        <div className="absolute inset-0 m-auto w-4 h-4 sm:w-5 sm:h-5 bg-white rounded-full p-0.5 shadow flex items-center justify-center border border-emerald-600 overflow-hidden">
                           <img
-                            src="/Dr.Jhatka.png"
+                            src="/djm-monogram.png"
                             alt="DJM"
                             className="w-full h-full object-contain"
                           />
                         </div>
                       </div>
                     ) : (
-                      <div className="w-18 h-18 sm:w-22 sm:h-22 bg-gray-100 flex items-center justify-center">
-                        <span className="text-[8px] text-gray-400">Loading QR</span>
+                      <div className="w-14 h-14 sm:w-18 sm:h-18 bg-gray-100 flex items-center justify-center">
+                        <span className="text-[7px] text-gray-400">Loading QR</span>
                       </div>
                     )}
-                    <span className="text-[7.5px] sm:text-[8.5px] font-extrabold text-gray-600 uppercase tracking-tighter mt-0.5">
-                      Scan to Verify Health Card
+                    <span className="text-[7px] sm:text-[8px] font-extrabold text-gray-600 uppercase tracking-tighter mt-0.5">
+                      Scan to Verify
                     </span>
                   </div>
 
                   {/* Card Status Button / Badge */}
                   <div
-                    className={`mt-1.5 w-full text-center py-0.5 px-2 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider shadow-sm ${
+                    className={`mt-1 w-full text-center py-0.5 px-2 rounded-full text-[8px] sm:text-[9.5px] font-black uppercase tracking-wider shadow-xs ${
                       isActive
                         ? "bg-[#006837] text-white"
                         : "bg-red-600 text-white"
@@ -556,13 +552,13 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
               {/* Top Bar: Brand Logo + "Your Health Our Priority" */}
               <div className="relative z-10 flex items-center justify-between px-4 sm:px-6 pt-3.5 pb-2 border-b border-emerald-100/60">
                 <div className="flex items-center gap-2">
-                  <div className="w-9 h-9 rounded-lg bg-white border border-emerald-100 p-1 flex items-center justify-center shadow-xs shrink-0">
+                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden bg-white border border-emerald-100 p-0.5 flex items-center justify-center shadow-xs shrink-0">
                     <img
-                      src="/icon.png"
+                      src="/djm-monogram.png"
                       alt="DJM Monogram"
                       className="w-full h-full object-contain"
                       onError={(e) => {
-                        e.target.src = "/Dr.Jhatka.png";
+                        e.target.src = "/icon.png";
                       }}
                     />
                   </div>

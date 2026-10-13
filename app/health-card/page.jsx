@@ -195,7 +195,13 @@ function HealthCardRegistrationContent() {
         }
         setStep(3);
       } else {
-        const errorMsg = data.message && !data.message.includes("is not a function")
+        const isTechnicalError = !data.message || 
+          typeof data.message !== 'string' ||
+          data.message.includes("is not a function") ||
+          data.message.includes("TypeError") ||
+          data.message.includes("CastError") ||
+          data.message.includes("Cannot read propert");
+        const errorMsg = !isTechnicalError
           ? data.message
           : "Failed to create Health Card. Please check your information and try again.";
         setFormError(errorMsg);
