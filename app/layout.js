@@ -27,6 +27,11 @@ export const metadata = {
   description:
     "24x7 Ambulance Service, Lab Tests, and Medical Equipment at Home in Lucknow.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.png",
+    shortcut: "/favicon.ico",
+    apple: "/icon-192.png",
+  },
   other: {
     "google-site-verification": process.env.NEXT_PUBLIC_SEARCH_CONSOLE_ID || "",
   }
