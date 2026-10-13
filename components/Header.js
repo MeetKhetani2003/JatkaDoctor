@@ -835,14 +835,6 @@ export default function Navbar() {
               <button
                 id="book-appointment-btn"
                 onClick={() => {
-                  if (!loggedIn) {
-                    router.push("/patient/login");
-                    return;
-                  }
-                  if (!profileComplete) {
-                    router.push("/patient/complete-profile");
-                    return;
-                  }
                   const s = pathname?.startsWith('/services/') ? pathname.split('/services/')[1] : "";
                   openModal({ service: s });
                 }}

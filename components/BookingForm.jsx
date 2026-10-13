@@ -273,12 +273,10 @@ function BookingFormInner({
       const data = await res.json();
       if (res.ok) {
         setBookingId(data.bookingId);
+        setSuccess(true);
         setFormData({ name: "", phone: "", email: "", service: defaultService, otherService: "", doctor: "", appointmentDate: "", appointmentTime: "", patientAddress: "", googleMapLocation: "", patientCondition: "" });
         setAgreed(false);
         onSuccess();
-        
-        // Redirect to payment gateway with accurate booking charge
-        router.push(`/payment?bookingId=${data.bookingId}&amount=${amountToCharge}`);
       } else {
         alert(data.error || "Error submitting request. Please try again.");
       }
