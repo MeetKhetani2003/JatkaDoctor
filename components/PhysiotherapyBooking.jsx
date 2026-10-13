@@ -199,11 +199,14 @@ export default function PhysiotherapyBooking() {
     e.preventDefault();
     setLoading(true);
     try {
-      // Auto-create patient and booking via our new endpoint
+      const effectivePrice = (selection.pkg.offerPrice && selection.pkg.offerPrice < selection.pkg.basePrice)
+        ? selection.pkg.offerPrice
+        : (selection.pkg.offerPrice || selection.pkg.basePrice);
+
       const payload = {
         name: selection.patientName,
         mobile: selection.mobile,
-        totalAmount: selection.pkg.basePrice,
+        totalAmount: effectivePrice,
         preferredDate: selection.date,
         preferredTime: selection.time,
       };
@@ -439,10 +442,22 @@ export default function PhysiotherapyBooking() {
                       <p className="text-sm text-gray-500 mb-6">{pkg.sessionsCount} Sessions included</p>
                       
                       <div className="mt-auto mb-6">
-                        <div className="flex items-baseline gap-1">
-                          <span className="text-3xl font-black text-gray-900">₹{pkg.basePrice}</span>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-3xl font-black text-gray-900">
+                            ₹{pkg.offerPrice && pkg.offerPrice < pkg.basePrice ? pkg.offerPrice : (pkg.offerPrice || pkg.basePrice)}
+                          </span>
+                          {pkg.offerPrice && pkg.basePrice && pkg.offerPrice < pkg.basePrice && (
+                            <span className="text-sm text-gray-400 line-through">
+                              ₹{pkg.basePrice}
+                            </span>
+                          )}
                         </div>
-                        <p className="text-xs text-green-600 font-medium">Valid for {pkg.validityDays} Days</p>
+                        {pkg.offerPrice && pkg.basePrice && pkg.offerPrice < pkg.basePrice && (
+                          <span className="inline-block bg-green-50 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded mt-1">
+                            Save ₹{pkg.basePrice - pkg.offerPrice}
+                          </span>
+                        )}
+                        <p className="text-xs text-green-600 font-medium mt-1">Valid for {pkg.validityDays} Days</p>
                       </div>
                       
                       <button 

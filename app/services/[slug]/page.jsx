@@ -2557,9 +2557,9 @@ function PhysiotherapyPage() {
 
                 <div className={`mt-${pkg.isRecommended ? "2" : "3"} flex items-end gap-2`}>
                   <span className={`${pkg.isRecommended ? "text-3xl" : "text-2xl"} font-normal text-black tracking-tight`}>
-                    ₹{pkg.offerPrice || pkg.basePrice}
+                    ₹{pkg.offerPrice && pkg.offerPrice < pkg.basePrice ? pkg.offerPrice : (pkg.offerPrice || pkg.basePrice)}
                   </span>
-                  {pkg.offerPrice && pkg.offerPrice !== pkg.basePrice && (
+                  {pkg.offerPrice && pkg.basePrice && pkg.offerPrice < pkg.basePrice && (
                     <span className={`text-${pkg.isRecommended ? "sm" : "xs"} text-gray-400 line-through mb-1.5`}>
                       ₹{pkg.basePrice}
                     </span>
