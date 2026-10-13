@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Calendar,
   Clock,
@@ -112,126 +113,112 @@ export default function UpcomingCampBanner() {
   };
 
   return (
-    <section className="py-4 px-4 sm:px-6 max-w-7xl mx-auto">
-      <div className="relative rounded-2xl sm:rounded-3xl bg-gradient-to-r from-emerald-50 via-teal-50/60 to-emerald-50/30 border border-emerald-200/80 p-4 sm:p-6 lg:p-7 shadow-sm hover:shadow-md transition-shadow">
-        
-        {/* Top Header Row */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-emerald-100">
-          
-          {/* Left: Badge + Camp Title */}
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-600 text-white text-[10px] sm:text-xs font-black tracking-wide uppercase shadow-xs">
-                <span>📢</span>
-                <span>{camp.status === "Active" ? "LIVE TODAY" : "UPCOMING CAMP"}</span>
-              </span>
-              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-100/70 px-2.5 py-0.5 rounded-full">
-                Dr Jhatka Medicare Community Health Initiative
-              </span>
-            </div>
-
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-gray-900 tracking-tight leading-snug">
-              <span className="text-[#006837] uppercase">{camp.name || "FREE HEALTH CHECK-UP CAMP"}</span>
-            </h2>
-          </div>
-
-          {/* Right: Date, Time & Location Pill Card */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 bg-white/90 backdrop-blur-xs p-3 sm:p-3.5 rounded-xl border border-emerald-100 shadow-xs">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-100 text-[#006837] flex items-center justify-center shrink-0">
-                <Calendar className="w-4 h-4" />
-              </div>
-              <div className="text-left">
-                <p className="text-xs font-extrabold text-gray-900 leading-tight">
-                  {camp.date}
-                </p>
-                <p className="text-[11px] font-medium text-gray-600 flex items-center gap-1">
-                  <Clock className="w-3 h-3 text-emerald-700" />
-                  <span>{camp.time}</span>
-                </p>
-              </div>
-            </div>
-
-            <div className="hidden sm:block w-px h-8 bg-gray-200" />
-
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center shrink-0">
-                <MapPin className="w-4 h-4" />
-              </div>
-              <div className="text-left">
-                <p className="text-xs font-extrabold text-gray-900 leading-tight">
-                  {camp.location}
-                </p>
-                <p className="text-[11px] font-medium text-gray-600 truncate max-w-[200px]">
-                  {camp.city || "Lucknow"} • Dr Jhatka Medicare Camp
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Free Checks & Benefits Icons Grid */}
-        <div className="py-4">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-900 mb-2.5 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span>100% Free Health Screenings & Consultations For All:</span>
-          </p>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
-            {freeServices.map((srv, idx) => {
-              const Icon = srv.icon;
-              return (
-                <div
-                  key={idx}
-                  className="flex items-center gap-2 bg-white/95 rounded-xl p-2.5 border border-emerald-100 shadow-2xs hover:border-emerald-300 transition-colors"
-                >
-                  <div className="w-7 h-7 rounded-lg bg-emerald-50 text-[#006837] flex items-center justify-center shrink-0">
-                    <Icon className="w-4 h-4" />
-                  </div>
-                  <span className="text-xs font-bold text-gray-800 leading-tight">
-                    {srv.label}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Bottom CTA Row */}
-        <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-3 text-xs text-gray-600">
-            <span className="flex items-center gap-1.5 font-semibold text-emerald-800">
-              <CheckCircle2 className="w-4 h-4 text-[#006837]" />
-              <span>No Prior Registration Fee • Walk-ins & Pre-booking Welcome</span>
+    <section className="py-6 px-3 sm:px-6 max-w-7xl mx-auto">
+      {/* SECTION HEADER AS PER CLIENT SPECIFICATION */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2 mb-4 sm:mb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight">
+              Your Healthcare Benefits
             </span>
-            {camp.totalRegistered ? (
-              <span className="hidden md:inline-block bg-white px-2.5 py-0.5 rounded-full border border-emerald-200 text-[11px] font-bold text-gray-700">
-                👥 {camp.totalRegistered}+ Already Registered
-              </span>
-            ) : null}
+            <span className="bg-emerald-100 text-[#006837] text-[10px] font-black uppercase px-2 py-0.5 rounded-full">
+              Free For All
+            </span>
           </div>
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">
+            Free Check-up Camps &amp; Free Digital Health Card for a Healthier Tomorrow
+          </p>
+        </div>
 
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
-            <button
-              onClick={() => {
-                setSelectedCampForRegister(camp);
-                setRegSuccess(false);
-                setRegError("");
-              }}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#006837] hover:bg-[#00502a] text-white text-xs sm:text-sm font-extrabold shadow-sm transition active:scale-95"
-            >
-              <span>Register for Camp</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+        <Link
+          href="/health-card"
+          className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-extrabold text-[#006837] hover:text-emerald-700 transition self-start sm:self-auto group"
+        >
+          <span>Know More</span>
+          <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+        </Link>
+      </div>
 
-            <button
-              onClick={() => setSelectedCampForDetails(camp)}
-              className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-white hover:bg-gray-50 text-emerald-900 border border-emerald-300 text-xs sm:text-sm font-bold shadow-2xs transition"
-            >
-              <Info className="w-4 h-4 text-emerald-700" />
-              <span>View Details</span>
-            </button>
-          </div>
+      {/* TWO CARDS SIDE-BY-SIDE - BOTH FULLY CLICKABLE */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+        {/* CARD 1: FREE HEALTH CHECK-UP CAMP */}
+        <div
+          onClick={() => {
+            setSelectedCampForRegister(camp);
+            setRegSuccess(false);
+            setRegError("");
+          }}
+          className="group relative cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all duration-300 border border-emerald-100 bg-white aspect-[16/7.5] sm:aspect-[16/7]"
+          role="button"
+          tabIndex={0}
+          title="Click to Register for Free Health Check-up Camp"
+        >
+          <Image
+            src="/newimages/img2.jpeg"
+            alt="Free Health Check-Up Camp - Dr Jhatka Medicare"
+            fill
+            className="object-cover object-center group-hover:scale-[1.02] transition-transform duration-500"
+            sizes="(max-width: 768px) 100vw, 640px"
+          />
+        </div>
+
+        {/* CARD 2: FREE HEALTH CARD */}
+        <Link
+          href="/health-card"
+          className="group relative cursor-pointer rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:scale-[1.01] transition-all duration-300 border border-emerald-100 bg-white aspect-[16/7.5] sm:aspect-[16/7] block"
+          title="Click to Create Free Digital Health Card"
+        >
+          <Image
+            src="/newimages/img1.jpeg"
+            alt="Free Digital Health Card - Dr Jhatka Medicare"
+            fill
+            className="object-cover object-center group-hover:scale-[1.02] transition-transform duration-500"
+            sizes="(max-width: 768px) 100vw, 640px"
+          />
+        </Link>
+      </div>
+
+      {/* QUICK INFO BAR FOR CAMP DATE & ACTION BUTTONS */}
+      <div className="mt-3.5 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-emerald-50/90 via-teal-50/50 to-emerald-50/90 border border-emerald-200/80 flex flex-col md:flex-row items-center justify-between gap-3 shadow-2xs">
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 text-xs text-gray-700 w-full md:w-auto">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-600 text-white text-[11px] font-black uppercase shadow-2xs shrink-0">
+            <span>📢</span>
+            <span>{camp.status === "Active" ? "LIVE TODAY" : "UPCOMING CAMP"}</span>
+          </span>
+
+          <span className="font-bold text-gray-900 flex items-center gap-1">
+            <Calendar className="w-3.5 h-3.5 text-[#006837]" />
+            <span>{camp.date}</span>
+          </span>
+
+          <span className="hidden sm:inline text-gray-300">•</span>
+
+          <span className="font-medium text-gray-600 flex items-center gap-1">
+            <MapPin className="w-3.5 h-3.5 text-red-600" />
+            <span className="truncate max-w-[220px]">{camp.location}</span>
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2.5 w-full md:w-auto shrink-0">
+          <button
+            onClick={() => {
+              setSelectedCampForRegister(camp);
+              setRegSuccess(false);
+              setRegError("");
+            }}
+            className="flex-1 md:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-[#006837] hover:bg-[#00502a] text-white text-xs font-extrabold shadow-sm transition active:scale-95"
+          >
+            <span>Register Free</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            onClick={() => setSelectedCampForDetails(camp)}
+            className="flex-1 md:flex-none inline-flex items-center justify-center gap-1 px-3.5 py-2 rounded-xl bg-white hover:bg-gray-50 text-emerald-900 border border-emerald-300 text-xs font-bold transition shadow-2xs"
+          >
+            <Info className="w-3.5 h-3.5 text-emerald-700" />
+            <span>Details</span>
+          </button>
         </div>
       </div>
 

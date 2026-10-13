@@ -2,34 +2,44 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Phone, MessageCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 
 const slides = [
   {
-    image: "/hero-ambulance.jpeg",
-    title: "24x7 Ambulance Service",
-    subtitle: "Fast response in Lucknow",
+    id: "physiotherapy",
+    image: "/newimages/img4.jpeg",
+    title: "Physiotherapy at Home",
+    link: "/services/physiotherapy",
+    alt: "Physiotherapy at Home - Dr Jhatka Medicare",
   },
   {
-    image: "/hero-icu.jpeg",
-    title: "ICU Ambulance Available",
-    subtitle: "Advanced life support",
+    id: "doctor",
+    image: "/newimages/img5.jpeg",
+    title: "Doctor Visit at Home",
+    link: "/services/doctor",
+    alt: "Doctor Visit at Home - Dr Jhatka Medicare",
   },
   {
-    image: "/hero-doctor.jpeg",
-    title: "Doctor at Home",
-    subtitle: "Trusted medical care",
+    id: "icu",
+    image: "/newimages/img6.jpeg",
+    title: "ICU at Home",
+    link: "/icu-at-home",
+    alt: "ICU at Home - Dr Jhatka Medicare",
   },
   {
-    image: "/hero-physio.jpeg",
-    title: "Physiotherapy",
-    subtitle: "Trusted medical care",
-  }
+    id: "ambulance",
+    image: "/newimages/img7.jpeg",
+    title: "Ambulance at Home",
+    link: "/services/ambulance",
+    alt: "Ambulance at Home - Dr Jhatka Medicare",
+  },
 ];
 
 export default function HeroCarousel() {
   const [index, setIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
 
   const paginate = (newDirection) => {
     setIndex((prev) => (prev + newDirection + slides.length) % slides.length);
@@ -37,90 +47,94 @@ export default function HeroCarousel() {
 
   // Auto slide
   useEffect(() => {
+    if (isHovered) return;
     const interval = setInterval(() => {
       paginate(1);
-    }, 4000);
+    }, 4500);
     return () => clearInterval(interval);
-  }, []);
+  }, [isHovered, index]);
 
   return (
-    <section className="relative w-full h-[380px] sm:h-[380px] mt-20 overflow-hidden lg:mt-20 group">
-      {/* SLIDES */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -20 }}
-          transition={{ duration: 0.4 }}
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.2}
-          onDragEnd={(e, { offset }) => {
-            const swipe = offset.x;
-            if (swipe < -50) {
-              paginate(1);
-            } else if (swipe > 50) {
-              paginate(-1);
-            }
+    <section className="relative w-full max-w-7xl mx-auto px-3 sm:px-4 mt-16 sm:mt-20">
+      <div
+        className="relative w-full aspect-[16/7.2] sm:aspect-[16/6.8] rounded-2xl sm:rounded-3xl overflow-hidden shadow-md group bg-emerald-950"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {/* SLIDES */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.01 }}
+            transition={{ duration: 0.45 }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(e, { offset }) => {
+              const swipe = offset.x;
+              if (swipe < -40) {
+                paginate(1);
+              } else if (swipe > 40) {
+                paginate(-1);
+              }
+            }}
+            className="absolute inset-0 cursor-pointer select-none"
+          >
+            <Link
+              href={slides[index].link}
+              className="block w-full h-full relative"
+              title={slides[index].title}
+            >
+              <Image
+                src={slides[index].image}
+                alt={slides[index].alt}
+                fill
+                priority={index === 0}
+                className="object-cover object-center select-none"
+                sizes="(max-width: 768px) 100vw, 1280px"
+              />
+            </Link>
+          </motion.div>
+        </AnimatePresence>
+
+        {/* LEFT / RIGHT ARROWS (DESKTOP) */}
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            paginate(-1);
           }}
-          className="absolute inset-0 cursor-grab active:cursor-grabbing"
+          aria-label="Previous slide"
+          className="absolute left-2.5 sm:left-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/35 hover:bg-black/60 text-white backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-md"
         >
-          <Image
-            src={slides[index].image}
-            alt="banner"
-            fill
-            priority
-            className="object-cover object-[75%_center] sm:object-center select-none"
-          />
+          <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+        </button>
 
-          {/* DARK OVERLAY */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent pointer-events-none" />
-        </motion.div>
-      </AnimatePresence>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            paginate(1);
+          }}
+          aria-label="Next slide"
+          className="absolute right-2.5 sm:right-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/35 hover:bg-black/60 text-white backdrop-blur-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20 shadow-md"
+        >
+          <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+        </button>
 
-      {/* CONTENT */}
-      <div className="relative z-10 h-full flex flex-col justify-end px-4 pb-12 pointer-events-none">
-        <div className="pointer-events-auto">
-          <h1 className="text-white text-[22px] font-bold leading-tight">
-            {slides[index].title}
-          </h1>
-          <p className="text-white/80 text-sm mt-1 mb-4">
-            {slides[index].subtitle}
-          </p>
-
-          {/* CTA */}
-          <div className="flex gap-3">
-            <a
-              href="tel:8707790677"
-              className="bg-red-600 text-white px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 active:scale-95 animate-pulse-red shadow-lg"
-            >
-              <Phone className="w-4 h-4" />
-              Call
-            </a>
-
-            <a
-              href="https://wa.me/918707790677"
-              className="bg-white text-emerald-600 px-4 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 active:scale-95"
-            >
-              <MessageCircle className="w-4 h-4" />
-              WhatsApp
-            </a>
-          </div>
-        </div>
-      </div>
-
-      {/* DOT INDICATORS */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-2 z-20">
-        {slides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setIndex(i)}
-            className={`h-1.5 rounded-full transition-all ${i === index ? "w-6 bg-white" : "w-2 bg-white/50"
+        {/* DOT INDICATORS */}
+        <div className="absolute bottom-2.5 sm:bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 sm:gap-2 z-20 bg-black/30 backdrop-blur-xs px-2.5 py-1 rounded-full">
+          {slides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setIndex(i)}
+              className={`h-1.5 sm:h-2 rounded-full transition-all ${
+                i === index ? "w-5 sm:w-6 bg-white shadow-xs" : "w-1.5 sm:w-2 bg-white/50 hover:bg-white/80"
               }`}
-            aria-label={`Go to slide ${i + 1}`}
-          />
-        ))}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );

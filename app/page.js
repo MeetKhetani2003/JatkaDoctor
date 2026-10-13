@@ -22,7 +22,6 @@ import WhyChooseUs from "@/components/WhyChooseUs";
 import FAQSection from "@/components/FAQSection";
 import BookingForm from "@/components/BookingForm";
 import GalleryCarousel from "@/components/GalleryCarousel";
-import FreeHealthCardBanner from "@/components/FreeHealthCardBanner";
 import UpcomingCampBanner from "@/components/UpcomingCampBanner";
 
 const homeFaqs = [
@@ -42,9 +41,8 @@ export default function Home() {
       <HeroCarousel />
       {/* 1. Dynamic Search Bar immediately below Hero */}
       <HeroSearchBar onOpenPrescriptionModal={() => setIsPrescriptionModalOpen(true)} />
-      {/* 2. Upcoming Free Medical & Physiotherapy Camp Banner */}
+      {/* 2. Healthcare Benefits (Free Medical Camp & Free Health Card) */}
       <UpcomingCampBanner />
-      <FreeHealthCardBanner />
       {/* 3. Quick Actions Section featuring Upload Prescription */}
       <QuickActions onOpenPrescriptionModal={() => setIsPrescriptionModalOpen(true)} />
       <ServicesGrid />

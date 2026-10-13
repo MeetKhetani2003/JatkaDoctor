@@ -100,15 +100,90 @@ export default function PhysiotherapyBooking() {
     }
   };
 
+  const defaultFallbackPackages = [
+    {
+      _id: "6ab4f8d33bfd99ffe7298f2a",
+      title: "1 Session Home Physiotherapy",
+      description: "One home physiotherapy session by a qualified physiotherapist.",
+      sessionsCount: 1,
+      validityDays: 1,
+      basePrice: 499,
+      offerPrice: 499,
+      isRecommended: false
+    },
+    {
+      _id: "6ab4f9ec15c3070c8dd003d8",
+      title: "3 Days Trial Home Physiotherapy",
+      description: "3-day trial home physiotherapy package for new patients.",
+      sessionsCount: 3,
+      validityDays: 3,
+      basePrice: 1299,
+      offerPrice: 1299,
+      isRecommended: false
+    },
+    {
+      _id: "6ab4fad115c3070c8dd003db",
+      title: "5 Days Home Physiotherapy",
+      description: "5-day home physiotherapy package for pain relief and early recovery.",
+      sessionsCount: 5,
+      validityDays: 5,
+      basePrice: 2199,
+      offerPrice: 2199,
+      isRecommended: false
+    },
+    {
+      _id: "6ab4fb7b8334897e58911ea3",
+      title: "7 Days Home Physiotherapy",
+      description: "7-day home physiotherapy package for acute pain and early rehabilitation.",
+      sessionsCount: 7,
+      validityDays: 7,
+      basePrice: 2999,
+      offerPrice: 2999,
+      isRecommended: false
+    },
+    {
+      _id: "6ab4fca080f8ff3292106b0f",
+      title: "10 Days Home Physiotherapy",
+      description: "10-day home physiotherapy package for faster recovery and rehabilitation.",
+      sessionsCount: 10,
+      validityDays: 10,
+      basePrice: 3999,
+      offerPrice: 3999,
+      isRecommended: false
+    },
+    {
+      _id: "6ab4fd543bfd99ffe7298f2d",
+      title: "15 Days Home Physiotherapy",
+      description: "15-day home physiotherapy package for complete pain relief and rehabilitation.",
+      sessionsCount: 15,
+      validityDays: 15,
+      basePrice: 5999,
+      offerPrice: 5999,
+      isRecommended: true
+    },
+    {
+      _id: "6ab51639bedc59957e4dcd6f",
+      title: "30 Days Home Physiotherapy",
+      description: "30-day Home Physiotherapy Package for complete rehabilitation.",
+      sessionsCount: 30,
+      validityDays: 30,
+      basePrice: 11999,
+      offerPrice: 11999,
+      isRecommended: true
+    }
+  ];
+
   const handleConditionSelect = async (condition) => {
     setSelection({ ...selection, condition });
     setLoading(true);
     try {
-      // If we want specific packages for a condition, pass conditionId. 
-      // For now, fetch all active packages as per the model.
       const res = await fetch(`/api/admin/physio-packages`);
       const json = await res.json();
-      setData(d => ({ ...d, packages: json.data || [] }));
+      const list = json.data && json.data.length > 0 ? json.data : defaultFallbackPackages;
+      setData(d => ({ ...d, packages: list }));
+      setStep(4);
+    } catch {
+      setData(d => ({ ...d, packages: defaultFallbackPackages }));
       setStep(4);
     } finally {
       setLoading(false);
