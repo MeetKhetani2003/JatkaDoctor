@@ -2546,29 +2546,14 @@ function PhysiotherapyPage() {
                   <div className="absolute top-0 right-0 bg-primary text-white font-normal text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider flex items-center gap-1">
                     <Star className="w-3 h-3 fill-white" /> Recommended
                   </div>
-                ) : pkg.offerPrice && pkg.basePrice && pkg.offerPrice < pkg.basePrice ? (
-                  <div className="absolute top-0 right-0 bg-green-50 text-primary font-normal text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider">
-                    Save ₹{pkg.basePrice - pkg.offerPrice}
-                  </div>
                 ) : null}
 
                 <h4 className={`font-normal text-base ${pkg.isRecommended ? "text-primary text-lg mt-2" : "text-gray-800"}`}>
                   {pkg.title}
                 </h4>
 
-                <div className={`mt-${pkg.isRecommended ? "2" : "3"} flex items-end gap-2`}>
-                  <span className={`${pkg.isRecommended ? "text-3xl" : "text-2xl"} font-normal text-black tracking-tight`}>
-                    ₹{pkg.offerPrice && pkg.offerPrice < pkg.basePrice ? pkg.offerPrice : (pkg.offerPrice || pkg.basePrice)}
-                  </span>
-                  {pkg.offerPrice && pkg.basePrice && pkg.offerPrice < pkg.basePrice && (
-                    <span className={`text-${pkg.isRecommended ? "sm" : "xs"} text-gray-400 line-through mb-1.5`}>
-                      ₹{pkg.basePrice}
-                    </span>
-                  )}
-                </div>
-
                 {pkg.description && (
-                  <p className="text-[11px] text-gray-500 mt-2 whitespace-pre-wrap">
+                  <p className="text-[11px] text-gray-500 mt-3 whitespace-pre-wrap flex-1">
                     {pkg.description}
                   </p>
                 )}
