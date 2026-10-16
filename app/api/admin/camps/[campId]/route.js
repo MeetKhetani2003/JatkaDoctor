@@ -60,3 +60,33 @@ export async function PATCH(req, context) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
   }
 }
+
+export async function DELETE(req, context) {
+  try {
+    const params = await context.params;
+    const campId = params.campId;
+
+    await dbConnect();
+    const deleted = await Camp.findOneAndDelete({ campId });
+
+    if (!deleted) {
+      return NextResponse.json({ success: false, message: 'Camp not found' }, { status: 404 });
+    }
+
+    // Also optionally clean up visits recorded for this camp
+    try {
+      await CampVisit.deleteMany({ campId });
+    } catch (e) {
+      console.warn('Error deleting associated camp visits:', e);
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Camp deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete camp error:', error);
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  }
+}
+

@@ -17,6 +17,8 @@ import {
   Stethoscope,
   Eye,
   Edit,
+  Pencil,
+  Trash2,
   ArrowRight
 } from "lucide-react";
 import QRCode from "qrcode";
@@ -28,6 +30,11 @@ export default function CampManagementPage() {
 
   // Modal States
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingCamp, setEditingCamp] = useState(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editMsg, setEditMsg] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [selectedCamp, setSelectedCamp] = useState(null);
   const [campDetails, setCampDetails] = useState({ camp: null, patients: [], visits: [] });
   const [detailsLoading, setDetailsLoading] = useState(false);
@@ -128,6 +135,118 @@ export default function CampManagementPage() {
       setCreateMsg("Error creating camp");
     } finally {
       setCreateLoading(false);
+    }
+  };
+
+  // Open Edit Camp Modal
+  const handleOpenEdit = (camp) => {
+    const staffStr = Array.isArray(camp.assignedStaff)
+      ? camp.assignedStaff
+          .map((s) => (typeof s === "string" ? s : s?.name || ""))
+          .filter(Boolean)
+          .join(", ")
+      : "";
+
+    setEditingCamp({
+      campId: camp.campId,
+      name: camp.name || "",
+      location: camp.location || "",
+      city: camp.city || "Lucknow",
+      address: camp.address || "",
+      date: camp.date || "",
+      time: camp.time || "09:00 AM - 04:00 PM",
+      campType: camp.campType || "Free General Health & Physiotherapy Camp",
+      status: camp.status || "Active",
+      targetPatients: camp.targetPatients || 100,
+      description: camp.description || "",
+      assignedStaff: staffStr,
+    });
+    setEditMsg("");
+    setShowEditModal(true);
+  };
+
+  // Save Edit Camp
+  const handleSaveEdit = async (e) => {
+    e.preventDefault();
+    if (!editingCamp) return;
+    setEditLoading(true);
+    setEditMsg("");
+
+    try {
+      const payload = {
+        name: editingCamp.name,
+        location: editingCamp.location,
+        city: editingCamp.city,
+        address: editingCamp.address,
+        date: editingCamp.date,
+        time: editingCamp.time,
+        campType: editingCamp.campType,
+        status: editingCamp.status,
+        targetPatients: Number(editingCamp.targetPatients) || 100,
+        description: editingCamp.description,
+        assignedStaff: editingCamp.assignedStaff
+          ? editingCamp.assignedStaff.split(",").map((s) => ({ name: s.trim(), role: "Staff" }))
+          : [],
+      };
+
+      const res = await fetch(`/api/admin/camps/${editingCamp.campId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setEditMsg("Camp updated successfully!");
+        if (selectedCamp && selectedCamp.campId === editingCamp.campId) {
+          setSelectedCamp((prev) => ({ ...prev, ...payload }));
+        }
+        setTimeout(() => {
+          setShowEditModal(false);
+          setEditMsg("");
+          setEditingCamp(null);
+          fetchCamps();
+        }, 1200);
+      } else {
+        setEditMsg(data.message || "Failed to update camp");
+      }
+    } catch (err) {
+      console.error(err);
+      setEditMsg("Error updating camp");
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // Delete Camp
+  const handleDeleteCamp = async (camp) => {
+    if (!camp || !camp.campId) return;
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete camp "${camp.name}" (${camp.campId})?\n\nThis will also remove associated camp visits.`
+    );
+    if (!confirmDelete) return;
+
+    setDeleteLoading(true);
+    try {
+      const res = await fetch(`/api/admin/camps/${camp.campId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (selectedCamp && selectedCamp.campId === camp.campId) {
+          setSelectedCamp(null);
+        }
+        setCamps((prev) => prev.filter((c) => c.campId !== camp.campId));
+        alert(`Camp ${camp.campId} deleted successfully.`);
+        fetchCamps();
+      } else {
+        alert(data.message || "Failed to delete camp");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting camp");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -240,7 +359,7 @@ export default function CampManagementPage() {
 
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 text-xs font-bold">
-        {["All", "Active", "Upcoming", "Completed"].map((s) => (
+        {["All", "Active", "Upcoming", "Completed", "Cancelled"].map((s) => (
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
@@ -320,13 +439,28 @@ export default function CampManagementPage() {
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-gray-100">
+              <div className="mt-4 pt-3 border-t border-gray-100 flex items-center gap-2">
                 <button
                   onClick={() => handleViewCamp(camp)}
-                  className="w-full py-2 bg-gray-900 hover:bg-black text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5"
+                  className="flex-1 py-2 bg-gray-900 hover:bg-black text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-xs"
                 >
                   <Eye className="w-3.5 h-3.5" />
-                  <span>Manage Camp & Vitals</span>
+                  <span>Manage</span>
+                </button>
+                <button
+                  onClick={() => handleOpenEdit(camp)}
+                  title="Edit Camp"
+                  className="p-2 border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 text-gray-700 hover:text-[#006837] rounded-xl transition flex items-center justify-center shadow-xs"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => handleDeleteCamp(camp)}
+                  title="Delete Camp"
+                  disabled={deleteLoading}
+                  className="p-2 border border-rose-200 hover:border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl transition flex items-center justify-center shadow-xs disabled:opacity-50"
+                >
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
             </div>
@@ -352,12 +486,29 @@ export default function CampManagementPage() {
                   {selectedCamp.location} • {selectedCamp.date} ({selectedCamp.time})
                 </p>
               </div>
-              <button
-                onClick={() => setSelectedCamp(null)}
-                className="text-gray-400 hover:text-black font-bold text-lg"
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleOpenEdit(selectedCamp)}
+                  className="px-3 py-1.5 border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 text-gray-700 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
+                >
+                  <Pencil className="w-3.5 h-3.5 text-[#006837]" />
+                  <span>Edit Camp</span>
+                </button>
+                <button
+                  onClick={() => handleDeleteCamp(selectedCamp)}
+                  disabled={deleteLoading}
+                  className="px-3 py-1.5 border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete</span>
+                </button>
+                <button
+                  onClick={() => setSelectedCamp(null)}
+                  className="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-black font-bold flex items-center justify-center transition"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             {/* Quick Actions Bar */}
@@ -766,6 +917,201 @@ export default function CampManagementPage() {
                   className="px-5 py-2 bg-[#006837] hover:bg-[#004d26] text-white rounded-xl font-bold transition disabled:opacity-50"
                 >
                   {createLoading ? "Creating..." : "Create Camp & Auto ID"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODAL: EDIT CAMP */}
+      {/* ============================================================== */}
+      {showEditModal && editingCamp && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs font-black text-[#006837] bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  {editingCamp.campId}
+                </span>
+                <h3 className="font-extrabold text-base text-gray-900">Edit Medical Camp</h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingCamp(null);
+                }}
+                className="text-gray-400 hover:text-black font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {editMsg && (
+              <div
+                className={`mb-4 p-3 rounded-xl text-xs border ${
+                  editMsg.includes("success")
+                    ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                    : "bg-rose-50 border-rose-200 text-rose-800"
+                }`}
+              >
+                {editMsg}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveEdit} className="space-y-3.5 text-xs">
+              <div>
+                <label className="block font-bold text-gray-700 mb-1">Camp Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingCamp.name}
+                  onChange={(e) => setEditingCamp({ ...editingCamp, name: e.target.value })}
+                  placeholder="e.g. Gomti Nagar Mega Free Health & Physio Camp"
+                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Status</label>
+                  <select
+                    value={editingCamp.status}
+                    onChange={(e) => setEditingCamp({ ...editingCamp, status: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200 font-semibold"
+                  >
+                    <option value="Upcoming">Upcoming</option>
+                    <option value="Active">Active</option>
+                    <option value="Completed">Completed</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Target Patients</label>
+                  <input
+                    type="number"
+                    value={editingCamp.targetPatients}
+                    onChange={(e) => setEditingCamp({ ...editingCamp, targetPatients: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Location / Area *</label>
+                  <input
+                    type="text"
+                    required
+                    value={editingCamp.location}
+                    onChange={(e) => setEditingCamp({ ...editingCamp, location: e.target.value })}
+                    placeholder="e.g. Community Center, Gomti Nagar"
+                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">City</label>
+                  <input
+                    type="text"
+                    value={editingCamp.city}
+                    onChange={(e) => setEditingCamp({ ...editingCamp, city: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-gray-700 mb-1">Detailed Address</label>
+                <input
+                  type="text"
+                  value={editingCamp.address}
+                  onChange={(e) => setEditingCamp({ ...editingCamp, address: e.target.value })}
+                  placeholder="Street / Landmark / Sector details"
+                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Date *</label>
+                  <input
+                    type="date"
+                    required
+                    value={editingCamp.date}
+                    onChange={(e) => setEditingCamp({ ...editingCamp, date: e.target.value })}
+                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-gray-700 mb-1">Timings</label>
+                  <input
+                    type="text"
+                    value={editingCamp.time}
+                    onChange={(e) => setEditingCamp({ ...editingCamp, time: e.target.value })}
+                    placeholder="09:00 AM - 04:00 PM"
+                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-gray-700 mb-1">Camp Type</label>
+                <select
+                  value={editingCamp.campType}
+                  onChange={(e) => setEditingCamp({ ...editingCamp, campType: e.target.value })}
+                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
+                >
+                  <option value="Free General Health & Physiotherapy Camp">Free General Health & Physiotherapy Camp</option>
+                  <option value="Senior Citizen Wellness Camp">Senior Citizen Wellness Camp</option>
+                  <option value="Corporate & Community Health Camp">Corporate & Community Health Camp</option>
+                  <option value="Specialized Cardiac & Neuro Screening">Specialized Cardiac & Neuro Screening</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-gray-700 mb-1">Assigned Staff / Doctors (comma separated)</label>
+                <input
+                  type="text"
+                  value={editingCamp.assignedStaff}
+                  onChange={(e) => setEditingCamp({ ...editingCamp, assignedStaff: e.target.value })}
+                  placeholder="e.g. Dr. Verma, PT Rahul, Nurse Priya"
+                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-gray-700 mb-1">Description / Notes</label>
+                <textarea
+                  rows={2}
+                  value={editingCamp.description}
+                  onChange={(e) => setEditingCamp({ ...editingCamp, description: e.target.value })}
+                  placeholder="Special instructions or camp notes..."
+                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingCamp(null);
+                  }}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editLoading}
+                  className="px-5 py-2 bg-[#006837] hover:bg-[#004d26] text-white rounded-xl font-bold transition disabled:opacity-50"
+                >
+                  {editLoading ? "Saving..." : "Save Changes"}
                 </button>
               </div>
             </form>

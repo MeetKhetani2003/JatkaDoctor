@@ -12,7 +12,7 @@ function ProfileRedirectContent() {
     if (tab) {
       router.replace(`/patient/dashboard?tab=${tab}`);
     } else {
-      router.replace("/patient/dashboard");
+      router.replace("/patient/dashboard?tab=profile");
     }
   }, [router, searchParams]);
 

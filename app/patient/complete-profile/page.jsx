@@ -2,10 +2,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Phone, User, MapPin, CheckCircle2, Loader2,
-  ChevronDown, Shield, ArrowRight
+  ChevronDown, Shield, ArrowRight, ArrowLeft, Home
 } from "lucide-react";
 
 const PRIMARY = "#0F9D58";
@@ -151,9 +152,34 @@ export default function CompleteProfilePage() {
   return (
     <div className="min-h-screen" style={{ background: "linear-gradient(160deg, #0F9D58 0%, #0d8a4e 38%, #f0fdf4 38%)" }}>
       {/* Top bar */}
-      <div className="max-w-lg mx-auto px-4 pt-8 pb-4">
-        <div className="flex items-center gap-3">
+      <div className="max-w-lg mx-auto px-4 pt-6 pb-4 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition" title="Go to Home">
           <Image src="/Dr.Jhatka.png" alt="Dr. Jhatka" width={120} height={38} className="object-contain" />
+        </Link>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (typeof window !== "undefined" && window.history.length > 1) {
+                router.back();
+              } else {
+                router.push("/");
+              }
+            }}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 hover:bg-white/30 text-white rounded-xl text-xs font-bold transition backdrop-blur-xs cursor-pointer shadow-2xs"
+            title="Back to Previous Page"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Back</span>
+          </button>
+          <Link
+            href="/"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-[#006837] hover:bg-emerald-50 rounded-xl text-xs font-bold transition shadow-xs"
+            title="Back to Home Page"
+          >
+            <Home className="w-3.5 h-3.5" />
+            <span>Home</span>
+          </Link>
         </div>
       </div>
 
