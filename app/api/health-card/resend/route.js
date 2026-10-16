@@ -3,6 +3,7 @@ import dbConnect from '@/lib/db';
 import Patient from '@/lib/models/physio/Patient';
 import { sendHealthCardWhatsApp } from '@/lib/whatsapp';
 import { sendHealthCardEmail } from '@/lib/mail';
+import { getBaseUrl } from '@/lib/baseUrl';
 
 export async function POST(req) {
   try {
@@ -18,7 +19,8 @@ export async function POST(req) {
       return NextResponse.json({ success: false, message: 'Patient not found' }, { status: 404 });
     }
 
-    const cardUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.drjhatka.com'}/health-card/view/${patient.patientId}`;
+    const base = getBaseUrl(req);
+    const cardUrl = `${base}/health-card/view/${patient.patientId}`;
     const results = {};
 
     if (channel === 'whatsapp' || channel === 'all') {

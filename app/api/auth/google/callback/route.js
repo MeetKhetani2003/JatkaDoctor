@@ -1,17 +1,21 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Patient from "@/lib/models/physio/Patient";
+import { getBaseUrl } from "@/lib/baseUrl";
 
 export async function GET(req) {
+  const base = getBaseUrl(req);
   const { searchParams } = new URL(req.url);
   const code = searchParams.get("code");
   const error = searchParams.get("error");
 
   if (error || !code) {
-    return NextResponse.redirect(new URL("/patient/login?error=access_denied", req.url));
+    return NextResponse.redirect(new URL("/patient/login?error=access_denied", base));
   }
 
   try {
+    const redirectUri = `${base}/api/auth/google/callback`;
+
     // Exchange code for tokens
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
@@ -20,7 +24,7 @@ export async function GET(req) {
         code,
         client_id: process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        redirect_uri: `${process.env.NEXT_PUBLIC_BASE_URL || new URL(req.url).origin}/api/auth/google/callback`,
+        redirect_uri: redirectUri,
         grant_type: "authorization_code",
       }),
     });
@@ -28,7 +32,7 @@ export async function GET(req) {
     const tokenData = await tokenRes.json();
     if (!tokenRes.ok || !tokenData.access_token) {
       console.error("Token exchange failed:", tokenData);
-      return NextResponse.redirect(new URL("/patient/login?error=token_failed", req.url));
+      return NextResponse.redirect(new URL("/patient/login?error=token_failed", base));
     }
 
     // Fetch user info from Google
@@ -38,7 +42,7 @@ export async function GET(req) {
     const googleUser = await userRes.json();
 
     if (!googleUser.id) {
-      return NextResponse.redirect(new URL("/patient/login?error=user_fetch_failed", req.url));
+      return NextResponse.redirect(new URL("/patient/login?error=user_fetch_failed", base));
     }
 
     await dbConnect();
@@ -101,7 +105,7 @@ export async function GET(req) {
 
     // Redirect to profile completion if needed, otherwise go to profile
     const redirectPath = isProfileComplete ? "/patient/profile" : "/patient/complete-profile";
-    const response = NextResponse.redirect(new URL(redirectPath, req.url));
+    const response = NextResponse.redirect(new URL(redirectPath, base));
     response.cookies.set("patient_session", encoded, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -113,6 +117,6 @@ export async function GET(req) {
     return response;
   } catch (err) {
     console.error("Google OAuth callback error:", err);
-    return NextResponse.redirect(new URL("/patient/login?error=server_error", req.url));
+    return NextResponse.redirect(new URL("/patient/login?error=server_error", base));
   }
 }

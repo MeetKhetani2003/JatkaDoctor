@@ -9,6 +9,7 @@ import { generatePatientId, generateFamilyId, generateSecureToken } from '@/lib/
 import { sendHealthCardWhatsApp } from '@/lib/whatsapp';
 import { sendHealthCardEmail } from '@/lib/mail';
 import { uploadToGridFS } from '@/lib/gridfs';
+import { getBaseUrl } from '@/lib/baseUrl';
 
 export async function POST(req) {
   try {
@@ -333,7 +334,8 @@ export async function POST(req) {
     });
 
     // 8. Auto-send WhatsApp & Email
-    const cardUrl = `${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.drjhatka.com'}/health-card/view/${newPatient.patientId}`;
+    const base = getBaseUrl(req);
+    const cardUrl = `${base}/health-card/view/${newPatient.patientId}`;
     
     // Asynchronous send WhatsApp
     (async () => {
