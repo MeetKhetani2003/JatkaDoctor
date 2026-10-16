@@ -29,10 +29,11 @@ export async function GET(req) {
       }),
     });
 
-    const tokenData = await tokenRes.json();
+    const tokenData = await tokenRes.json().catch(() => ({}));
     if (!tokenRes.ok || !tokenData.access_token) {
       console.error("Token exchange failed:", tokenData);
-      return NextResponse.redirect(new URL("/patient/login?error=token_failed", base));
+      const errType = tokenData.error || "token_failed";
+      return NextResponse.redirect(new URL(`/patient/login?error=${encodeURIComponent(errType)}`, base));
     }
 
     // Fetch user info from Google

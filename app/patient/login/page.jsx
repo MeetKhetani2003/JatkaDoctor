@@ -33,6 +33,9 @@ function LoginContent() {
   const errorMessages = {
     access_denied: "You denied access to your Google account.",
     token_failed: "Failed to authenticate with Google. Please try again.",
+    invalid_client: "Google Client ID or Secret is invalid on the server. Please update environment variables on your hosting provider.",
+    redirect_uri_mismatch: "Google Redirect URI mismatch. Ensure https://drjhatka.com/api/auth/google/callback is in Google Cloud Console.",
+    invalid_grant: "Google authorization code expired or already used. Please try logging in again.",
     user_fetch_failed: "Could not retrieve your Google profile. Please try again.",
     server_error: "A server error occurred. Please try again later.",
   };
