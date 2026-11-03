@@ -35,13 +35,20 @@ export async function POST(req) {
     }
 
     const defaultParamsMap = {
-      booking_confirmation: ['Test Patient', 'DJM-TEST-001', 'Test Consultation', 'Today', '10:00 AM'],
+      booking_confirmation: ['Test Patient', 'DJM-TEST-001', 'Doctor Consultation', 'Today', '10:00 AM'],
       payment_confirmation: ['Test Patient', 'DJM-TEST-001', 'INR 500', 'UPI'],
-      admin_booking_alert: ['DJM-TEST-001', 'Test Patient', phone, 'Test Consultation'],
+      admin_booking_alert: ['DJM-TEST-001', 'Test Patient', phone, 'Doctor Consultation'],
       admin_payment_alert: ['DJM-TEST-001', 'Test Patient', 'INR 500', 'UPI'],
       feedback_request: ['Test Patient', 'DJM-TEST-001'],
       health_card_issued: ['Test Patient', 'DJM-P-99999', 'https://www.drjhatka.com/patient/dashboard', '+91 87077 90677'],
-      session_reminder: ['Test Patient', '1', 'Today', '10:00 AM', 'DJM-TEST-001']
+      session_reminder: ['Test Patient', '1', 'Today', '10:00 AM', 'DJM-TEST-001'],
+      free_camp_invite: ['Test Patient', 'Free Mega Health & Physiotherapy Camp', 'Sunday, 18 Oct', '10:00 AM - 02:00 PM', 'Gomti Nagar, Lucknow', 'CAMP-LKO-001'],
+      prescription_uploaded_lead: ['Test Patient', 'RX-2026-001', 'https://www.drjhatka.com/services'],
+      ambulance_247_express: ['Test Patient', 'Emergency ALS Ambulance', '15-20 Mins', 'AMB-LKO-999', '+91 88747 44756'],
+      doctor_home_visit_offer: ['Test Patient', '599', 'https://www.drjhatka.com/services/doctor'],
+      physio_trial_offer: ['Test Patient', '499', 'https://www.drjhatka.com/services/physiotherapy'],
+      home_care_attendant_offer: ['Test Patient', '399', 'https://www.drjhatka.com/services/home-care'],
+      patient_wellness_reengage: ['Test Patient', 'Physiotherapy Consultation', 'https://www.drjhatka.com/services']
     };
 
     const params = templateParams || defaultParamsMap[templateName] || ['Test Param 1'];
