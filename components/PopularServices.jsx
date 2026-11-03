@@ -1,247 +1,279 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   Star,
-  Clock,
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  Users,
+  Clock,
   ShieldCheck,
-  CheckCircle2,
-  Sparkles,
-  PhoneCall,
-  Activity,
-  HeartPulse,
-  Stethoscope,
-  Ambulance,
-  Bed,
-  UserCheck,
+  CheckCircle,
+  Home,
+  Zap,
 } from "lucide-react";
 import { useBookingModal } from "@/context/BookingModalContext";
 
-const POPULAR_SERVICES = [
+// Fallback services in case API is loading or network is slow
+const INITIAL_POPULAR_SERVICES = [
   {
-    id: "doctor-visit",
-    category: "doctor",
-    categoryLabel: "Doctor at Home",
-    icon: Stethoscope,
-    badge: "Most Demanded",
-    badgeColor: "bg-emerald-600 text-white",
-    title: "Doctor Consultation at Home",
-    shortDescription:
-      "Qualified MBBS & MD doctors visit your home with a diagnostic kit for full checkups & treatment.",
-    highlights: [
-      "Arrival in 30–45 mins",
-      "Vitals & full physical checkup",
-      "Digital prescription & guidance",
-    ],
-    rating: 4.9,
-    reviews: "1,450+",
-    price: "₹999",
-    priceUnit: "visit",
-    originalPrice: "₹1,499",
-    link: "/services/doctor",
-    serviceName: "Doctor Visit at Home",
-    image:
-      "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: "physiotherapy",
-    category: "physiotherapy",
-    categoryLabel: "Physiotherapy",
-    icon: Activity,
-    badge: "Top Rated",
-    badgeColor: "bg-teal-600 text-white",
+    id: "physiotherapy-home",
+    serviceType: "physiotherapy",
+    serviceCategory: "physiotherapy",
     title: "Physiotherapy at Home",
-    shortDescription:
-      "Specialized rehabilitation for back, cervical, knee pain, post-surgery & stroke recovery.",
-    highlights: [
-      "Certified physiotherapists",
-      "Electrotherapy & pain relief",
-      "Customized recovery exercise plan",
-    ],
+    shortDescription: "Certified physiotherapist visits your home for back, neck, knee pain, neuro & post-surgery rehabilitation.",
+    badge: "👑 Most Booked",
+    badgeColor: "bg-emerald-600 text-white",
+    image: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80",
+    bookingsCount: "500+ Bookings",
     rating: 4.9,
-    reviews: "2,100+",
-    price: "₹499",
+    reviewCount: "320+ Reviews",
+    features: ["⚡ Arrives in 30 Min", "🏠 Home Visit"],
+    price: 499,
+    originalPrice: 599,
     priceUnit: "session",
-    originalPrice: "₹899",
-    link: "/services/physiotherapy",
+    savings: 100,
     serviceName: "Physiotherapy at Home",
-    image:
-      "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80",
+    link: "/services/physiotherapy",
   },
   {
-    id: "ambulance",
-    category: "ambulance",
-    categoryLabel: "Ambulance",
-    icon: Ambulance,
-    badge: "15-20 Min Express",
-    badgeColor: "bg-red-600 text-white",
-    title: "24/7 Emergency & ICU Ambulance",
-    shortDescription:
-      "Fastest emergency ambulance in Lucknow equipped with oxygen, ventilator & paramedic team.",
-    highlights: [
-      "15–20 min rapid arrival",
-      "Oxygen, ECG & ventilator support",
-      "Trained paramedics & doctor onboard",
-    ],
+    id: "doctor-visit-home",
+    serviceType: "doctor",
+    serviceCategory: "doctor",
+    title: "Doctor Visit at Home",
+    shortDescription: "Qualified MBBS & MD doctors visit your home with full diagnostic medical kit for consultation & prescription.",
+    badge: "⚡ Quick & Reliable",
+    badgeColor: "bg-[#006837] text-white",
+    image: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=800&q=80",
+    bookingsCount: "300+ Bookings",
     rating: 4.8,
-    reviews: "3,600+",
-    price: "₹1,199",
+    reviewCount: "200+ Reviews",
+    features: ["⚡ Arrives in 30 Min", "🏠 Home Visit"],
+    price: 599,
+    originalPrice: 799,
+    priceUnit: "visit",
+    savings: 200,
+    serviceName: "Doctor Visit at Home",
+    link: "/services/doctor",
+  },
+  {
+    id: "nursing-at-home",
+    serviceType: "nursing",
+    serviceCategory: "nursing",
+    title: "Nursing at Home",
+    shortDescription: "Experienced registered nurses for IV drips, injections, wound dressing, catheterization & post-operative care.",
+    badge: "🛡️ Safe & Hygienic",
+    badgeColor: "bg-teal-600 text-white",
+    image: "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",
+    bookingsCount: "200+ Bookings",
+    rating: 4.8,
+    reviewCount: "150+ Reviews",
+    features: ["⚡ Arrives in 30 Min", "🏠 Home Visit"],
+    price: 699,
+    originalPrice: 899,
+    priceUnit: "visit",
+    savings: 200,
+    serviceName: "Nursing Care at Home",
+    link: "/services/nursing",
+  },
+  {
+    id: "patient-attendant-care",
+    serviceType: "home-care",
+    serviceCategory: "home-care",
+    title: "Patient Attendant / Elderly Care",
+    shortDescription: "Compassionate, 100% background-verified caregivers for elderly assistance, daily living support & mobility.",
+    badge: "🤝 Compassionate Care",
+    badgeColor: "bg-amber-600 text-white",
+    image: "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80",
+    bookingsCount: "180+ Bookings",
+    rating: 4.8,
+    reviewCount: "180+ Reviews",
+    features: ["⚡ Same Day Availability", "🏠 Home Visit"],
+    price: 399,
+    originalPrice: 599,
+    priceUnit: "day",
+    savings: 200,
+    serviceName: "Home Care Services",
+    link: "/services/home-care",
+  },
+  {
+    id: "icu-at-home",
+    serviceType: "icu",
+    serviceCategory: "icu",
+    title: "Complete ICU Setup at Home",
+    shortDescription: "Hospital-grade ventilator, BiPAP, monitor and round-the-clock ICU nurse support in your home bedroom.",
+    badge: "🏥 Critical Care",
+    badgeColor: "bg-purple-600 text-white",
+    image: "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
+    bookingsCount: "120+ Bookings",
+    rating: 4.9,
+    reviewCount: "95+ Reviews",
+    features: ["⏱️ 24/7 Setup Support", "🏠 Home Setup"],
+    price: 2999,
+    originalPrice: 4500,
+    priceUnit: "day",
+    savings: 1501,
+    serviceName: "ICU at Home",
+    link: "/icu-at-home",
+  },
+  {
+    id: "ambulance-emergency",
+    serviceType: "ambulance",
+    serviceCategory: "ambulance",
+    title: "24/7 Emergency Ambulance",
+    shortDescription: "Lucknow's fastest emergency response ambulance equipped with oxygen, ventilator, defibrillator & paramedic team.",
+    badge: "🚨 15-20 Min Express",
+    badgeColor: "bg-red-600 text-white",
+    image: "https://images.unsplash.com/photo-1587745416684-47953f16f02f?auto=format&fit=crop&w=800&q=80",
+    bookingsCount: "1,200+ Trips",
+    rating: 4.9,
+    reviewCount: "450+ Reviews",
+    features: ["⏱️ 15-20 Min Response", "🚑 GPS Tracked"],
+    price: 1199,
+    originalPrice: 1699,
     priceUnit: "trip",
-    originalPrice: "₹1,699",
-    link: "/services/ambulance",
+    savings: 500,
     serviceName: "Ambulance Service",
     isAmbulance: true,
-    image:
-      "https://images.unsplash.com/photo-1587745416684-47953f16f02f?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: "nursing",
-    category: "nursing",
-    categoryLabel: "Nursing Care",
-    icon: HeartPulse,
-    badge: "Certified Staff",
-    badgeColor: "bg-blue-600 text-white",
-    title: "Professional Nursing Care at Home",
-    shortDescription:
-      "Registered nurses for IV/IM injections, sterile wound dressing, vitals monitoring & post-op care.",
-    highlights: [
-      "Hospital-trained registered nurses",
-      "Dressing, cannula & injections",
-      "Available for short visits or 12/24h shifts",
-    ],
-    rating: 4.8,
-    reviews: "1,280+",
-    price: "₹499",
-    priceUnit: "visit",
-    originalPrice: "₹799",
-    link: "/services/nursing",
-    serviceName: "Nursing Care at Home",
-    image:
-      "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: "icu-home",
-    category: "icu",
-    categoryLabel: "ICU at Home",
-    icon: Bed,
-    badge: "Critical Care",
-    badgeColor: "bg-purple-600 text-white",
-    title: "Complete ICU Setup at Home",
-    shortDescription:
-      "Hospital-grade ICU setup at home with ventilator, multipara monitor, infusion pump & 24/7 ICU nurse.",
-    highlights: [
-      "Ventilator, BiPAP & oxygen support",
-      "Dedicated 24/7 critical care nurse",
-      "Saves up to 60% compared to hospital ICU",
-    ],
-    rating: 4.9,
-    reviews: "450+",
-    price: "₹2,999",
-    priceUnit: "day",
-    originalPrice: "₹4,500",
-    link: "/icu-at-home",
-    serviceName: "ICU at Home",
-    image:
-      "https://images.unsplash.com/photo-1516549655169-df83a0774514?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: "elderly-care",
-    category: "home-care",
-    categoryLabel: "Elderly & Home Care",
-    icon: UserCheck,
-    badge: "Compassionate",
-    badgeColor: "bg-amber-600 text-white",
-    title: "Patient Attendant & Elderly Care",
-    shortDescription:
-      "Compassionate, verified attendants to assist seniors and recovering patients with daily living.",
-    highlights: [
-      "100% background-verified staff",
-      "Hygiene, mobility & feeding support",
-      "Medicine reminders & companionship",
-    ],
-    rating: 4.8,
-    reviews: "1,150+",
-    price: "₹399",
-    priceUnit: "day",
-    originalPrice: "₹599",
-    link: "/services/home-care",
-    serviceName: "Home Care Services",
-    image:
-      "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?auto=format&fit=crop&w=800&q=80",
-  },
+    link: "/services/ambulance",
+  }
 ];
 
 const CATEGORIES = [
-  { id: "all", label: "All Services" },
-  { id: "doctor", label: "Doctor Visit" },
+  { id: "all", label: "All Popular" },
   { id: "physiotherapy", label: "Physiotherapy" },
-  { id: "ambulance", label: "Ambulance" },
+  { id: "doctor", label: "Doctor Visit" },
   { id: "nursing", label: "Nursing Care" },
-  { id: "icu", label: "ICU at Home" },
-  { id: "home-care", label: "Elderly Care" },
+  { id: "home-care", label: "Elderly & Attendant" },
+  { id: "icu", label: "ICU Setup" },
+  { id: "ambulance", label: "Ambulance" },
 ];
 
 export default function PopularServices() {
+  const [services, setServices] = useState(INITIAL_POPULAR_SERVICES);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [favorites, setFavorites] = useState({});
+  const carouselRef = useRef(null);
   const { openModal, openAmbulanceModal } = useBookingModal();
+  const router = useRouter();
+
+  // Fetch dynamic popular services from Admin
+  useEffect(() => {
+    let isMounted = true;
+    async function loadPopularServices() {
+      try {
+        const res = await fetch("/api/services/popular");
+        const json = await res.json();
+        if (isMounted && json.success && Array.isArray(json.data) && json.data.length > 0) {
+          setServices(json.data);
+        }
+      } catch (err) {
+        console.warn("Could not load dynamic popular services, using defaults:", err);
+      }
+    }
+    loadPopularServices();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const toggleFavorite = (id, e) => {
+    e.stopPropagation();
+    setFavorites((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleScroll = (direction) => {
+    if (!carouselRef.current) return;
+    const scrollAmount = 300;
+    carouselRef.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
 
   const filteredServices =
     activeCategory === "all"
-      ? POPULAR_SERVICES
-      : POPULAR_SERVICES.filter((s) => s.category === activeCategory);
+      ? services
+      : services.filter(
+          (s) =>
+            s.serviceType === activeCategory ||
+            s.serviceCategory === activeCategory ||
+            (activeCategory === "home-care" && s.serviceType === "home-care")
+        );
 
   const handleBook = (svc) => {
-    if (svc.isAmbulance) {
+    if (svc.isAmbulance || svc.serviceType === "ambulance") {
       openAmbulanceModal();
-    } else {
-      openModal({
-        service: svc.serviceName,
-        package: svc.title,
-      });
+      return;
     }
+    openModal({
+      service: svc.serviceName || svc.title,
+      package: svc.title,
+    });
   };
 
   return (
-    <section className="px-4 py-12 max-w-7xl mx-auto">
-      {/* SECTION HEADER */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+    <section className="px-4 py-8 sm:py-10 max-w-7xl mx-auto">
+      {/* HEADER SECTION (Matching Mockup 1) */}
+      <div className="flex items-center justify-between gap-4 mb-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-bold mb-2.5">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600 fill-emerald-600" />
-            <span>Lucknow&apos;s Most Booked Services</span>
+          <div className="flex items-center gap-1.5 text-xs font-bold text-amber-800 mb-1">
+            <span className="text-base">👑</span>
+            <span className="uppercase tracking-wider text-[11px] font-black text-[#006837]">
+              Popular Services
+            </span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-            Popular Healthcare Services
+          <h2 className="text-xl sm:text-2xl font-black text-gray-900 tracking-tight leading-tight">
+            Most booked services in Lucknow
           </h2>
-          <p className="text-sm sm:text-base text-gray-600 mt-1 max-w-2xl">
-            Trusted, verified medical care delivered quickly to your doorstep with 24/7 dedicated support.
-          </p>
         </div>
 
-        <Link
-          href="/services"
-          className="inline-flex items-center gap-1.5 text-sm font-bold text-[#006837] hover:text-[#004e29] transition group self-start md:self-end"
-        >
-          <span>View all services</span>
-          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-        </Link>
+        <div className="flex items-center gap-2">
+          {/* Carousel Arrow Controls */}
+          <div className="hidden sm:flex items-center gap-1 mr-2">
+            <button
+              onClick={() => handleScroll("left")}
+              aria-label="Previous services"
+              className="w-8 h-8 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-700 shadow-xs active:scale-95 transition"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              onClick={() => handleScroll("right")}
+              aria-label="Next services"
+              className="w-8 h-8 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-700 shadow-xs active:scale-95 transition"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+
+          <Link
+            href="/services"
+            className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-[#006837] hover:text-[#004e29] transition group shrink-0"
+          >
+            <span>View All</span>
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </div>
       </div>
 
-      {/* FILTER TABS */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 scrollbar-none">
+      {/* CATEGORY FILTER CHIPS */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-2.5 mb-3 scrollbar-none">
         {CATEGORIES.map((cat) => {
           const isActive = activeCategory === cat.id;
           return (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
-              className={`px-4 py-2 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
+              className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all duration-200 ${
                 isActive
-                  ? "bg-[#006837] text-white shadow-md shadow-emerald-900/10 scale-[1.02]"
-                  : "bg-gray-100/80 text-gray-700 hover:bg-gray-200/80"
+                  ? "bg-[#006837] text-white shadow-xs"
+                  : "bg-gray-100/90 text-gray-600 hover:bg-gray-200/80"
               }`}
             >
               {cat.label}
@@ -250,163 +282,152 @@ export default function PopularServices() {
         })}
       </div>
 
-      {/* SERVICES GRID */}
-      <motion.div
-        layout
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+      {/* HORIZONTAL CAROUSEL CONTAINER (OCCUPIES LESS SPACE) */}
+      <div
+        ref={carouselRef}
+        className="flex gap-3.5 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory scroll-smooth scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        <AnimatePresence>
-          {filteredServices.map((svc) => {
-            const Icon = svc.icon;
-            return (
-              <motion.div
-                key={svc.id}
-                layout
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.25 }}
-                className="bg-white rounded-2xl border border-gray-100 shadow-[0_2px_12px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_32px_rgba(0,104,55,0.12)] hover:border-emerald-200/80 transition-all duration-300 flex flex-col justify-between overflow-hidden group"
-              >
+        {filteredServices.map((svc) => {
+          const isFav = !!favorites[svc.id];
+          return (
+            <motion.div
+              key={svc.id}
+              whileHover={{ y: -3 }}
+              transition={{ duration: 0.2 }}
+              className="w-[240px] sm:w-[260px] shrink-0 snap-start bg-white rounded-2xl border border-gray-200/80 shadow-xs hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group select-none"
+            >
+              {/* Top Image + Badges */}
+              <div className="relative aspect-[16/10] w-full bg-gray-100 overflow-hidden">
+                <img
+                  src={svc.image}
+                  alt={svc.title}
+                  loading="lazy"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    e.currentTarget.src =
+                      "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80";
+                  }}
+                />
+
+                {/* Status / Demanded Badge */}
+                {svc.badge && (
+                  <span
+                    className={`absolute top-2 left-2 text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs flex items-center gap-1 ${
+                      svc.badgeColor || "bg-[#006837] text-white"
+                    }`}
+                  >
+                    {svc.badge}
+                  </span>
+                )}
+
+                {/* Wishlist Heart Button */}
+                <button
+                  type="button"
+                  onClick={(e) => toggleFavorite(svc.id, e)}
+                  aria-label="Add to favorites"
+                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-white/90 backdrop-blur-xs flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-white shadow-xs transition"
+                >
+                  <Heart
+                    size={14}
+                    className={
+                      isFav ? "fill-red-500 text-red-500" : "text-gray-600"
+                    }
+                  />
+                </button>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-3.5 flex-1 flex flex-col justify-between">
                 <div>
-                  {/* SERVICE IMAGE & BADGES */}
-                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-gray-100">
-                    <img
-                      src={svc.image}
-                      alt={svc.title}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10" />
+                  {/* Title */}
+                  <h3 className="font-bold text-sm text-gray-900 group-hover:text-[#006837] transition-colors leading-snug line-clamp-1 mb-1.5">
+                    {svc.title}
+                  </h3>
 
-                    {/* TOP BADGE */}
-                    <div className="absolute top-3 left-3 flex items-center gap-2">
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide shadow-sm ${svc.badgeColor}`}
-                      >
-                        {svc.badge}
-                      </span>
-                    </div>
-
-                    {/* CATEGORY ICON */}
-                    <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/95 backdrop-blur-md flex items-center justify-center text-[#006837] shadow">
-                      <Icon className="w-4 h-4" />
-                    </div>
-
-                    {/* QUICK AVAILABILITY PILL */}
-                    <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md text-gray-800 text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1.5 shadow-sm">
-                      <Clock className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Lucknow 24/7 Available</span>
-                    </div>
+                  {/* Social Proof (Bookings + Rating) */}
+                  <div className="flex items-center gap-2 text-[11px] text-gray-600 font-semibold mb-2">
+                    <span className="flex items-center gap-1 text-emerald-800">
+                      <Users size={12} className="text-[#006837]" />
+                      <span>{svc.bookingsCount || "250+ Bookings"}</span>
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1 text-amber-700">
+                      <Star size={11} className="fill-amber-400 text-amber-400" />
+                      <span>{svc.rating || 4.8} ({svc.reviewCount?.replace(/ Reviews\+?/, '') || "150+"})</span>
+                    </span>
                   </div>
 
-                  {/* CONTENT */}
-                  <div className="p-5">
-                    {/* RATING & BOOKINGS */}
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-                      <div className="flex items-center gap-1 text-amber-900 bg-amber-50 px-2 py-0.5 rounded-md font-bold">
-                        <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                        <span>{svc.rating}</span>
-                      </div>
-                      <span className="text-emerald-700 font-semibold text-[11px]">
-                        {svc.reviews} bookings
-                      </span>
-                    </div>
-
-                    {/* TITLE */}
-                    <Link href={svc.link} className="block group-hover:text-[#006837] transition">
-                      <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-snug line-clamp-1">
-                        {svc.title}
-                      </h3>
-                    </Link>
-
-                    {/* DESCRIPTION */}
-                    <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
-                      {svc.shortDescription}
-                    </p>
-
-                    {/* KEY HIGHLIGHTS */}
-                    <ul className="mt-3.5 space-y-1.5 border-t border-gray-50 pt-3">
-                      {svc.highlights.map((hl, idx) => (
-                        <li
-                          key={idx}
-                          className="flex items-center gap-2 text-[11px] text-gray-600 font-medium"
-                        >
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                          <span className="truncate">{hl}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  {/* Feature Tags (Pills) */}
+                  <div className="flex flex-wrap items-center gap-1.5 mb-3">
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                      <Zap size={10} className="text-emerald-600" />
+                      <span>Arrives in 30 Min</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded-md">
+                      <Home size={10} className="text-gray-500" />
+                      <span>Home Visit</span>
+                    </span>
                   </div>
                 </div>
 
-                {/* FOOTER ACTIONS */}
-                <div className="p-5 pt-3 border-t border-gray-100 bg-gray-50/50 flex items-center justify-between gap-3">
-                  <div>
-                    <span className="text-[10px] text-gray-400 uppercase font-semibold block">
-                      Starting from
-                    </span>
+                {/* Pricing & CTA */}
+                <div>
+                  <div className="flex items-baseline justify-between gap-1 mb-2.5 pt-2 border-t border-gray-100">
                     <div className="flex items-baseline gap-1.5">
-                      <span className="text-lg font-extrabold text-gray-900 tracking-tight">
-                        {svc.price}
-                      </span>
-                      <span className="text-[11px] text-gray-500 font-medium">
-                        /{svc.priceUnit}
-                      </span>
                       {svc.originalPrice && (
                         <span className="text-[11px] text-gray-400 line-through">
-                          {svc.originalPrice}
+                          ₹{svc.originalPrice}
                         </span>
                       )}
+                      <span className="text-base font-black text-gray-900">
+                        ₹{svc.price}
+                      </span>
+                      <span className="text-[10px] text-gray-500 font-medium">
+                        /{svc.priceUnit || "visit"}
+                      </span>
                     </div>
+
+                    {svc.savings > 0 && (
+                      <span className="text-[10px] font-bold bg-emerald-100 text-[#006837] px-1.5 py-0.5 rounded">
+                        Save ₹{svc.savings}
+                      </span>
+                    )}
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href={svc.link}
-                      className="px-3 py-2 text-xs font-bold text-gray-700 hover:text-[#006837] bg-white hover:bg-gray-100 rounded-xl border border-gray-200 transition shadow-2xs"
-                    >
-                      Details
-                    </Link>
-                    <button
-                      onClick={() => handleBook(svc)}
-                      className="px-4 py-2 bg-[#006837] hover:bg-[#004e29] active:scale-95 text-white rounded-xl text-xs font-bold transition shadow-sm flex items-center gap-1.5"
-                    >
-                      <span>Book Now</span>
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                  {/* Book Now Button */}
+                  <button
+                    type="button"
+                    onClick={() => handleBook(svc)}
+                    className="w-full py-2 px-3 rounded-xl bg-[#006837] hover:bg-[#004e29] active:scale-[0.98] text-white text-xs font-bold transition flex items-center justify-center gap-1 shadow-xs"
+                  >
+                    <span>Book Now</span>
+                    <ArrowRight size={13} />
+                  </button>
                 </div>
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </motion.div>
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
 
-      {/* QUICK EMERGENCY / SUPPORT STRIP */}
-      <div className="mt-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 border border-emerald-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-3 text-center sm:text-left">
-          <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
-            <ShieldCheck className="w-5 h-5" />
-          </div>
-          <div>
-            <h4 className="text-sm font-bold text-gray-900">
-              Need immediate medical assistance in Lucknow?
-            </h4>
-            <p className="text-xs text-gray-600">
-              Talk directly with our on-duty medical coordinator for emergency ambulance or instant doctor dispatch.
-            </p>
-          </div>
+      {/* TRUST BANNER BELOW POPULAR CAROUSEL (Image 7 bottom bar) */}
+      <div className="mt-4 p-3 bg-gray-50 rounded-2xl border border-gray-200/70 grid grid-cols-2 md:grid-cols-4 gap-2 text-center text-xs">
+        <div className="flex items-center justify-center gap-1.5 text-gray-700 font-semibold py-1">
+          <Users size={14} className="text-[#006837]" />
+          <span>1,000+ Happy Patients</span>
         </div>
-
-        <div className="flex items-center gap-2 shrink-0">
-          <a
-            href="tel:+918887754988"
-            className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition"
-          >
-            <PhoneCall className="w-3.5 h-3.5" />
-            <span>Call 24/7 Helpline</span>
-          </a>
+        <div className="flex items-center justify-center gap-1.5 text-gray-700 font-semibold py-1">
+          <Clock size={14} className="text-[#006837]" />
+          <span>30 Min Avg Response</span>
+        </div>
+        <div className="flex items-center justify-center gap-1.5 text-gray-700 font-semibold py-1">
+          <Star size={14} className="text-amber-500 fill-amber-500" />
+          <span>4.9/5 Lucknow Rating</span>
+        </div>
+        <div className="flex items-center justify-center gap-1.5 text-gray-700 font-semibold py-1">
+          <ShieldCheck size={14} className="text-[#006837]" />
+          <span>100% Verified Staff</span>
         </div>
       </div>
     </section>

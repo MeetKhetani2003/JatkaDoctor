@@ -13,7 +13,7 @@ export async function GET(req) {
 
     let filter = {};
     if (tab === 'Booking Leads') {
-      filter.notificationType = 'Booking Lead';
+      filter.notificationType = { $in: ['Booking Lead', 'New Booking Lead', 'Quote Request'] };
     } else if (tab === 'Payments') {
       filter.notificationType = 'Payment';
     } else if (tab === 'Prescriptions') {
@@ -30,7 +30,7 @@ export async function GET(req) {
     // Calculate unread counts
     const [totalUnread, leadUnread, paymentUnread, prescriptionUnread, systemUnread] = await Promise.all([
       BookingNotification.countDocuments({ isRead: false }),
-      BookingNotification.countDocuments({ isRead: false, notificationType: 'Booking Lead' }),
+      BookingNotification.countDocuments({ isRead: false, notificationType: { $in: ['Booking Lead', 'New Booking Lead', 'Quote Request'] } }),
       BookingNotification.countDocuments({ isRead: false, notificationType: 'Payment' }),
       BookingNotification.countDocuments({ isRead: false, notificationType: 'Prescription' }),
       BookingNotification.countDocuments({ isRead: false, notificationType: 'System' })

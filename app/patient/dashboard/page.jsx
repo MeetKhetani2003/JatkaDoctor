@@ -1049,87 +1049,108 @@ function PatientDashboardContent() {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {campVisits.map((v, i) => (
-                    <div key={i} className="bg-white p-5 sm:p-6 rounded-3xl border border-gray-100 shadow-xs">
-                      <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-extrabold text-sm text-gray-900">{v.campName || v.campId}</h4>
-                            <span className="bg-emerald-100 text-[#006837] text-[10px] font-bold px-2 py-0.5 rounded-full">
-                              Camp Checkup Verified
+                  {campVisits.map((v, i) => {
+                    const hasVitals = !!(v.bpSystolic || v.sugarRBS || v.spo2 || v.pulse || v.checkStatus === 'Completed');
+                    return (
+                      <div key={i} className="bg-white p-5 sm:p-6 rounded-3xl border border-gray-100 shadow-xs">
+                        <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-4">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-extrabold text-sm text-gray-900">{v.campName || v.campId}</h4>
+                              {hasVitals ? (
+                                <span className="bg-emerald-100 text-[#006837] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                  ✓ Camp Checkup Verified
+                                </span>
+                              ) : (
+                                <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                  ⏳ Pre-Registered • Vitals Pending
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-gray-500">
+                              {new Date(v.visitDate).toLocaleDateString()} • {v.location || "Lucknow"} • Staff: {v.registeredBy || "Camp Medical Staff"}
+                            </p>
+                          </div>
+                          <span className="text-xs font-mono font-bold text-gray-400">
+                            {v.campId}
+                          </span>
+                        </div>
+
+                        {!hasVitals && (
+                          <div className="mb-4 p-3 bg-amber-50/80 border border-amber-200/80 rounded-2xl text-xs text-amber-900 flex items-start gap-2">
+                            <span className="text-base leading-none">📋</span>
+                            <div>
+                              <p className="font-bold">Online Registration Confirmed</p>
+                              <p className="text-[11px] text-amber-800 mt-0.5">
+                                Please visit the camp location with your Health Card ID ({patientData.patientId}). Medical staff will measure your Blood Pressure, Sugar, SpO2 & BMI, and your results will update here automatically in real time!
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Vitals Grid */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5 text-xs mb-4">
+                          <div className={`${hasVitals && (v.bpSystolic || v.bpDiastolic) ? 'bg-emerald-50/60 border-emerald-200' : 'bg-gray-50 border-gray-100'} p-2.5 rounded-xl border text-center`}>
+                            <span className="text-[10px] text-gray-500 font-bold block">Blood Pressure</span>
+                            <span className="text-sm font-black text-gray-900">
+                              {v.bpSystolic && v.bpDiastolic ? `${v.bpSystolic}/${v.bpDiastolic} mmHg` : (hasVitals ? "Not Tested" : "Pending Check")}
                             </span>
                           </div>
-                          <p className="text-[11px] text-gray-500">
-                            {new Date(v.visitDate).toLocaleDateString()} • {v.location || "Lucknow"} • Staff: {v.registeredBy || "Camp Medical Staff"}
-                          </p>
+
+                          <div className={`${hasVitals && v.sugarRBS ? 'bg-emerald-50/60 border-emerald-200' : 'bg-gray-50 border-gray-100'} p-2.5 rounded-xl border text-center`}>
+                            <span className="text-[10px] text-gray-500 font-bold block">Sugar (RBS)</span>
+                            <span className="text-sm font-black text-gray-900">
+                              {v.sugarRBS ? `${v.sugarRBS} mg/dL` : (hasVitals ? "Not Tested" : "Pending Check")}
+                            </span>
+                          </div>
+
+                          <div className={`${hasVitals && v.spo2 ? 'bg-emerald-50/60 border-emerald-200' : 'bg-gray-50 border-gray-100'} p-2.5 rounded-xl border text-center`}>
+                            <span className="text-[10px] text-gray-500 font-bold block">SpO2 Oxygen</span>
+                            <span className="text-sm font-black text-gray-900">
+                              {v.spo2 ? `${v.spo2}%` : (hasVitals ? "Not Tested" : "Pending Check")}
+                            </span>
+                          </div>
+
+                          <div className={`${hasVitals && v.pulse ? 'bg-emerald-50/60 border-emerald-200' : 'bg-gray-50 border-gray-100'} p-2.5 rounded-xl border text-center`}>
+                            <span className="text-[10px] text-gray-500 font-bold block">Pulse Rate</span>
+                            <span className="text-sm font-black text-gray-900">
+                              {v.pulse ? `${v.pulse} bpm` : (hasVitals ? "Not Tested" : "Pending Check")}
+                            </span>
+                          </div>
+
+                          <div className={`${hasVitals && v.weight ? 'bg-emerald-50/60 border-emerald-200' : 'bg-gray-50 border-gray-100'} p-2.5 rounded-xl border text-center`}>
+                            <span className="text-[10px] text-gray-500 font-bold block">Weight / Height</span>
+                            <span className="text-sm font-black text-gray-900">
+                              {v.weight ? `${v.weight} kg` : (hasVitals ? "Not Tested" : "Pending Check")}
+                            </span>
+                          </div>
+
+                          <div className={`${hasVitals && v.bmi ? 'bg-emerald-50/60 border-emerald-200' : 'bg-gray-50 border-gray-100'} p-2.5 rounded-xl border text-center`}>
+                            <span className="text-[10px] text-gray-500 font-bold block">Body Mass Index</span>
+                            <span className="text-sm font-black text-gray-900">
+                              {v.bmi || (hasVitals ? "Not Tested" : "Pending Check")}
+                            </span>
+                          </div>
                         </div>
-                        <span className="text-xs font-mono font-bold text-gray-400">
-                          {v.campId}
-                        </span>
+
+                        {/* Doctor & Physiotherapy Advice */}
+                        {(v.physiotherapyAdvice || (v.doctorNotes && v.doctorNotes !== "Online Camp Pre-Registration")) && (
+                          <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-100 text-xs space-y-1">
+                            {v.physiotherapyAdvice && (
+                              <p className="text-emerald-950">
+                                <strong>Physiotherapy Advice:</strong> {v.physiotherapyAdvice}
+                              </p>
+                            )}
+                            {v.doctorNotes && v.doctorNotes !== "Online Camp Pre-Registration" && (
+                              <p className="text-gray-700">
+                                <strong>Doctor Notes:</strong> {v.doctorNotes}
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
-
-                      {/* Vitals Grid */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5 text-xs mb-4">
-                        <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 text-center">
-                          <span className="text-[10px] text-gray-500 font-bold block">Blood Pressure</span>
-                          <span className="text-sm font-black text-gray-900">
-                            {v.bpSystolic && v.bpDiastolic ? `${v.bpSystolic}/${v.bpDiastolic} mmHg` : "N/A"}
-                          </span>
-                        </div>
-
-                        <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 text-center">
-                          <span className="text-[10px] text-gray-500 font-bold block">Sugar (RBS)</span>
-                          <span className="text-sm font-black text-gray-900">
-                            {v.sugarRBS ? `${v.sugarRBS} mg/dL` : "N/A"}
-                          </span>
-                        </div>
-
-                        <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 text-center">
-                          <span className="text-[10px] text-gray-500 font-bold block">SpO2 Oxygen</span>
-                          <span className="text-sm font-black text-gray-900">
-                            {v.spo2 ? `${v.spo2}%` : "N/A"}
-                          </span>
-                        </div>
-
-                        <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 text-center">
-                          <span className="text-[10px] text-gray-500 font-bold block">Pulse Rate</span>
-                          <span className="text-sm font-black text-gray-900">
-                            {v.pulse ? `${v.pulse} bpm` : "N/A"}
-                          </span>
-                        </div>
-
-                        <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 text-center">
-                          <span className="text-[10px] text-gray-500 font-bold block">Weight / Height</span>
-                          <span className="text-sm font-black text-gray-900">
-                            {v.weight ? `${v.weight} kg` : "N/A"}
-                          </span>
-                        </div>
-
-                        <div className="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100 text-center">
-                          <span className="text-[10px] text-gray-500 font-bold block">Body Mass Index</span>
-                          <span className="text-sm font-black text-gray-900">
-                            {v.bmi || "N/A"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Doctor & Physiotherapy Advice */}
-                      {(v.physiotherapyAdvice || v.doctorNotes) && (
-                        <div className="bg-gray-50 p-3.5 rounded-xl border border-gray-100 text-xs space-y-1">
-                          {v.physiotherapyAdvice && (
-                            <p className="text-emerald-950">
-                              <strong>Physiotherapy Advice:</strong> {v.physiotherapyAdvice}
-                            </p>
-                          )}
-                          {v.doctorNotes && (
-                            <p className="text-gray-700">
-                              <strong>Doctor Notes:</strong> {v.doctorNotes}
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

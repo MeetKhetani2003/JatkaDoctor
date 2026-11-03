@@ -23,44 +23,113 @@ export async function POST(req, context) {
       return NextResponse.json({ success: false, message: 'Camp not found' }, { status: 404 });
     }
 
-    const patient = await Patient.findOne({ patientId });
+    let patient = await Patient.findOne({ patientId });
+    if (!patient && patientId.length === 24) {
+      patient = await Patient.findById(patientId);
+    }
+    if (!patient) {
+      // Try search by mobile
+      patient = await Patient.findOne({
+        $or: [
+          { mobile: patientId },
+          { mobile: patientId.replace(/[^0-9]/g, '').slice(-10) }
+        ]
+      });
+    }
     if (!patient) {
       return NextResponse.json({ success: false, message: 'Patient not found' }, { status: 404 });
     }
 
-    // Create Camp Visit & Health Check record
-    const visit = new CampVisit({
-      patientId: patient.patientId,
-      patientName: patient.name,
+    const bpSystolicNum = body.bpSystolic ? parseFloat(body.bpSystolic) : undefined;
+    const bpDiastolicNum = body.bpDiastolic ? parseFloat(body.bpDiastolic) : undefined;
+    const sugarRBSNum = body.sugarRBS ? parseFloat(body.sugarRBS) : undefined;
+    const spo2Num = body.spo2 ? parseFloat(body.spo2) : undefined;
+    const pulseNum = body.pulse ? parseFloat(body.pulse) : undefined;
+    const tempNum = body.temperature ? parseFloat(body.temperature) : undefined;
+    const weightNum = body.weight ? parseFloat(body.weight) : undefined;
+    const heightNum = body.height ? parseFloat(body.height) : undefined;
+    let bmiNum = body.bmi ? parseFloat(body.bmi) : undefined;
+
+    if (!bmiNum && weightNum && heightNum && heightNum > 0) {
+      const heightInMeters = heightNum / 100;
+      bmiNum = parseFloat((weightNum / (heightInMeters * heightInMeters)).toFixed(1));
+    }
+
+    // Check if an existing camp registration/visit exists for this patient and camp
+    let visit = await CampVisit.findOne({
       campId,
-      campName: camp.name,
-      location: camp.location,
-      visitDate: new Date(),
-      registeredBy: body.registeredBy || 'Camp Staff',
-      bpSystolic: body.bpSystolic ? parseFloat(body.bpSystolic) : undefined,
-      bpDiastolic: body.bpDiastolic ? parseFloat(body.bpDiastolic) : undefined,
-      sugarRBS: body.sugarRBS ? parseFloat(body.sugarRBS) : undefined,
-      spo2: body.spo2 ? parseFloat(body.spo2) : undefined,
-      pulse: body.pulse ? parseFloat(body.pulse) : undefined,
-      temperature: body.temperature ? parseFloat(body.temperature) : undefined,
-      weight: body.weight ? parseFloat(body.weight) : undefined,
-      height: body.height ? parseFloat(body.height) : undefined,
-      bmi: body.bmi ? parseFloat(body.bmi) : undefined,
-      postureScreening: body.postureScreening || '',
-      physiotherapyAdvice: body.physiotherapyAdvice || '',
-      doctorNotes: body.doctorNotes || '',
-      recommendedService: body.recommendedService || '',
-      checkStatus: 'Completed',
-      followupRequired: !!body.followupRequired,
-      followupDate: body.followupDate ? new Date(body.followupDate) : undefined,
-      followupNotes: body.followupNotes || ''
+      $or: [
+        { patientId: patient.patientId },
+        { patientId: patient._id.toString() }
+      ]
     });
 
-    await visit.save();
+    const isNewCheck = !visit || visit.checkStatus === 'Pending';
 
-    // Increment camp health check counter
-    camp.totalChecksCompleted = (camp.totalChecksCompleted || 0) + 1;
-    await camp.save();
+    if (visit) {
+      // Update existing record with entered vitals
+      visit.patientId = patient.patientId;
+      visit.patientName = patient.name;
+      visit.campName = camp.name;
+      visit.location = camp.location;
+      visit.visitDate = new Date();
+      visit.registeredBy = body.registeredBy || 'Camp Medical Staff';
+      visit.bpSystolic = bpSystolicNum ?? visit.bpSystolic;
+      visit.bpDiastolic = bpDiastolicNum ?? visit.bpDiastolic;
+      visit.sugarRBS = sugarRBSNum ?? visit.sugarRBS;
+      visit.spo2 = spo2Num ?? visit.spo2;
+      visit.pulse = pulseNum ?? visit.pulse;
+      visit.temperature = tempNum ?? visit.temperature;
+      visit.weight = weightNum ?? visit.weight;
+      visit.height = heightNum ?? visit.height;
+      visit.bmi = bmiNum ?? visit.bmi;
+      visit.postureScreening = body.postureScreening || visit.postureScreening || '';
+      visit.physiotherapyAdvice = body.physiotherapyAdvice || visit.physiotherapyAdvice || '';
+      visit.doctorNotes = body.doctorNotes || (visit.doctorNotes === 'Online Camp Pre-Registration' ? '' : visit.doctorNotes) || '';
+      visit.recommendedService = body.recommendedService || visit.recommendedService || '';
+      visit.checkStatus = 'Completed';
+      visit.followupRequired = !!body.followupRequired;
+      if (body.followupDate) visit.followupDate = new Date(body.followupDate);
+      if (body.followupNotes) visit.followupNotes = body.followupNotes;
+
+      await visit.save();
+    } else {
+      // Create new completed Camp Visit record
+      visit = new CampVisit({
+        patientId: patient.patientId,
+        patientName: patient.name,
+        campId,
+        campName: camp.name,
+        location: camp.location,
+        visitDate: new Date(),
+        registeredBy: body.registeredBy || 'Camp Medical Staff',
+        bpSystolic: bpSystolicNum,
+        bpDiastolic: bpDiastolicNum,
+        sugarRBS: sugarRBSNum,
+        spo2: spo2Num,
+        pulse: pulseNum,
+        temperature: tempNum,
+        weight: weightNum,
+        height: heightNum,
+        bmi: bmiNum,
+        postureScreening: body.postureScreening || '',
+        physiotherapyAdvice: body.physiotherapyAdvice || '',
+        doctorNotes: body.doctorNotes || '',
+        recommendedService: body.recommendedService || '',
+        checkStatus: 'Completed',
+        followupRequired: !!body.followupRequired,
+        followupDate: body.followupDate ? new Date(body.followupDate) : undefined,
+        followupNotes: body.followupNotes || ''
+      });
+
+      await visit.save();
+    }
+
+    // Increment camp health check counter if this was a new completion
+    if (isNewCheck) {
+      camp.totalChecksCompleted = (camp.totalChecksCompleted || 0) + 1;
+      await camp.save();
+    }
 
     // Update patient followup status if needed
     if (body.followupRequired) {
@@ -71,6 +140,7 @@ export async function POST(req, context) {
 
     // Award camp participation coins
     patient.rewardCoinsBalance = (patient.rewardCoinsBalance || 0) + 20;
+    if (!Array.isArray(patient.rewardHistory)) patient.rewardHistory = [];
     patient.rewardHistory.push({
       coins: 20,
       type: 'Earned',
@@ -78,27 +148,32 @@ export async function POST(req, context) {
       date: new Date()
     });
 
+    if (!Array.isArray(patient.auditLogs)) patient.auditLogs = [];
     patient.auditLogs.push({
       action: 'Camp Health Check Recorded',
       performedBy: body.registeredBy || 'Camp Staff',
-      details: `Camp ${campId} check-up: BP ${body.bpSystolic || '-'}/${body.bpDiastolic || '-'}, Sugar: ${body.sugarRBS || '-'} mg/dL`,
+      details: `Camp ${campId} check-up: BP ${bpSystolicNum || '-'}/${bpDiastolicNum || '-'}, Sugar: ${sugarRBSNum || '-'} mg/dL, SpO2: ${spo2Num || '-'}%`,
       timestamp: new Date()
     });
 
     await patient.save();
 
-    // Notification to patient
-    await Notification.create({
-      patientId: patient.patientId,
-      title: 'Health Checkup Record Added',
-      message: `Your vitals and doctor advice from ${camp.name} have been updated in your Health Records. You earned +20 Health Coins!`,
-      type: 'Camp',
-      actionUrl: '/patient/dashboard'
-    });
+    // Send real-time notification to patient
+    try {
+      await Notification.create({
+        patientId: patient.patientId,
+        title: 'Camp Health Checkup Completed',
+        message: `Your vitals (BP: ${bpSystolicNum || '-'}/${bpDiastolicNum || '-'}, Sugar: ${sugarRBSNum || '-'} mg/dL) from ${camp.name} have been updated in your profile. You earned +20 Health Coins!`,
+        type: 'Camp',
+        actionUrl: '/patient/dashboard?tab=camps'
+      });
+    } catch (e) {
+      console.warn('Camp notification creation warning:', e);
+    }
 
     return NextResponse.json({
       success: true,
-      message: 'Health check recorded successfully!',
+      message: 'Camp health checkup recorded successfully',
       visit
     });
   } catch (error) {

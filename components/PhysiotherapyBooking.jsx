@@ -3,15 +3,20 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeft, 
+  ArrowRight,
   MapPin, 
   Calendar as CalIcon, 
   Clock, 
-  Mic, 
   HelpCircle,
   Stethoscope,
   Activity,
   UserPlus,
-  CheckCircle
+  CheckCircle,
+  Sparkles,
+  FileText,
+  Baby,
+  HeartPulse,
+  ChevronRight
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -26,12 +31,170 @@ export const getEffectivePrice = (pkg) => {
   return pkg.offerPrice || pkg.basePrice || 0;
 };
 
+// Render department photo uploaded by admin, or specialty-specific thematic icon
+const renderDepartmentVisual = (dept) => {
+  const imgSrc = dept?.icon || dept?.image;
+  const isImageFile = imgSrc && (
+    imgSrc.startsWith("http") ||
+    imgSrc.startsWith("data:") ||
+    imgSrc.startsWith("/uploads") ||
+    imgSrc.startsWith("/api") ||
+    imgSrc.includes(".png") ||
+    imgSrc.includes(".jpg") ||
+    imgSrc.includes(".jpeg") ||
+    imgSrc.includes(".webp") ||
+    imgSrc.includes(".svg")
+  );
+
+  if (isImageFile) {
+    return (
+      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border border-emerald-100 shadow-xs bg-emerald-50/50 mb-3 group-hover:scale-105 transition-transform flex items-center justify-center shrink-0">
+        <img
+          src={imgSrc}
+          alt={dept.name}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      </div>
+    );
+  }
+
+  const name = dept?.name?.toLowerCase() || "";
+  let iconComp = <Stethoscope size={28} className="text-[#006837]" />;
+  let bgClass = "bg-emerald-50 border-emerald-100";
+
+  if (name.includes("pediatric") || name.includes("child")) {
+    iconComp = <Baby size={28} className="text-pink-600" />;
+    bgClass = "bg-pink-50 border-pink-100";
+  } else if (name.includes("women") || name.includes("gynec") || name.includes("maternity")) {
+    iconComp = <HeartPulse size={28} className="text-purple-600" />;
+    bgClass = "bg-purple-50 border-purple-100";
+  } else if (name.includes("neuro") || name.includes("paralysis") || name.includes("stroke")) {
+    iconComp = <Activity size={28} className="text-indigo-600" />;
+    bgClass = "bg-indigo-50 border-indigo-100";
+  } else if (name.includes("sport") || name.includes("fitness")) {
+    iconComp = <Activity size={28} className="text-amber-600" />;
+    bgClass = "bg-amber-50 border-amber-100";
+  } else if (name.includes("geriatric") || name.includes("elderly")) {
+    iconComp = <HeartPulse size={28} className="text-teal-600" />;
+    bgClass = "bg-teal-50 border-teal-100";
+  }
+
+  return (
+    <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center border shadow-xs mb-3 group-hover:scale-105 transition-transform ${bgClass}`}>
+      {iconComp}
+    </div>
+  );
+};
+
+// Render condition photo uploaded by admin, or specialty-specific thematic icon
+const renderConditionVisual = (condition) => {
+  const imgSrc = condition?.image || condition?.icon;
+  const isImageFile = imgSrc && (
+    imgSrc.startsWith("http") ||
+    imgSrc.startsWith("data:") ||
+    imgSrc.startsWith("/uploads") ||
+    imgSrc.startsWith("/api") ||
+    imgSrc.includes(".png") ||
+    imgSrc.includes(".jpg") ||
+    imgSrc.includes(".jpeg") ||
+    imgSrc.includes(".webp") ||
+    imgSrc.includes(".svg")
+  );
+
+  if (isImageFile) {
+    return (
+      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden border border-emerald-100/90 shadow-xs bg-emerald-50/50 shrink-0 flex items-center justify-center">
+        <img
+          src={imgSrc}
+          alt={condition.name}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      </div>
+    );
+  }
+
+  const name = condition?.name?.toLowerCase() || "";
+  let iconComp = <Activity size={22} className="text-[#006837]" />;
+  let bgClass = "bg-emerald-50 text-[#006837] border-emerald-100";
+
+  if (name.includes("neck") || name.includes("cervical")) {
+    iconComp = <Activity size={22} className="text-teal-600" />;
+    bgClass = "bg-teal-50 border-teal-100";
+  } else if (name.includes("back") || name.includes("spine") || name.includes("sciatica") || name.includes("disc")) {
+    iconComp = <HeartPulse size={22} className="text-blue-600" />;
+    bgClass = "bg-blue-50 border-blue-100";
+  } else if (name.includes("knee") || name.includes("joint") || name.includes("arthritis")) {
+    iconComp = <Activity size={22} className="text-purple-600" />;
+    bgClass = "bg-purple-50 border-purple-100";
+  } else if (name.includes("shoulder") || name.includes("frozen")) {
+    iconComp = <Activity size={22} className="text-amber-600" />;
+    bgClass = "bg-amber-50 border-amber-100";
+  } else if (name.includes("paralysis") || name.includes("stroke") || name.includes("facial")) {
+    iconComp = <HeartPulse size={22} className="text-indigo-600" />;
+    bgClass = "bg-indigo-50 border-indigo-100";
+  }
+
+  return (
+    <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center border shadow-xs shrink-0 ${bgClass}`}>
+      {iconComp}
+    </div>
+  );
+};
+
 export default function PhysiotherapyBooking({ initialPackage = null, onClose = null }) {
   const router = useRouter();
   const { closeModal } = useBookingModal();
   const { patient, loggedIn, loading: authLoading } = usePatientAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [problemInput, setProblemInput] = useState("");
+
+  const detectDepartment = (text) => {
+    if (!text || !text.trim()) return null;
+    const lower = text.toLowerCase();
+    const list = (data.departments && data.departments.length > 0) ? data.departments : defaultFallbackDepartments;
+
+    if (lower.match(/knee|back|spine|bone|joint|shoulder|hip|cervical|slip disc|fracture|ortho|arthritis|spondylitis|sciatica|neck|tendon|post surgery|pain|elbow|ankle|wrist/)) {
+      return list.find(d => d.name.toLowerCase().includes("ortho")) || list[0];
+    }
+    if (lower.match(/stroke|paralysis|nerve|neuro|brain|facial|bell|parkinson|hemiplegia|neuropathy|weakness/)) {
+      return list.find(d => d.name.toLowerCase().includes("neuro")) || list[1];
+    }
+    if (lower.match(/elderly|old age|senior|balance|walk|fall|bedridden|aging|age/)) {
+      return list.find(d => d.name.toLowerCase().includes("geriatric") || d.name.toLowerCase().includes("elderly")) || list[2];
+    }
+    if (lower.match(/sport|ligament|acl|pcl|tear|sprain|strain|gym|athlet|runner|muscle|fitness/)) {
+      return list.find(d => d.name.toLowerCase().includes("sport")) || list[3];
+    }
+    if (lower.match(/breath|chest|cardio|heart|lung|covid|asthma|copd/)) {
+      return list.find(d => d.name.toLowerCase().includes("cardio")) || list[4];
+    }
+    return list.find(d => d.name.toLowerCase().includes("general") || d.name.toLowerCase().includes("rehab")) || list[5] || list[0];
+  };
+
+  const handleProblemSubmit = (e) => {
+    if (e) e.preventDefault();
+    if (!problemInput.trim()) return;
+
+    const matched = detectDepartment(problemInput);
+    setSelection(prev => ({
+      ...prev,
+      department: matched,
+      conditionNotes: problemInput.trim(),
+      condition: { _id: 'custom', name: problemInput.trim() }
+    }));
+
+    if (!data.packages || data.packages.length === 0) {
+      setData(d => ({ ...d, packages: defaultFallbackPackages }));
+    }
+    setStep(4);
+  };
 
   const [data, setData] = useState({
     departments: [],
@@ -380,29 +543,78 @@ export default function PhysiotherapyBooking({ initialPackage = null, onClose = 
                 <p className="text-gray-500">Select the department that best matches your problem.</p>
               </div>
 
-              {/* Voice Search Promo */}
-              <div className="bg-gradient-to-r from-green-50 to-indigo-50 border border-green-100 rounded-2xl p-4 flex items-center gap-4 mb-8 cursor-pointer hover:shadow-md transition-shadow group">
-                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center text-primary shadow-sm group-hover:scale-110 transition-transform">
-                  <Mic size={24} />
+              {/* Problem Explanation Text Box */}
+              <div className="bg-gradient-to-br from-green-50/90 via-emerald-50/50 to-indigo-50/40 border border-green-200/80 rounded-2xl p-5 mb-8 shadow-xs">
+                <div className="flex items-start gap-3.5 mb-3">
+                  <div className="w-11 h-11 bg-white rounded-2xl flex items-center justify-center text-primary shadow-xs shrink-0 mt-0.5 border border-green-100">
+                    <FileText size={22} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-900 text-sm sm:text-base">Not sure what you need?</h3>
+                    <p className="text-xs sm:text-sm text-gray-600">Explain your problem or pain in your own words, and we'll suggest the right service.</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Not sure what you need?</h3>
-                  <p className="text-sm text-primary-dark">Tell us your problem and we'll suggest the right service.</p>
-                </div>
+
+                <form onSubmit={handleProblemSubmit} className="space-y-3">
+                  <div className="relative">
+                    <textarea
+                      value={problemInput}
+                      onChange={(e) => setProblemInput(e.target.value)}
+                      placeholder="Type your problem here (e.g., severe back pain, knee arthritis, post-stroke weakness, difficulty walking, neck stiffness)..."
+                      rows={2}
+                      className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition resize-none text-gray-900 placeholder:text-gray-400 font-normal"
+                    />
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                    {problemInput.trim() ? (
+                      <div className="flex items-center gap-1.5 text-xs text-emerald-800 font-medium bg-emerald-100/70 px-3 py-1.5 rounded-xl border border-emerald-200 self-start sm:self-auto">
+                        <Sparkles size={14} className="text-emerald-700 shrink-0" />
+                        <span>
+                          Suggested: <strong>{detectDepartment(problemInput)?.name || "Physiotherapy Specialist"}</strong>
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-[11px] text-gray-400">Describe your symptoms to continue directly to therapy plans</span>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={!problemInput.trim()}
+                      className="px-5 py-2.5 bg-primary text-white text-xs sm:text-sm font-bold rounded-xl hover:bg-primary-dark disabled:opacity-40 disabled:cursor-not-allowed transition active:scale-95 flex items-center justify-center gap-2 shadow-sm self-end sm:self-auto"
+                    >
+                      <span>Continue with this Problem</span>
+                      <ArrowRight size={15} />
+                    </button>
+                  </div>
+                </form>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Department Divider */}
+              <div className="flex items-center gap-3 mb-5">
+                <div className="h-px bg-gray-200 flex-1"></div>
+                <span className="text-[11px] uppercase font-bold text-gray-400 tracking-wider">Or Select Department Directly</span>
+                <div className="h-px bg-gray-200 flex-1"></div>
+              </div>
+
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {((data.departments && data.departments.length > 0) ? data.departments : defaultFallbackDepartments).map(dept => (
                   <button
                     key={dept._id}
                     onClick={() => handleDepartmentSelect(dept)}
-                    className="flex flex-col items-center text-center p-6 border-2 border-gray-100 rounded-2xl hover:border-primary hover:bg-green-50/50 transition-all group"
+                    className="flex flex-col items-center text-center p-4 sm:p-5 bg-white border-2 border-gray-100 hover:border-[#006837] rounded-2xl hover:bg-emerald-50/20 hover:shadow-md transition-all group active:scale-[0.98]"
                   >
-                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 group-hover:bg-white group-hover:text-primary group-hover:shadow-sm mb-4 transition-all">
-                       <Stethoscope size={28} />
-                    </div>
-                    <h3 className="font-bold text-gray-900 mb-1">{dept.name}</h3>
-                    <p className="text-xs text-gray-500 line-clamp-2">{dept.description || "Specialized care and rehabilitation."}</p>
+                    {renderDepartmentVisual(dept)}
+                    <h3 className="font-bold text-sm sm:text-base text-gray-900 group-hover:text-[#006837] transition-colors mb-1 leading-snug line-clamp-2">
+                      {dept.name}
+                    </h3>
+                    <p className="text-[11px] sm:text-xs text-gray-500 line-clamp-2">
+                      {dept.description || "Specialized care and rehabilitation."}
+                    </p>
+                    <span className="mt-2.5 text-[10px] font-bold text-[#006837] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100 flex items-center gap-1 group-hover:bg-[#006837] group-hover:text-white transition-colors">
+                      <span>Select</span>
+                      <ArrowRight size={10} />
+                    </span>
                   </button>
                 ))}
               </div>
@@ -456,20 +668,27 @@ export default function PhysiotherapyBooking({ initialPackage = null, onClose = 
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Specific Condition</h2>
               <p className="text-gray-500 mb-8">Select the condition you need treatment for.</p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 {data.conditions.length > 0 ? (
                   data.conditions.map(condition => (
                     <button
                       key={condition._id}
                       onClick={() => handleConditionSelect(condition)}
-                      className="flex items-center gap-4 p-4 border border-gray-200 rounded-xl hover:border-primary hover:shadow-md transition-all text-left"
+                      className="flex items-center justify-between gap-3 p-3.5 sm:p-4 bg-white border border-gray-200 rounded-2xl hover:border-[#006837] hover:shadow-md transition-all text-left group active:scale-[0.99]"
                     >
-                      <div className="w-12 h-12 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center text-gray-400">
-                        <Activity size={20} />
+                      <div className="flex items-center gap-3 min-w-0">
+                        {renderConditionVisual(condition)}
+                        <div className="min-w-0">
+                          <h3 className="font-bold text-sm sm:text-base text-gray-900 group-hover:text-[#006837] transition-colors leading-snug">
+                            {condition.name}
+                          </h3>
+                          <p className="text-xs text-gray-500 line-clamp-1 mt-0.5">
+                            {condition.shortDescription || "Specialized therapy & pain relief"}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-gray-900">{condition.name}</h3>
-                        <p className="text-xs text-gray-500 line-clamp-1">{condition.shortDescription}</p>
+                      <div className="w-8 h-8 rounded-full bg-gray-50 group-hover:bg-emerald-50 text-gray-400 group-hover:text-[#006837] flex items-center justify-center shrink-0 transition-colors">
+                        <ChevronRight size={18} />
                       </div>
                     </button>
                   ))
@@ -482,14 +701,19 @@ export default function PhysiotherapyBooking({ initialPackage = null, onClose = 
                 {/* Fallback Option */}
                 <button
                     onClick={() => handleConditionSelect({ _id: 'other', name: 'Other Condition', shortDescription: 'Consult with our doctors' })}
-                    className="flex items-center gap-4 p-4 border border-dashed border-gray-300 rounded-xl hover:border-primary hover:shadow-md transition-all text-left bg-gray-50 col-span-full sm:col-span-1"
+                    className="flex items-center justify-between gap-3 p-3.5 sm:p-4 border border-dashed border-gray-300 rounded-2xl hover:border-[#006837] hover:shadow-md transition-all text-left bg-gray-50 col-span-full sm:col-span-1 group"
                   >
-                    <div className="w-12 h-12 bg-white rounded-lg flex-shrink-0 flex items-center justify-center text-primary shadow-sm">
-                      <HelpCircle size={20} />
+                    <div className="flex items-center gap-3">
+                      <div className="w-14 h-14 bg-white rounded-xl flex-shrink-0 flex items-center justify-center text-[#006837] shadow-xs border border-gray-200">
+                        <HelpCircle size={22} />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-sm sm:text-base text-gray-900">Other Problem</h3>
+                        <p className="text-xs text-gray-500">I don't see my condition listed here.</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">Other Problem</h3>
-                      <p className="text-xs text-gray-500">I don't see my condition listed here.</p>
+                    <div className="w-8 h-8 rounded-full bg-white text-gray-400 group-hover:text-[#006837] flex items-center justify-center shrink-0">
+                      <ChevronRight size={18} />
                     </div>
                   </button>
               </div>
@@ -499,7 +723,16 @@ export default function PhysiotherapyBooking({ initialPackage = null, onClose = 
           {/* STEP 4: PACKAGES */}
           {step === 4 && (
             <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="p-8 bg-gray-50">
-              <BackButton onClick={() => setStep(selection.condition ? 3 : (selection.group ? 2 : 1))} />
+              <BackButton onClick={() => setStep((selection.condition && selection.condition._id !== 'custom') ? 3 : (selection.group ? 2 : 1))} />
+              {selection.conditionNotes && (
+                <div className="max-w-xl mx-auto mb-6 p-3.5 bg-emerald-50/90 border border-emerald-200/80 rounded-2xl text-xs sm:text-sm text-emerald-900 flex items-center justify-between shadow-xs">
+                  <div className="flex items-center gap-2 truncate">
+                    <Sparkles size={16} className="text-emerald-600 shrink-0" />
+                    <span className="truncate">Your problem: <strong>"{selection.conditionNotes}"</strong> ({selection.department?.name || 'Physiotherapy'})</span>
+                  </div>
+                  <button type="button" onClick={() => setStep(1)} className="text-emerald-700 hover:text-emerald-900 underline text-xs font-bold shrink-0 ml-3">Edit</button>
+                </div>
+              )}
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Select a Treatment Package</h2>
                 <p className="text-gray-500">For optimal recovery, consistency is key.</p>
@@ -752,10 +985,6 @@ export default function PhysiotherapyBooking({ initialPackage = null, onClose = 
                     >
                       {loading ? "Processing..." : "Confirm & Pay"}
                     </button>
-                    
-                    <div className="mt-4 text-center">
-                      <button className="text-sm font-medium text-gray-500 hover:text-primary underline">Request Financial Assistance</button>
-                    </div>
                   </div>
                 </div>
               </div>

@@ -229,7 +229,19 @@ export async function GET(req) {
     }
     
     if (status) {
-      filter.status = status;
+      if (status === 'New') {
+        filter.$or = [{ bookingStatus: 'New' }, { status: 'Pending' }, { status: 'New' }];
+      } else if (status === 'Assigned') {
+        filter.$or = [{ bookingStatus: 'Assigned' }, { status: 'Confirmed' }];
+      } else if (status === 'In Progress') {
+        filter.$or = [{ bookingStatus: 'In Progress' }];
+      } else if (status === 'Completed') {
+        filter.$or = [{ bookingStatus: 'Completed' }, { status: 'Completed' }];
+      } else if (status === 'Cancelled') {
+        filter.$or = [{ bookingStatus: 'Cancelled' }, { status: 'Cancelled' }];
+      } else {
+        filter.$or = [{ bookingStatus: status }, { status: status }];
+      }
     }
     
     if (appointmentDate) {
@@ -391,7 +403,9 @@ export async function POST(req) {
       appointmentDate: body.appointmentDate || new Date().toISOString().split('T')[0],
       appointmentTime: body.appointmentTime || '09:00',
       bookingStatus: body.bookingStatus || 'New',
-      paymentStatus: body.paymentStatus || (finalTotalAmount === 0 ? 'Free' : 'Pending'),
+      paymentStatus: (body.paymentStatus && ["Pending", "Paid", "Failed", "Refund Pending", "Refunded", "Free"].includes(body.paymentStatus))
+        ? body.paymentStatus 
+        : (finalTotalAmount === 0 ? 'Free' : 'Pending'),
       status: body.status || 'Pending',
       totalAmount: finalTotalAmount
     });

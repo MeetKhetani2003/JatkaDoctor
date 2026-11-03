@@ -156,7 +156,7 @@ export async function POST(req) {
         location: `${area ? area + ', ' : ''}${city}`,
         paymentStatus: initialPaymentStatus,
         source: 'Website',
-        notificationType: isQuote ? 'Quote Request' : 'New Booking Lead'
+        notificationType: 'Booking Lead'
       });
     } catch (notifErr) {
       console.warn('Booking lead notification error:', notifErr.message);

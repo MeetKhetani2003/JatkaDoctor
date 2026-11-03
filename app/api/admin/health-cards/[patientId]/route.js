@@ -37,12 +37,31 @@ export async function GET(req, context) {
     }
 
     // 2. Camp visits & health checks
-    const campVisits = await CampVisit.find({ 
+    const rawCampVisits = await CampVisit.find({ 
       $or: [
         { patientId: patient.patientId },
-        { patientId: patientId }
+        { patientId: patientId },
+        { patientId: patient._id.toString() }
       ]
-    }).sort({ visitDate: -1 }).lean();
+    }).sort({ visitDate: -1, createdAt: -1 }).lean();
+
+    // Deduplicate camp visits by campId, prioritizing completed visits with vitals
+    const campVisitMap = new Map();
+    for (const cv of rawCampVisits) {
+      const key = cv.campId || cv._id.toString();
+      if (!campVisitMap.has(key)) {
+        campVisitMap.set(key, cv);
+      } else {
+        const existing = campVisitMap.get(key);
+        // If current has completed status or vitals while existing does not, replace with completed
+        const currentHasVitals = cv.checkStatus === 'Completed' || cv.bpSystolic || cv.sugarRBS;
+        const existingHasVitals = existing.checkStatus === 'Completed' || existing.bpSystolic || existing.sugarRBS;
+        if (currentHasVitals && !existingHasVitals) {
+          campVisitMap.set(key, cv);
+        }
+      }
+    }
+    const campVisits = Array.from(campVisitMap.values());
 
     // 3. Appointments & Bookings
     const appointments = await Appointment.find({

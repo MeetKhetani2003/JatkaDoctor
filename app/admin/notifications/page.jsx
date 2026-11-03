@@ -226,6 +226,9 @@ export default function AdminNotificationCenter() {
             if (notif.paymentStatus === 'Paid') {
               paymentBadgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200";
               paymentDot = "bg-emerald-500";
+            } else if (notif.paymentStatus === 'Free') {
+              paymentBadgeStyle = "bg-blue-50 text-blue-700 border-blue-200";
+              paymentDot = "bg-blue-500";
             } else if (notif.paymentStatus === 'Failed') {
               paymentBadgeStyle = "bg-rose-50 text-rose-700 border-rose-200";
               paymentDot = "bg-rose-500";

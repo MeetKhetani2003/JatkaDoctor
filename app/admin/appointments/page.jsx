@@ -144,6 +144,11 @@ export default function AdminAppointments() {
     setLoading(true);
     fetchData();
     fetchPayments();
+
+    const pollInterval = setInterval(() => {
+      fetchData();
+    }, 10000);
+    return () => clearInterval(pollInterval);
   }, [filterDoctor, filterStatus, filterDate]);
 
   // Filter appointments by search term (name, phone, bookingId, or Lucknow zone)
@@ -190,6 +195,8 @@ export default function AdminAppointments() {
     switch (pStatus) {
       case "Paid":
         return "bg-green-100 text-green-800";
+      case "Free":
+        return "bg-blue-100 text-blue-800";
       case "Failed":
         return "bg-red-100 text-red-800";
       case "Refund Pending":
@@ -575,7 +582,7 @@ export default function AdminAppointments() {
                     </span>
 
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${getPaymentStatusColor(appt.paymentStatus)}`}>
-                      💳 {appt.paymentStatus || 'Pending'}
+                      💳 {appt.paymentStatus === 'Free' ? 'Free' : (appt.paymentStatus || 'Pending')}
                     </span>
                     
                     {appt.emergencyPriority && (
@@ -751,6 +758,7 @@ export default function AdminAppointments() {
                           className="w-full p-2 bg-white border border-gray-200 rounded-lg outline-none font-medium"
                         >
                           <option value="Pending">Pending</option>
+                          <option value="Free">Free</option>
                           <option value="Paid">Paid</option>
                           <option value="Failed">Failed</option>
                           <option value="Refund Pending">Refund Pending</option>

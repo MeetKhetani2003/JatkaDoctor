@@ -83,12 +83,15 @@ export default function HeroSearchBar({ onOpenPrescriptionModal }) {
       (window.SpeechRecognition || window.webkitSpeechRecognition);
 
     if (!SpeechRecognition) {
-      alert("Voice search is not supported in this browser. Please use Chrome, Edge, or Safari.");
+      alert("Voice search is not supported in this browser. Please use Chrome, Edge, or Safari, or type in the search bar.");
+      inputRef.current?.focus();
       return;
     }
 
     if (isListening) {
-      recognitionRef.current?.stop();
+      try {
+        recognitionRef.current?.stop();
+      } catch (e) {}
       setIsListening(false);
       return;
     }
@@ -96,7 +99,8 @@ export default function HeroSearchBar({ onOpenPrescriptionModal }) {
     try {
       const recognition = new SpeechRecognition();
       recognitionRef.current = recognition;
-      recognition.lang = "hi-IN"; // Hindi / Indian English recognition
+      const userLang = typeof navigator !== "undefined" ? (navigator.language || "en-IN") : "en-IN";
+      recognition.lang = userLang.startsWith("hi") ? "hi-IN" : "en-IN";
       recognition.continuous = false;
       recognition.interimResults = false;
 
@@ -105,7 +109,7 @@ export default function HeroSearchBar({ onOpenPrescriptionModal }) {
       };
 
       recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
+        const transcript = event.results?.[0]?.[0]?.transcript;
         if (transcript) {
           setQuery(transcript);
           setIsOpen(true);
@@ -115,6 +119,12 @@ export default function HeroSearchBar({ onOpenPrescriptionModal }) {
       recognition.onerror = (event) => {
         console.error("Speech recognition error:", event.error);
         setIsListening(false);
+        if (event.error === 'not-allowed' || event.error === 'permission-denied') {
+          alert("Microphone permission was denied. Please allow microphone access in your browser or type in the search box.");
+        } else if (event.error === 'network') {
+          alert("Network error connecting to voice service. Please type your search query.");
+        }
+        inputRef.current?.focus();
       };
 
       recognition.onend = () => {
@@ -125,6 +135,8 @@ export default function HeroSearchBar({ onOpenPrescriptionModal }) {
     } catch (err) {
       console.error("Voice search initiation error:", err);
       setIsListening(false);
+      alert("Unable to start microphone voice search. Please type your search in the box.");
+      inputRef.current?.focus();
     }
   };
 

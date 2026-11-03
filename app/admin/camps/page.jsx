@@ -290,6 +290,30 @@ export default function CampManagementPage() {
     }
   };
 
+  // Quick Enter / Update Vitals from Camp List
+  const handleQuickEnterVitals = (patientId, patientName, existingVisit) => {
+    setCheckPatientSearch(patientId);
+    setFoundPatient({ patientId, name: patientName });
+    if (existingVisit) {
+      setCheckForm({
+        bpSystolic: existingVisit.bpSystolic || "",
+        bpDiastolic: existingVisit.bpDiastolic || "",
+        sugarRBS: existingVisit.sugarRBS || "",
+        spo2: existingVisit.spo2 || "",
+        pulse: existingVisit.pulse || "",
+        temperature: existingVisit.temperature || "",
+        weight: existingVisit.weight || "",
+        bmi: existingVisit.bmi || "",
+        postureScreening: existingVisit.postureScreening || "",
+        physiotherapyAdvice: existingVisit.physiotherapyAdvice || "",
+        doctorNotes: existingVisit.doctorNotes || "",
+        followupRequired: !!existingVisit.followupRequired,
+        followupNotes: existingVisit.followupNotes || "",
+      });
+    }
+    setShowHealthCheckModal(true);
+  };
+
   // Submit Health Check Entry
   const handleSubmitHealthCheck = async (e) => {
     e.preventDefault();
@@ -606,13 +630,22 @@ export default function CampManagementPage() {
                         )}
                       </div>
 
-                      <div className="flex sm:flex-col items-end gap-1">
-                        <span className="text-[10px] text-gray-400">
-                          {new Date(v.visitDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                        </span>
-                        <span className="bg-emerald-100 text-[#006837] text-[10px] font-bold px-2 py-0.5 rounded-full">
-                          Completed
-                        </span>
+                      <div className="flex sm:flex-col items-end gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10px] text-gray-400">
+                            {new Date(v.visitDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                          </span>
+                          <span className="bg-emerald-100 text-[#006837] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            Completed
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleQuickEnterVitals(v.patientId, v.patientName, v)}
+                          className="px-2.5 py-1 bg-white hover:bg-emerald-50 text-[#006837] border border-emerald-300 rounded-lg text-[11px] font-bold transition shadow-2xs"
+                        >
+                          ✏️ Update Vitals
+                        </button>
                       </div>
                     </div>
                   ))}
