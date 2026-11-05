@@ -97,6 +97,10 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Notification not found' }, { status: 404 });
     }
 
+    if (!notification.phone) {
+      notification.phone = notification.mobile || 'Not provided';
+    }
+
     let retrySuccess = false;
     let errorDetails = '';
 

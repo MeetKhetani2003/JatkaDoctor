@@ -32,7 +32,7 @@ export const getEffectivePrice = (pkg) => {
 };
 
 // Render department photo uploaded by admin, or specialty-specific thematic icon
-const renderDepartmentVisual = (dept) => {
+export const renderDepartmentVisual = (dept) => {
   const imgSrc = dept?.icon || dept?.image;
   const isImageFile = imgSrc && (
     imgSrc.startsWith("http") ||
@@ -147,7 +147,16 @@ const renderConditionVisual = (condition) => {
   );
 };
 
-export default function PhysiotherapyBooking({ initialPackage = null, onClose = null }) {
+export const defaultFallbackDepartments = [
+  { _id: "6ab4f00115c3070c8dd00301", name: "Orthopedic", description: "Joint, bone, spine, fracture & post-surgery recovery." },
+  { _id: "6ab4f00215c3070c8dd00302", name: "Neurological", description: "Stroke, paralysis, nerve weakness & brain injury rehabilitation." },
+  { _id: "6ab4f00315c3070c8dd00303", name: "Geriatric / Elderly", description: "Balance, walking mobility & age-related pain." },
+  { _id: "6ab4f00415c3070c8dd00304", name: "Sports Rehabilitation", description: "Ligament tears, athletic injuries, muscle pulls & sprains." },
+  { _id: "6ab4f00515c3070c8dd00305", name: "Cardiopulmonary", description: "Post-COVID recovery, breathing therapy & cardiac wellness." },
+  { _id: "6ab4f00615c3070c8dd00306", name: "General Home Rehab", description: "Daily pain management & full-body physical therapy." },
+];
+
+export default function PhysiotherapyBooking({ initialPackage = null, onClose = null, initialDepartment = null }) {
   const router = useRouter();
   const { closeModal } = useBookingModal();
   const { patient, loggedIn, loading: authLoading } = usePatientAuth();
@@ -275,15 +284,6 @@ export default function PhysiotherapyBooking({ initialPackage = null, onClose = 
     }
   };
 
-  const defaultFallbackDepartments = [
-    { _id: "6ab4f00115c3070c8dd00301", name: "Orthopedic", description: "Joint, bone, spine, fracture & post-surgery recovery." },
-    { _id: "6ab4f00215c3070c8dd00302", name: "Neurological", description: "Stroke, paralysis, nerve weakness & brain injury rehabilitation." },
-    { _id: "6ab4f00315c3070c8dd00303", name: "Geriatric / Elderly", description: "Balance, walking mobility & age-related pain." },
-    { _id: "6ab4f00415c3070c8dd00304", name: "Sports Rehabilitation", description: "Ligament tears, athletic injuries, muscle pulls & sprains." },
-    { _id: "6ab4f00515c3070c8dd00305", name: "Cardiopulmonary", description: "Post-COVID recovery, breathing therapy & cardiac wellness." },
-    { _id: "6ab4f00615c3070c8dd00306", name: "General Home Rehab", description: "Daily pain management & full-body physical therapy." },
-  ];
-
   const defaultFallbackPackages = [
     {
       _id: "6ab4f8d33bfd99ffe7298f2a",
@@ -400,6 +400,41 @@ export default function PhysiotherapyBooking({ initialPackage = null, onClose = 
       }
     }
   }, [initialPackage, data.packages]);
+
+  // Auto-resolve initialDepartment if provided (skip directly to Step 2)
+  useEffect(() => {
+    if (initialDepartment) {
+      let deptObj = null;
+      const deptList = (data.departments && data.departments.length > 0) ? data.departments : defaultFallbackDepartments;
+      
+      if (typeof initialDepartment === 'object' && initialDepartment?._id) {
+        deptObj = initialDepartment;
+      } else if (typeof initialDepartment === 'string') {
+        deptObj = deptList.find(d => 
+          d._id === initialDepartment || 
+          d.name?.toLowerCase() === initialDepartment.toLowerCase() ||
+          d.name?.toLowerCase().includes(initialDepartment.toLowerCase())
+        );
+      }
+
+      if (deptObj) {
+        setSelection(prev => ({ ...prev, department: deptObj }));
+        setLoading(true);
+        fetch(`/api/admin/physio-problem-groups?departmentId=${deptObj._id}`)
+          .then(res => res.json())
+          .then(json => {
+            setData(d => ({ ...d, groups: json.data || [] }));
+            setStep(2);
+          })
+          .catch(() => {
+            setStep(2);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
+      }
+    }
+  }, [initialDepartment, data.departments]);
 
   const handleConditionSelect = async (condition) => {
     setSelection({ ...selection, condition });

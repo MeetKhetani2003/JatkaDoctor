@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Patient from '@/lib/models/physio/Patient';
+import { ensurePatientFamilyId } from '@/lib/idGenerator';
 
 export async function GET(req, context) {
   try {
@@ -29,6 +30,12 @@ export async function GET(req, context) {
       }, { status: 404 });
     }
 
+    // Ensure familyId exists
+    let effectiveFamilyId = patient.familyId;
+    if (!effectiveFamilyId) {
+      effectiveFamilyId = await ensurePatientFamilyId(patient);
+    }
+
     // Mask name partially for privacy if desired (e.g. "Rahul Kumar" or show clean name)
     const isCardActive = patient.cardStatus === 'ACTIVE';
 
@@ -39,7 +46,7 @@ export async function GET(req, context) {
       cardType: 'FREE HEALTH CARD',
       cardVersion: patient.cardVersion || 1,
       patientId: patient.patientId,
-      familyId: patient.familyId || null,
+      familyId: effectiveFamilyId || null,
       patientName: patient.healthCardDetails?.name || patient.name,
       gender: patient.healthCardDetails?.gender || patient.gender || null,
       age: patient.healthCardDetails?.age !== undefined && patient.healthCardDetails?.age !== null ? patient.healthCardDetails.age : (patient.age || null),

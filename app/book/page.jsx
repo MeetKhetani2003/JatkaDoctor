@@ -16,12 +16,13 @@ function BookingFormContent() {
   const searchParams = useSearchParams();
   const service = searchParams.get('service') || searchParams.get('category') || '';
   const pkg = searchParams.get('package');
+  const dept = searchParams.get('department');
   const isPhysio = service.toLowerCase().includes('physio') || (typeof pkg === 'string' && pkg.toLowerCase().includes('physio'));
 
   if (isPhysio) {
     return (
       <div className="py-2">
-        <PhysiotherapyBooking initialPackage={pkg} />
+        <PhysiotherapyBooking initialPackage={pkg} initialDepartment={dept} />
       </div>
     );
   }

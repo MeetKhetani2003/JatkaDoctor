@@ -61,7 +61,7 @@ import Navbar from "@/components/Header";
 import FAQSection from "@/components/FAQSection";
 import AmbulanceNetwork from "@/components/AmbulanceNetwork";
 import PhysiotherapyCenters from "@/components/PhysiotherapyCenters";
-import PhysiotherapyBooking from "@/components/PhysiotherapyBooking";
+import PhysiotherapyBooking, { renderDepartmentVisual, defaultFallbackDepartments } from "@/components/PhysiotherapyBooking";
 import { useBookingModal } from "@/context/BookingModalContext";
 
 
@@ -2360,128 +2360,37 @@ function AmbulancePage() {
   );
 }
 
-const fallbackPhysioPackages = [
-  {
-    _id: "pkg-1",
-    title: "1 Session Home Physiotherapy",
-    description: "One home physiotherapy session by a qualified physiotherapist. Includes assessment, pain relief treatment, exercise guidance, posture correction and personalized rehabilitation plan. Suitable for first-time consultation and single-session treatment.",
-    sessionsCount: 1,
-    validityDays: 1,
-    basePrice: 699,
-    offerPrice: 499,
-    perSessionPrice: 499,
-    isRecommended: false,
-    order: 1,
-    isActive: true
-  },
-  {
-    _id: "pkg-2",
-    title: "3 Days Trial Home Physiotherapy",
-    description: "3-day trial home physiotherapy package for new patients. Includes assessment, pain relief therapy, exercise guidance and personalized treatment plan by a qualified physiotherapist.",
-    sessionsCount: 3,
-    validityDays: 3,
-    basePrice: 1599,
-    offerPrice: 1299,
-    perSessionPrice: 433,
-    isRecommended: false,
-    order: 2,
-    isActive: true
-  },
-  {
-    _id: "pkg-3",
-    title: "5 Days Home Physiotherapy",
-    description: "5-day home physiotherapy package for pain relief and early recovery. Ideal for neck pain, back pain, knee pain, shoulder pain, muscle strain and sports injuries. Includes five home physiotherapy sessions, exercise guidance and progress monitoring.",
-    sessionsCount: 5,
-    validityDays: 5,
-    basePrice: 2699,
-    offerPrice: 2199,
-    perSessionPrice: 440,
-    isRecommended: false,
-    order: 3,
-    isActive: true
-  },
-  {
-    _id: "pkg-4",
-    title: "7 Days Home Physiotherapy",
-    description: "7-day home physiotherapy package for acute pain and early rehabilitation. Best for neck pain, back pain, knee pain, shoulder pain and muscle injury. Includes daily home visits, pain relief therapy, exercises and progress monitoring.",
-    sessionsCount: 7,
-    validityDays: 7,
-    basePrice: 3499,
-    offerPrice: 2999,
-    perSessionPrice: 428,
-    isRecommended: false,
-    order: 4,
-    isActive: true
-  },
-  {
-    _id: "pkg-5",
-    title: "10 Days Home Physiotherapy",
-    description: "10-day home physiotherapy package for faster recovery and rehabilitation. Best for cervical pain, sciatica, knee pain, frozen shoulder, arthritis and post-fracture recovery. Includes daily home visits, exercise program and progress monitoring.",
-    sessionsCount: 10,
-    validityDays: 10,
-    basePrice: 5199,
-    offerPrice: 3999,
-    perSessionPrice: 400,
-    isRecommended: false,
-    order: 5,
-    isActive: true
-  },
-  {
-    _id: "pkg-6",
-    title: "15 Days Home Physiotherapy",
-    description: "15-day home physiotherapy package for complete pain relief and rehabilitation. Ideal for cervical pain, back pain, knee pain, sciatica, frozen shoulder, arthritis, post-surgery and post-fracture recovery. Includes daily home visits, personalized exercise plan, progress monitoring and rehabilitation support.",
-    sessionsCount: 15,
-    validityDays: 15,
-    basePrice: 7499,
-    offerPrice: 5999,
-    perSessionPrice: 400,
-    isRecommended: true,
-    order: 6,
-    isActive: true
-  },
-  {
-    _id: "pkg-7",
-    title: "30 Days Home Physiotherapy",
-    description: "30-day Home Physiotherapy Package for complete rehabilitation and long-term recovery. Best for stroke rehabilitation, paralysis, arthritis, post-surgery recovery, chronic back pain, cervical pain, sciatica and elderly physiotherapy. Includes daily home physiotherapy sessions, personalized exercise plan, progress tracking and expert guidance.",
-    sessionsCount: 30,
-    validityDays: 30,
-    basePrice: 14999,
-    offerPrice: 11999,
-    perSessionPrice: 400,
-    isRecommended: true,
-    order: 7,
-    isActive: true
-  }
-];
-
 // ==================== PHYSIOTHERAPY PAGE ====================
 function PhysiotherapyPage() {
   const { openModal } = useBookingModal();
   const phone = "919026365448";
-  const [packages, setPackages] = useState(fallbackPhysioPackages);
+  const [departments, setDepartments] = useState(defaultFallbackDepartments);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchPackages = async () => {
+    const fetchDepartments = async () => {
       try {
-        const res = await fetch("/api/admin/physio-packages");
+        setLoading(true);
+        const res = await fetch("/api/admin/physio-departments");
         const data = await res.json();
         if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-          const active = data.data.filter(p => p.isActive !== false);
-          if (active.length > 0) setPackages(active);
+          const active = data.data.filter(d => d.isActive !== false);
+          if (active.length > 0) setDepartments(active);
         }
       } catch (e) {
-        console.error("Failed to fetch physio packages:", e);
+        console.error("Failed to fetch physio departments:", e);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchPackages();
+    fetchDepartments();
   }, []);
 
   return (
     <main className="min-h-screen bg-white pb-20">
       <Navbar />
 
-      {/* Hero Banner - EXACTLY SAME AS OTHERS */}
+      {/* Hero Banner */}
       <section className="mt-14 relative w-full bg-gray-900">
         <div className="max-w-7xl mx-auto">
           <div className="relative h-[300px] sm:h-[300px] w-full">
@@ -2502,7 +2411,7 @@ function PhysiotherapyPage() {
         </div>
       </section>
 
-      {/* Intro / Positioning (Premium Mobile Style) */}
+      {/* Intro / Positioning */}
       <section className="px-5 pt-8 pb-4 max-w-7xl mx-auto">
         <div className="flex flex-col gap-3">
           <div className="inline-flex items-center gap-2 bg-red-50 text-red-500 font-normal px-3 py-1.5 rounded-full text-[11px] uppercase tracking-wider w-max">
@@ -2510,61 +2419,89 @@ function PhysiotherapyPage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
             </span>
-            Limited Slots Available Today
+            Certified Home Physiotherapists Available in 30 Min
           </div>
-          <h2 className="text-2xl sm:text-3xl font-normal text-black tracking-tight leading-[1.2] tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-normal text-black tracking-tight leading-[1.2]">
             Book Certified Physiotherapist at Home in 30 Minutes
           </h2>
           <p className="text-gray-500 text-sm sm:text-base">
             Expert Care at Home <span className="text-gray-300 mx-1">•</span>{" "}
-            Affordable Packages <span className="text-gray-300 mx-1">•</span>{" "}
-            Quick Recovery
+            Specialized Therapy <span className="text-gray-300 mx-1">•</span>{" "}
+            Fast Pain Relief & Recovery
           </p>
+
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <button
+              onClick={() => openModal({ service: 'Physiotherapy' })}
+              className="bg-[#006837] text-white px-5 sm:px-6 py-3 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 hover:bg-[#00522c] transition active:scale-95 shadow-sm cursor-pointer"
+            >
+              <Calendar className="w-4 h-4" />
+              <span>Book Appointment</span>
+            </button>
+            <a
+              href={`tel:${phone}`}
+              className="bg-gray-100 text-gray-800 px-4 sm:px-5 py-3 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 hover:bg-gray-200 transition active:scale-95"
+            >
+              <Phone className="w-4 h-4 text-[#006837]" />
+              <span>Call Helpline: +91 9026365448</span>
+            </a>
+          </div>
         </div>
       </section>
 
-      {/* Pricing Section (Minimal App Style) */}
+      {/* Departments Section (Replaces Old Packages Section) */}
       <section className="px-5 py-8 max-w-7xl mx-auto">
-        <h3 className="text-lg font-normal text-black tracking-tight mb-6">
-          Transparent Pricing
-        </h3>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-6">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#006837] mb-1">
+              <span className="w-2 h-2 rounded-full bg-[#006837]" />
+              <span className="uppercase tracking-wider text-[11px] font-black">
+                Specialized Treatments
+              </span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
+              Select Physiotherapy Department
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1">
+              Click on your department to consult specialized physiotherapists at home
+            </p>
+          </div>
+
+          <button
+            onClick={() => openModal({ service: 'Physiotherapy' })}
+            className="self-start sm:self-auto px-4 py-2 bg-emerald-50 text-[#006837] border border-emerald-200 text-xs font-bold rounded-xl hover:bg-emerald-100 transition active:scale-95 flex items-center gap-1.5 cursor-pointer"
+          >
+            <span>View All in Modal</span>
+            <ArrowRight size={14} />
+          </button>
+        </div>
 
         {loading ? (
           <div className="flex justify-center items-center h-32">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
-        ) : packages.length === 0 ? (
-          <div className="text-center text-gray-500 py-10">No packages found</div>
+        ) : departments.length === 0 ? (
+          <div className="text-center text-gray-500 py-10">No departments found</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {packages.map((pkg) => (
-              <div 
-                key={pkg._id} 
-                className={`${pkg.isRecommended ? "bg-primary/5 border-primary/20 sm:col-span-2 lg:col-span-1" : "bg-white border-gray-100"} rounded-2xl p-5 border shadow-[0_2px_12px_rgba(0,0,0,0.04)] relative overflow-hidden flex flex-col`}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+            {departments.map((dept) => (
+              <button
+                key={dept._id}
+                onClick={() => openModal({ service: 'Physiotherapy', department: dept })}
+                className="flex flex-col items-center text-center p-4 sm:p-5 bg-white border-2 border-gray-100 hover:border-[#006837] rounded-2xl hover:bg-emerald-50/20 hover:shadow-md transition-all group active:scale-[0.98] cursor-pointer"
               >
-                {pkg.isRecommended ? (
-                  <div className="absolute top-0 right-0 bg-primary text-white font-normal text-[10px] px-3 py-1 rounded-bl-xl uppercase tracking-wider flex items-center gap-1">
-                    <Star className="w-3 h-3 fill-white" /> Recommended
-                  </div>
-                ) : null}
-
-                <h4 className={`font-normal text-base ${pkg.isRecommended ? "text-primary text-lg mt-2" : "text-gray-800"}`}>
-                  {pkg.title}
+                {renderDepartmentVisual(dept)}
+                <h4 className="font-bold text-sm sm:text-base text-gray-900 group-hover:text-[#006837] transition-colors mb-1 leading-snug line-clamp-2">
+                  {dept.name}
                 </h4>
-
-                {pkg.description && (
-                  <p className="text-[11px] text-gray-500 mt-3 whitespace-pre-wrap flex-1">
-                    {pkg.description}
-                  </p>
-                )}
-
-                <button
-                  onClick={() => openModal({ service: 'Physiotherapy', package: pkg })}
-                  className={`mt-5 w-full py-3 rounded-xl text-sm font-normal flex items-center justify-center transition active:scale-95 ${pkg.isRecommended ? "bg-primary text-white hover:bg-primary-dark shadow-sm py-3.5" : "bg-gray-50 text-gray-700 hover:bg-gray-100"}`}
-                >
-                  {pkg.isRecommended ? `Book ${pkg.title} Now` : `Book ${pkg.title}`}
-                </button>
-              </div>
+                <p className="text-[11px] sm:text-xs text-gray-500 line-clamp-2 mb-3">
+                  {dept.description || "Specialized care and rehabilitation."}
+                </p>
+                <span className="mt-auto text-[11px] font-bold text-[#006837] bg-emerald-50 px-3 py-1 rounded-full border border-emerald-100 flex items-center gap-1 group-hover:bg-[#006837] group-hover:text-white transition-colors">
+                  <span>Select Department</span>
+                  <ArrowRight size={11} />
+                </span>
+              </button>
             ))}
           </div>
         )}

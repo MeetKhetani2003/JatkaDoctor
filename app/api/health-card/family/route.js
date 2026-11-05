@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
 import Patient from '@/lib/models/physio/Patient';
 import Family from '@/lib/models/Family';
-import { generatePatientId, generateSecureToken } from '@/lib/idGenerator';
+import { generatePatientId, generateSecureToken, ensurePatientFamilyId } from '@/lib/idGenerator';
 
 export async function GET(req) {
   try {
@@ -17,9 +17,12 @@ export async function GET(req) {
 
     let targetFamilyId = familyId;
     if (!targetFamilyId && patientId) {
-      const patient = await Patient.findOne({ patientId }).lean();
-      if (!patient || !patient.familyId) {
+      let patient = await Patient.findOne({ patientId });
+      if (!patient) {
         return NextResponse.json({ success: true, family: null, members: [] });
+      }
+      if (!patient.familyId) {
+        patient.familyId = await ensurePatientFamilyId(patient);
       }
       targetFamilyId = patient.familyId;
     }
@@ -89,6 +92,9 @@ export async function POST(req) {
     if (!targetFamilyId && primaryPatientId) {
       const primary = await Patient.findOne({ patientId: primaryPatientId });
       if (primary) {
+        if (!primary.familyId) {
+          primary.familyId = await ensurePatientFamilyId(primary);
+        }
         targetFamilyId = primary.familyId;
       }
     }

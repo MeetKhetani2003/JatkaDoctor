@@ -3,7 +3,7 @@ import dbConnect from '@/lib/db';
 import HomeCareBooking from '@/lib/models/homeCare/HomeCareBooking';
 import HomeCareService from '@/lib/models/homeCare/HomeCareService';
 import Patient from '@/lib/models/physio/Patient';
-import { generateHomeCareBookingId, generatePatientId } from '@/lib/idGenerator';
+import { generateHomeCareBookingId, generatePatientId, generateFamilyId } from '@/lib/idGenerator';
 import { recordBookingLeadNotification } from '@/lib/notificationHelper';
 
 export async function POST(req) {
@@ -67,8 +67,11 @@ export async function POST(req) {
     // Create new patient record if first time
     if (!patient) {
       const permanentId = await generatePatientId();
+      const familyId = await generateFamilyId();
       patient = await Patient.create({
         patientId: permanentId,
+        familyId,
+        isFamilyHead: true,
         name: patientName.trim(),
         mobile: patientPhone.trim(),
         email: patientEmail ? patientEmail.trim() : '',
@@ -81,6 +84,10 @@ export async function POST(req) {
       });
     } else {
       // Update missing fields if needed
+      if (!patient.familyId) {
+        patient.familyId = await generateFamilyId();
+        patient.isFamilyHead = true;
+      }
       if (!patient.address && address) patient.address = address;
       if (!patient.age && patientAge) patient.age = Number(patientAge);
       if (!patient.gender && patientGender) patient.gender = patientGender;

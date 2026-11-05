@@ -19,10 +19,54 @@ import {
   Calendar,
   AlertCircle,
   HelpCircle,
-  FileCheck
+  FileCheck,
+  Camera
 } from "lucide-react";
 import HealthCard from "@/components/HealthCard";
 import Link from "next/link";
+
+// Auto-compress and scale images client-side for fast, seamless mobile uploads under 30KB
+const compressImage = (file, maxBytes = 28 * 1024) => {
+  return new Promise((resolve, reject) => {
+    if (typeof window === "undefined") return reject(new Error("Browser only"));
+    const img = new window.Image();
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+        const maxDim = 320;
+        if (width > maxDim || height > maxDim) {
+          if (width > height) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          } else {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+
+        let quality = 0.85;
+        let dataUrl = canvas.toDataURL("image/jpeg", quality);
+        while (dataUrl.length * 0.75 > maxBytes && quality > 0.2) {
+          quality -= 0.1;
+          dataUrl = canvas.toDataURL("image/jpeg", quality);
+        }
+        resolve(dataUrl);
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
 
 function HealthCardRegistrationContent() {
   const searchParams = useSearchParams();
@@ -542,45 +586,82 @@ function HealthCardRegistrationContent() {
                   
                   {/* Passport Photo */}
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-gray-700 mb-1">
-                      Passport Size Photo <span className="text-red-500">*</span> <span className="text-gray-400 font-normal">(Max 30KB)</span>
+                    <label className="block text-xs font-bold text-gray-700 mb-1.5">
+                      Passport Size Photo <span className="text-red-500">*</span>
+                      <span className="text-[11px] text-gray-500 font-normal ml-2">
+                        (Auto-optimized for your Health Card)
+                      </span>
                     </label>
-                    <div className="flex items-center gap-4">
-                      {photoPreview ? (
-                        <div className="w-16 h-16 rounded overflow-hidden border border-gray-300 shrink-0">
-                          <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+
+                    <div className="p-3 bg-gray-50 border border-gray-200 rounded-2xl">
+                      <div className="flex items-center gap-3.5">
+                        <div className="relative w-16 h-20 rounded-xl overflow-hidden border-2 border-dashed border-[#006837]/40 bg-white shadow-xs shrink-0 flex items-center justify-center">
+                          {photoPreview ? (
+                            <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="flex flex-col items-center justify-center text-gray-400">
+                              <User className="w-7 h-7 text-gray-300" />
+                              <span className="text-[8px] font-bold uppercase tracking-wider text-gray-400 mt-0.5">Photo</span>
+                            </div>
+                          )}
+                          {photoPreview && (
+                            <span className="absolute top-1 right-1 w-4 h-4 bg-emerald-500 rounded-full flex items-center justify-center text-white shadow-xs">
+                              <CheckCircle2 size={12} />
+                            </span>
+                          )}
                         </div>
-                      ) : (
-                        <div className="w-16 h-16 rounded border border-gray-300 bg-gray-50 flex items-center justify-center shrink-0">
-                          <User className="w-6 h-6 text-gray-300" />
+
+                        <div className="flex-1 min-w-0">
+                          <input
+                            type="file"
+                            id="passportPhotoInput"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files[0];
+                              if (!file) return;
+                              setFormError("");
+                              try {
+                                const compressedDataUrl = await compressImage(file, 28 * 1024);
+                                setPhotoPreview(compressedDataUrl);
+                                setFormData((prev) => ({ ...prev, photo: compressedDataUrl }));
+                              } catch (err) {
+                                console.error("Image processing error:", err);
+                                setFormError("Could not process this photo. Please try a different image.");
+                              }
+                            }}
+                          />
+
+                          <div className="flex flex-wrap items-center gap-2">
+                            <label
+                              htmlFor="passportPhotoInput"
+                              className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-[#006837] border border-emerald-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-2xs"
+                            >
+                              <Camera className="w-4 h-4" />
+                              <span>{photoPreview ? "Change Photo" : "Upload Passport Photo"}</span>
+                            </label>
+
+                            {photoPreview && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setPhotoPreview(null);
+                                  setFormData((prev) => ({ ...prev, photo: null }));
+                                  const input = document.getElementById("passportPhotoInput");
+                                  if (input) input.value = "";
+                                }}
+                                className="text-xs text-red-600 hover:text-red-700 font-semibold px-2 py-1"
+                              >
+                                Remove
+                              </button>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-gray-500 mt-1 leading-snug">
+                            {photoPreview
+                              ? "✓ Photo ready and auto-fitted for your Health Card."
+                              : "Tap to select photo from Camera or Gallery. Auto-compressed instantly."}
+                          </p>
                         </div>
-                      )}
-                      <div className="flex-1">
-                        <input
-                          type="file"
-                          accept="image/*"
-                          required
-                          className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 transition-all cursor-pointer"
-                          onChange={(e) => {
-                            const file = e.target.files[0];
-                            if (!file) return;
-                            
-                            if (file.size > 30 * 1024) {
-                              setFormError("Image size must be less than 30KB. Please compress your image.");
-                              e.target.value = "";
-                              setPhotoPreview(null);
-                              return;
-                            }
-                            
-                            setFormError("");
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              setPhotoPreview(reader.result);
-                              setFormData({ ...formData, photo: reader.result });
-                            };
-                            reader.readAsDataURL(file);
-                          }}
-                        />
                       </div>
                     </div>
                   </div>

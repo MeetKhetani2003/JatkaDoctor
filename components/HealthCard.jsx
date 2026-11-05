@@ -68,6 +68,7 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
   const cardGender = cardDetails.gender || patient.gender;
   const cardBloodGroup = cardDetails.bloodGroup || patient.bloodGroup;
   const cardPhoto = cardDetails.photo || patient.photo;
+  const cardFamilyId = patient.familyId || cardDetails.familyId || patient.family_id;
 
   const isActive = patient.cardStatus !== "INACTIVE";
 
@@ -173,7 +174,7 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
         `*Dr Jhatka Medicare - Free Health Card*\n\n` +
         `Patient Name: *${cardName}*\n` +
         `Permanent Patient ID: *${patient.patientId}*\n` +
-        `Family ID: *${patient.familyId || "N/A"}*\n` +
+        `Family ID: *${cardFamilyId || "N/A"}*\n` +
         `Status: *${patient.cardStatus || "ACTIVE"}*\n\n` +
         `View & Download Digital Card: ${verifyUrl}\n\n` +
         `Helpline: +91 87077 90677 | www.drjhatka.com`
@@ -313,7 +314,7 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
             <div
               ref={frontRef}
               id="drjhatka-health-card-front"
-              className="relative w-[340px] sm:w-[480px] md:w-[520px] aspect-[85.6/53.98] rounded-2xl overflow-hidden shadow-2xl border border-gray-200 bg-white text-gray-900 select-none transition-transform"
+              className="relative w-[320px] min-[380px]:w-[340px] sm:w-[480px] md:w-[520px] max-w-full aspect-[85.6/53.98] rounded-2xl overflow-hidden shadow-2xl border border-gray-200 bg-white text-gray-900 select-none transition-transform"
               style={{
                 fontFamily: "var(--font-poppins, 'Inter', -apple-system, sans-serif)",
                 background: "linear-gradient(135deg, #ffffff 0%, #f6fbf8 60%, #e7f7ee 100%)",
@@ -389,13 +390,13 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
                     </div>
 
                     {/* Family ID (Only if available) */}
-                    {patient.familyId && (
+                    {cardFamilyId && (
                       <>
                         <div className="text-gray-600">Family ID</div>
                         <div>:</div>
                         <div>
                           <span className="inline-block bg-[#dcfce7] text-[#006837] font-bold px-1.5 py-0.5 rounded shadow-xs tracking-wide">
-                            {patient.familyId}
+                            {cardFamilyId}
                           </span>
                         </div>
                       </>
@@ -521,7 +522,7 @@ export default function HealthCard({ patient, showActions = true, onUpdate = nul
             <div
               ref={backRef}
               id="drjhatka-health-card-back"
-              className="relative w-[340px] sm:w-[480px] md:w-[520px] aspect-[85.6/53.98] rounded-2xl overflow-hidden shadow-2xl border border-gray-200 bg-white text-gray-900 select-none transition-transform"
+              className="relative w-[320px] min-[380px]:w-[340px] sm:w-[480px] md:w-[520px] max-w-full aspect-[85.6/53.98] rounded-2xl overflow-hidden shadow-2xl border border-gray-200 bg-white text-gray-900 select-none transition-transform"
               style={{
                 fontFamily: "var(--font-poppins, 'Inter', -apple-system, sans-serif)",
                 background: "linear-gradient(135deg, #ffffff 0%, #f7fcf9 70%, #ebf9f1 100%)",

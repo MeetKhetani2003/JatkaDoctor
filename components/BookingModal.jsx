@@ -56,6 +56,7 @@ export default function BookingModal() {
                 <div className="p-1 sm:p-2">
                   <PhysiotherapyBooking 
                     initialPackage={bookingData.package}
+                    initialDepartment={bookingData.department}
                     onClose={closeModal}
                   />
                 </div>

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Patient from "@/lib/models/physio/Patient";
 import { getBaseUrl } from "@/lib/baseUrl";
+import { generatePatientId, generateFamilyId, ensurePatientFamilyId } from "@/lib/idGenerator";
 
 export async function GET(req) {
   const base = getBaseUrl(req);
@@ -63,14 +64,20 @@ export async function GET(req) {
         patient.googleEmail = googleUser.email;
         patient.googleAvatar = googleUser.picture;
         patient.googleName = googleUser.name;
+        if (!patient.familyId) {
+          patient.familyId = await generateFamilyId();
+          patient.isFamilyHead = true;
+        }
         await patient.save();
       } else {
-        // Create a new patient from Google profile
-        const count = await Patient.countDocuments();
-        const newPatientId = `DJM-PT-${(count + 1).toString().padStart(6, "0")}`;
+        // Create a new patient from Google profile with Permanent Patient ID & Family ID
+        const newPatientId = await generatePatientId();
+        const familyId = await generateFamilyId();
 
         patient = await Patient.create({
           patientId: newPatientId,
+          familyId,
+          isFamilyHead: true,
           name: googleUser.name,
           email: googleUser.email,
           mobile: `google_${googleUser.id}`, // placeholder, patient can update later
@@ -81,10 +88,14 @@ export async function GET(req) {
         });
       }
     } else {
-      // Refresh Google info
+      // Refresh Google info & ensure familyId
       patient.googleEmail = googleUser.email;
       patient.googleAvatar = googleUser.picture;
       patient.googleName = googleUser.name;
+      if (!patient.familyId) {
+        patient.familyId = await generateFamilyId();
+        patient.isFamilyHead = true;
+      }
       await patient.save();
     }
 

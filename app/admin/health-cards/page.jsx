@@ -24,7 +24,10 @@ import {
   ChevronRight,
   ShieldCheck,
   Stethoscope,
-  Trash2
+  Trash2,
+  Loader2,
+  RefreshCw,
+  AlertCircle
 } from "lucide-react";
 import HealthCard from "@/components/HealthCard";
 
@@ -42,6 +45,7 @@ export default function HealthCardsAdminPage() {
   const [selectedPatientId, setSelectedPatientId] = useState(null);
   const [patient360Data, setPatient360Data] = useState(null);
   const [drawerLoading, setDrawerLoading] = useState(false);
+  const [drawerError, setDrawerError] = useState("");
   const [active360Tab, setActive360Tab] = useState("card"); // card | profile | family | visits | bookings | followups | audit
 
   // Action status message
@@ -81,15 +85,20 @@ export default function HealthCardsAdminPage() {
   const handleOpenPatient360 = async (patientId) => {
     setSelectedPatientId(patientId);
     setDrawerLoading(true);
+    setDrawerError("");
+    setPatient360Data(null);
     setActionMsg("");
     try {
-      const res = await fetch(`/api/admin/health-cards/${patientId}`);
+      const res = await fetch(`/api/admin/health-cards/${encodeURIComponent(patientId)}`);
       const data = await res.json();
-      if (data.success) {
+      if (res.ok && data.success && data.patient) {
         setPatient360Data(data);
+      } else {
+        setDrawerError(data.message || `Patient profile could not be loaded (${res.status})`);
       }
     } catch (e) {
-      console.error(e);
+      console.error("Fetch patient 360 error:", e);
+      setDrawerError("Network error: Could not reach server. Please check your connection.");
     } finally {
       setDrawerLoading(false);
     }
@@ -405,95 +414,156 @@ export default function HealthCardsAdminPage() {
       {/* PATIENT 360° DRAWER / MODAL */}
       {/* ============================================================== */}
       {selectedPatientId && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6">
-          <div className="bg-white rounded-3xl max-w-4xl w-full max-h-[94vh] overflow-y-auto p-6 shadow-2xl flex flex-col justify-between">
-            
-            {drawerLoading || !patient360Data ? (
-              <div className="py-20 text-center text-sm font-bold text-gray-400">
-                Loading Patient 360° Profile...
+        <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6">
+          {/* Backdrop with click to dismiss */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+            onClick={() => {
+              setSelectedPatientId(null);
+              setDrawerError("");
+            }}
+          />
+
+          <div className="relative z-10 bg-white rounded-t-3xl sm:rounded-3xl max-w-4xl w-full h-[90vh] sm:h-auto max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom sm:slide-in-from-bottom-0 sm:fade-in duration-200">
+            {/* Top Drag Indicator for Mobile */}
+            <div className="pt-3 pb-1 sm:hidden flex justify-center shrink-0 bg-white">
+              <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
+            </div>
+
+            {/* Permanent Header (ALWAYS visible, even while loading or on error) */}
+            <div className="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white">
+              <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-emerald-50 text-[#006837] border border-emerald-100 flex items-center justify-center font-bold text-base sm:text-lg shrink-0">
+                  {patient360Data?.patient?.name ? patient360Data.patient.name[0] : "P"}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                    <h2 className="text-base sm:text-lg font-black text-gray-900 leading-tight truncate">
+                      {patient360Data?.patient?.name || (drawerLoading ? "Loading Patient..." : "Patient 360°")}
+                    </h2>
+                    <span className="font-mono text-[11px] sm:text-xs font-black text-white bg-[#004d26] px-1.5 sm:px-2 py-0.5 rounded">
+                      {patient360Data?.patient?.patientId || selectedPatientId}
+                    </span>
+                    {patient360Data?.patient?.cardStatus && (
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                        patient360Data.patient.cardStatus === "ACTIVE"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-red-100 text-red-800"
+                      }`}>
+                        {patient360Data.patient.cardStatus} (V{patient360Data.patient.cardVersion || 1})
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] sm:text-xs text-gray-500 mt-0.5 leading-snug">
+                    {patient360Data?.patient ? (
+                      <>Family ID: <strong className="text-gray-800">{patient360Data.patient.familyId || "None"}</strong> • Mobile: +91 {patient360Data.patient.mobile}</>
+                    ) : (
+                      <>Permanent Patient ID: <strong className="text-gray-800">{selectedPatientId}</strong></>
+                    )}
+                  </p>
+                </div>
               </div>
-            ) : (
-              <div>
-                {/* Drawer Header */}
-                <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#006837] border border-emerald-100 flex items-center justify-center font-bold text-lg">
-                      {patient360Data.patient.name[0]}
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-lg font-black text-gray-900 leading-tight">
-                          {patient360Data.patient.name}
-                        </h2>
-                        <span className="font-mono text-xs font-black text-white bg-[#004d26] px-2 py-0.5 rounded">
-                          {patient360Data.patient.patientId}
-                        </span>
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          patient360Data.patient.cardStatus === "ACTIVE"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-red-100 text-red-800"
-                        }`}>
-                          {patient360Data.patient.cardStatus} (V{patient360Data.patient.cardVersion || 1})
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        Family ID: <strong>{patient360Data.patient.familyId || "None"}</strong> • Mobile: +91 {patient360Data.patient.mobile}
-                      </p>
-                    </div>
-                  </div>
 
-                  <button
-                    onClick={() => setSelectedPatientId(null)}
-                    className="text-gray-400 hover:text-black font-bold text-xl"
-                  >
-                    ✕
-                  </button>
+              {/* Close Button - ALWAYS present & clickable */}
+              <button
+                onClick={() => {
+                  setSelectedPatientId(null);
+                  setDrawerError("");
+                }}
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-black flex items-center justify-center text-sm font-bold shrink-0 transition ml-2 cursor-pointer"
+                aria-label="Close"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Scrollable Modal Body */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 custom-scrollbar">
+              {drawerLoading ? (
+                <div className="py-24 flex flex-col items-center justify-center text-center">
+                  <div className="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-3 text-[#006837]">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  </div>
+                  <p className="text-sm font-bold text-gray-800">Loading Patient 360° Profile...</p>
+                  <p className="text-xs text-gray-400 mt-1">Fetching health records, cards & history</p>
                 </div>
-
-                {/* Status Message */}
-                {actionMsg && (
-                  <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-emerald-600" />
-                    <span>{actionMsg}</span>
+              ) : drawerError || !patient360Data ? (
+                <div className="py-20 flex flex-col items-center justify-center text-center">
+                  <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-3">
+                    <AlertTriangle className="w-6 h-6" />
                   </div>
-                )}
-
-                {/* 360 Navigation Tabs */}
-                <div className="flex overflow-x-auto gap-1 border-b border-gray-100 pb-2 mb-5 text-xs font-bold text-gray-500">
-                  {[
-                    { id: "card", label: "Health Card & Delivery" },
-                    { id: "profile", label: "Patient Profile" },
-                    { id: "prescriptions", label: `Prescriptions (${(patient360Data.prescriptions || []).length})` },
-                    { id: "family", label: `Family Members (${(patient360Data.familyMembers || []).length})` },
-                    { id: "visits", label: `Camp & Checks (${(patient360Data.campVisits || []).length})` },
-                    { id: "bookings", label: `Bookings (${(patient360Data.appointments || []).length + (patient360Data.physioBookings || []).length + (patient360Data.icuRequests || []).length})` },
-                    { id: "followups", label: "Follow-up & Notes" },
-                    { id: "audit", label: "Audit Trail" },
-                  ].map((t) => (
+                  <p className="text-sm font-bold text-gray-900 mb-1">
+                    {drawerError || "Could not load patient details"}
+                  </p>
+                  <p className="text-xs text-gray-400 mb-4 max-w-sm">
+                    Unable to fetch full records for patient ID {selectedPatientId}.
+                  </p>
+                  <div className="flex items-center gap-2">
                     <button
-                      key={t.id}
-                      onClick={() => setActive360Tab(t.id)}
-                      className={`px-3 py-1.5 rounded-xl transition whitespace-nowrap ${
-                        active360Tab === t.id
-                          ? "bg-gray-900 text-white font-extrabold"
-                          : "hover:bg-gray-100 hover:text-black"
-                      }`}
+                      onClick={() => handleOpenPatient360(selectedPatientId)}
+                      className="px-4 py-2 bg-[#006837] text-white text-xs font-bold rounded-xl hover:bg-[#004d26] transition flex items-center gap-1.5 cursor-pointer shadow-sm"
                     >
-                      {t.label}
+                      <RefreshCw className="w-3.5 h-3.5" /> Retry
                     </button>
-                  ))}
+                    <button
+                      onClick={() => {
+                        setSelectedPatientId(null);
+                        setDrawerError("");
+                      }}
+                      className="px-4 py-2 bg-gray-100 text-gray-700 text-xs font-bold rounded-xl hover:bg-gray-200 transition cursor-pointer"
+                    >
+                      Close Drawer
+                    </button>
+                  </div>
                 </div>
+              ) : (
+                <div>
+                  {/* Status Message */}
+                  {actionMsg && (
+                    <div className="mb-4 p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>{actionMsg}</span>
+                    </div>
+                  )}
+
+                  {/* 360 Navigation Tabs */}
+                  <div className="flex overflow-x-auto gap-1.5 border-b border-gray-100 pb-2 mb-4 text-xs font-bold text-gray-500 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+                    {[
+                      { id: "card", label: "Health Card & Delivery" },
+                      { id: "profile", label: "Patient Profile" },
+                      { id: "prescriptions", label: `Prescriptions (${(patient360Data.prescriptions || []).length})` },
+                      { id: "family", label: `Family Members (${(patient360Data.familyMembers || []).length})` },
+                      { id: "visits", label: `Camp & Checks (${(patient360Data.campVisits || []).length})` },
+                      { id: "bookings", label: `Bookings (${(patient360Data.appointments || []).length + (patient360Data.physioBookings || []).length + (patient360Data.icuRequests || []).length})` },
+                      { id: "followups", label: "Follow-up & Notes" },
+                      { id: "audit", label: "Audit Trail" },
+                    ].map((t) => (
+                      <button
+                        key={t.id}
+                        onClick={() => setActive360Tab(t.id)}
+                        className={`px-3 py-1.5 rounded-xl transition whitespace-nowrap shrink-0 text-xs ${
+                          active360Tab === t.id
+                            ? "bg-gray-900 text-white font-extrabold shadow-xs"
+                            : "bg-gray-50 sm:bg-transparent text-gray-600 hover:bg-gray-100 hover:text-black"
+                        }`}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
 
                 {/* 1. HEALTH CARD & DELIVERY */}
                 {active360Tab === "card" && (
-                  <div className="space-y-6">
+                  <div className="space-y-4 sm:space-y-6">
                     {/* Health Card Component */}
-                    <div className="bg-gray-50/50 p-4 rounded-3xl border border-gray-100 flex flex-col items-center">
-                      <HealthCard patient={patient360Data.patient} showActions={false} />
+                    <div className="bg-gray-50/50 p-2 sm:p-4 rounded-2xl sm:rounded-3xl border border-gray-100 flex flex-col items-center overflow-x-auto">
+                      <div className="w-full flex justify-center py-1 overflow-x-auto">
+                        <HealthCard patient={patient360Data.patient} showActions={false} />
+                      </div>
                     </div>
 
                     {/* Admin Card Controls */}
-                    <div className="bg-white p-5 rounded-2xl border border-gray-200 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                    <div className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                       <div>
                         <h4 className="font-bold text-gray-900 mb-2">Health Card Status & Actions</h4>
                         <div className="space-y-2">
@@ -503,7 +573,7 @@ export default function HealthCardsAdminPage() {
                           <button
                             onClick={() => handleToggleCardStatus(patient360Data.patient.cardStatus)}
                             disabled={actionLoading}
-                            className={`px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5 ${
+                            className={`w-full sm:w-auto px-4 py-2 rounded-xl font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                               patient360Data.patient.cardStatus === "ACTIVE"
                                 ? "bg-red-50 text-red-700 hover:bg-red-100 border border-red-200"
                                 : "bg-emerald-600 text-white hover:bg-emerald-700"
@@ -525,23 +595,23 @@ export default function HealthCardsAdminPage() {
                       <div>
                         <h4 className="font-bold text-gray-900 mb-2">Automated Card Delivery & Resend</h4>
                         <div className="space-y-2">
-                          <div className="flex items-center justify-between text-gray-600">
+                          <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center justify-between gap-2 text-gray-600">
                             <span>WhatsApp Status: <strong>{patient360Data.patient.deliveryStatus?.whatsApp?.status || "Pending"}</strong></span>
                             <button
                               onClick={() => handleResendCard("whatsapp")}
                               disabled={actionLoading}
-                              className="px-3 py-1 bg-emerald-50 text-[#006837] border border-emerald-200 rounded-lg font-bold hover:bg-emerald-100 transition"
+                              className="px-3 py-1.5 bg-emerald-50 text-[#006837] border border-emerald-200 rounded-lg font-bold hover:bg-emerald-100 transition self-start min-[420px]:self-auto cursor-pointer"
                             >
                               Resend WhatsApp
                             </button>
                           </div>
 
-                          <div className="flex items-center justify-between text-gray-600 pt-2 border-t border-gray-100">
+                          <div className="flex flex-col min-[420px]:flex-row min-[420px]:items-center justify-between gap-2 text-gray-600 pt-2 border-t border-gray-100">
                             <span>Email Status: <strong>{patient360Data.patient.deliveryStatus?.email?.status || "Pending"}</strong></span>
                             <button
                               onClick={() => handleResendCard("email")}
                               disabled={actionLoading}
-                              className="px-3 py-1 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg font-bold hover:bg-blue-100 transition"
+                              className="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-lg font-bold hover:bg-blue-100 transition self-start min-[420px]:self-auto cursor-pointer"
                             >
                               Resend Email
                             </button>
@@ -554,10 +624,10 @@ export default function HealthCardsAdminPage() {
 
                 {/* 2. PATIENT PROFILE */}
                 {active360Tab === "profile" && (
-                  <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
+                  <div className="bg-gray-50 p-4 sm:p-6 rounded-2xl border border-gray-100 grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 text-xs">
                     <div>
                       <span className="text-gray-400 font-bold block">Patient Name</span>
-                      <span className="font-bold text-gray-900">{patient360Data.patient.name}</span>
+                      <span className="font-bold text-gray-900 break-words">{patient360Data.patient.name}</span>
                     </div>
                     <div>
                       <span className="text-gray-400 font-bold block">Mobile</span>
@@ -565,7 +635,7 @@ export default function HealthCardsAdminPage() {
                     </div>
                     <div>
                       <span className="text-gray-400 font-bold block">Email</span>
-                      <span className="font-medium text-gray-800">{patient360Data.patient.email || "Not provided"}</span>
+                      <span className="font-medium text-gray-800 break-words">{patient360Data.patient.email || "Not provided"}</span>
                     </div>
                     <div>
                       <span className="text-gray-400 font-bold block">Age & Gender</span>
@@ -579,11 +649,11 @@ export default function HealthCardsAdminPage() {
                       <span className="text-gray-400 font-bold block">Senior Citizen</span>
                       <span className="font-bold text-amber-800">{patient360Data.patient.isSeniorCitizen ? "Eligible (70+)" : "No"}</span>
                     </div>
-                    <div className="col-span-2">
+                    <div className="col-span-2 sm:col-span-3">
                       <span className="text-gray-400 font-bold block">Address</span>
-                      <span className="text-gray-800">{patient360Data.patient.address || "None"} • {patient360Data.patient.city || "Lucknow"}</span>
+                      <span className="text-gray-800 break-words">{patient360Data.patient.address || "None"} • {patient360Data.patient.city || "Lucknow"}</span>
                     </div>
-                    <div>
+                    <div className="col-span-2 sm:col-span-3">
                       <span className="text-gray-400 font-bold block">Source & Camp</span>
                       <span className="text-gray-800">{patient360Data.patient.source} {patient360Data.patient.campId ? `(${patient360Data.patient.campId})` : ""}</span>
                     </div>
@@ -600,7 +670,7 @@ export default function HealthCardsAdminPage() {
                     ) : (
                       patient360Data.prescriptions.map((rx) => (
                         <div key={rx._id || rx.prescriptionId} className="bg-gray-50/70 p-4 rounded-2xl border border-gray-200 text-xs space-y-3">
-                          <div className="flex items-start justify-between gap-3">
+                          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="font-bold font-mono text-emerald-800 text-sm">
@@ -620,7 +690,7 @@ export default function HealthCardsAdminPage() {
                               </p>
                             </div>
 
-                            <div className="flex items-center gap-2 shrink-0">
+                            <div className="flex items-center gap-2 shrink-0 flex-wrap">
                               <a
                                 href={rx.fileUrl || `/api/prescriptions/${rx.prescriptionId}/file`}
                                 target="_blank"
@@ -708,7 +778,7 @@ export default function HealthCardsAdminPage() {
                             <span>{v.campName || v.campId}</span>
                             <span className="text-gray-400">{new Date(v.visitDate).toLocaleDateString()}</span>
                           </div>
-                          <div className="grid grid-cols-4 gap-2 text-center">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
                             <div className="bg-white p-2 rounded border">BP: <strong>{v.bpSystolic}/{v.bpDiastolic}</strong></div>
                             <div className="bg-white p-2 rounded border">Sugar: <strong>{v.sugarRBS || "-"}</strong></div>
                             <div className="bg-white p-2 rounded border">SpO2: <strong>{v.spo2 || "-"}%</strong></div>
@@ -732,7 +802,7 @@ export default function HealthCardsAdminPage() {
                       </div>
                     ) : (
                       [...(patient360Data.appointments || []), ...(patient360Data.physioBookings || []), ...(patient360Data.icuRequests || []).map(r => ({ ...r, bookingId: r.requestId, service: r.careType, date: r.startDate, isIcu: true }))].map((b, i) => (
-                        <div key={i} className="p-3 bg-gray-50 rounded-xl border flex items-center justify-between">
+                        <div key={i} className="p-3 bg-gray-50 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="font-bold">{b.bookingId || "BK"} - {b.service || b.category || "Service"}</span>
@@ -798,6 +868,7 @@ export default function HealthCardsAdminPage() {
                 )}
               </div>
             )}
+            </div>
           </div>
         </div>
       )}

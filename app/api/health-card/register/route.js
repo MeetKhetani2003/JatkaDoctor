@@ -122,6 +122,10 @@ export async function POST(req) {
           submittedAt: new Date(),
         };
       }
+      if (!existingPatient.familyId) {
+        existingPatient.familyId = await generateFamilyId();
+        existingPatient.isFamilyHead = true;
+      }
       await existingPatient.save();
 
       // Return existing patient info - No duplicate patient ID is created!

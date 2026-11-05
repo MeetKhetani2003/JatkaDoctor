@@ -140,11 +140,13 @@ function PatientDashboardContent() {
         setNotifications(data.notifications || []);
         
         // Fetch family
-        if (data.patient.familyId) {
-          const famRes = await fetch(`/api/health-card/family?familyId=${data.patient.familyId}`);
-          const famData = await famRes.json();
-          if (famData.success) {
-            setFamilyData({ family: famData.family, members: famData.members || [] });
+        const famQuery = data.patient.familyId ? `familyId=${data.patient.familyId}` : `patientId=${data.patient.patientId}`;
+        const famRes = await fetch(`/api/health-card/family?${famQuery}`);
+        const famData = await famRes.json();
+        if (famData.success) {
+          setFamilyData({ family: famData.family, members: famData.members || [] });
+          if (!data.patient.familyId && famData.family?.familyId) {
+            setPatientData(prev => ({ ...prev, familyId: famData.family.familyId }));
           }
         }
 
